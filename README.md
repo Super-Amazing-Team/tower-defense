@@ -1,54 +1,55 @@
 ### Как запускать?
 
 1. Убедитесь что у вас установлен `node` и `docker`
-2. Выполните команду `yarn bootstrap` - это обязательный шаг, без него ничего работать не будет :)
-3. Выполните команду `yarn dev`
-3. Выполните команду `yarn dev --scope=client` чтобы запустить только клиент
-4. Выполните команду `yarn dev --scope=server` чтобы запустить только server
-
+2. Выполните команду `pnpm bootstrap` - это обязательный шаг, без него ничего работать не будет :)
+3. Выполните команду `pnpm dev` чтобы запустить и фронтенд и бекенд в режиме разработки
+4. Выполните команду `pnpm dev --scope=client` чтобы запустить только клиент
+5. Выполните команду `pnpm dev --scope=server` чтобы запустить только server
 
 ### Как добавить зависимости?
+
 В этом проекте используется `monorepo` на основе [`lerna`](https://github.com/lerna/lerna)
 
-Чтобы добавить зависимость для клиента 
-```yarn lerna add {your_dep} --scope client```
+Чтобы добавить зависимость для клиента
+`pnpm --filter client i {your_dep}`
 
 Для сервера
-```yarn lerna add {your_dep} --scope server```
+`pnpm --filter server i {your_dep}`
 
 И для клиента и для сервера
-```yarn lerna add {your_dep}```
-
+`yarn lerna add {your_dep}`
 
 Если вы хотите добавить dev зависимость, проделайте то же самое, но с флагом `dev`
-```yarn lerna add {your_dep} --dev --scope server```
-
+для фронтенда:
+`pnpm --filter client i -D {your_dep}`
+для бекенда:
+`pnpm --filter server i -D {your_dep}`
 
 ### Тесты
 
 Для клиента используется [`react-testing-library`](https://testing-library.com/docs/react-testing-library/intro/)
 
-```yarn test```
+`pnpm test`
 
 ### Линтинг
 
-```yarn lint```
+`pnpm lint`
 
 ### Форматирование prettier
 
-```yarn format```
+`pnpm format`
 
 ### Production build
 
-```yarn build```
+`pnpm build`
 
 И чтобы посмотреть что получилось
 
-
-`yarn preview --scope client`
-`yarn preview --scope server`
+`pnpm preview --scope client`
+`pnpm preview --scope server`
 
 ## Хуки
+
 В проекте используется [lefthook](https://github.com/evilmartians/lefthook)
 Если очень-очень нужно пропустить проверки, используйте `--no-verify` (но не злоупотребляйте :)
 
@@ -57,6 +58,7 @@
 Откройте issue, я приду :)
 
 ## Автодеплой статики на vercel
+
 Зарегистрируйте аккаунт на [vercel](https://vercel.com/)
 Следуйте [инструкции](https://vitejs.dev/guide/static-deploy.html#vercel-for-git)
 В качестве `root directory` укажите `packages/client`
@@ -64,10 +66,11 @@
 Все ваши PR будут автоматически деплоиться на vercel. URL вам предоставит деплоящий бот
 
 ## Production окружение в докере
+
 Перед первым запуском выполните `node init.js`
 
-
 `docker compose up` - запустит три сервиса
+
 1. nginx, раздающий клиентскую статику (client)
 2. node, ваш сервер (server)
 3. postgres, вашу базу данных (postgres)
