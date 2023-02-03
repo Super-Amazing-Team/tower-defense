@@ -21,7 +21,7 @@ export const createClientAndConnect = async (): Promise<Client | null> => {
 
     return client
   } catch (e) {
-    console.error(e)
+    console.error('Failed to connect to the database: ', e)
   }
 
   return null
