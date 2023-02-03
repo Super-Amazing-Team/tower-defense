@@ -1,7 +1,3 @@
-import React from "react";
-
-function Profile() {
-  return (
-    <h1>I'm Profile Component</h1>
-  )
+export function Profile() {
+  return <h1>I&apos;m Profile Component</h1>;
 }

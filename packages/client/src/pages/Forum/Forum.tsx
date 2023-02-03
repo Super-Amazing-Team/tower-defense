@@ -1,7 +1,3 @@
-import React from "react";
-
-function Forum() {
-  return (
-    <h1>I'm Forum Component</h1>
-  )
+export function Forum() {
+  return <h1>I&apos;m Forum Component</h1>;
 }

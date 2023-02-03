@@ -1,7 +1,3 @@
-import React from "react";
-
-function Register() {
-  return (
-    <h1>I'm Register Component</h1>
-  )
+export function Register() {
+  return <h1>I&apos;m Register Component</h1>;
 }

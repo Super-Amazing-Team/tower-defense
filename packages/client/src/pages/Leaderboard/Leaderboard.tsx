@@ -1,7 +1,3 @@
-import React from "react";
-
-function Leaderboard() {
-  return (
-    <h1>I'm Leaderboard Component</h1>
-  )
+export function Leaderboard() {
+  return <h1>I&apos;m Leaderboard Component</h1>;
 }
