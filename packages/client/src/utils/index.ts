@@ -1,0 +1,1 @@
+export { dummySayHi } from "./dummySayHi";

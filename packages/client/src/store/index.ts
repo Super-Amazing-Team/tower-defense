@@ -1,0 +1,1 @@
+export { useBearsStore } from "./bearsStore";
