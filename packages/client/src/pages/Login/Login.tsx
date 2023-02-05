@@ -21,28 +21,29 @@ export function Login() {
     return <Navigate to="/profile" replace />;
   }
 
-  return (<Container
-    maxWidth="sm"
-    sx={{
-      flex: 1,
-      display: "flex",
-      flexDirection: "column",
-      justifyContent: "center",
-    }}
-  >
-    <Typography variant="h4" mb={5} sx={{ textTransform: "uppercase" }}>
-      вход
-    </Typography>
-    <AuthLogin />
-    <Link
-      variant="body1"
-      // component={RouterLink}
-      // to=""
-      color="text.primary"
-      sx={{ textAlign: "center", mt: 3, cursor: "pointer" }}
+  return (
+    <Container
+      maxWidth="sm"
+      sx={{
+        flex: 1,
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "center",
+      }}
     >
-      Регистрация
-    </Link>
-  </Container>
-  )
-};
+      <Typography variant="h4" mb={5} sx={{ textTransform: "uppercase" }}>
+        вход
+      </Typography>
+      <AuthLogin />
+      <Link
+        variant="body1"
+        // component={RouterLink}
+        // to=""
+        color="text.primary"
+        sx={{ textAlign: "center", mt: 3, cursor: "pointer" }}
+      >
+        Регистрация
+      </Link>
+    </Container>
+  );
+}

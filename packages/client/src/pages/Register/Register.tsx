@@ -10,31 +10,33 @@ export function Register() {
     return <Navigate to="/profile" replace />;
   }
 
-  return (<Container
-    maxWidth="sm"
-    sx={{
-      flex: 1,
-      display: "flex",
-      flexDirection: "column",
-      justifyContent: "center",
-    }}
-  >
-    <Typography
-      variant="h4"
-      mb={5}
-      sx={{ textAlign: "center", textTransform: "uppercase" }}
+  return (
+    <Container
+      maxWidth="sm"
+      sx={{
+        flex: 1,
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "center",
+      }}
     >
-      регистрация
-    </Typography>
-    <AuthRegister />
-    <Link
-      variant="body1"
-      // component={RouterLink}
-      // to=""
-      color="text.primary"
-      sx={{ textAlign: "center", mt: 3, cursor: "pointer" }}
-    >
-      Вход
-    </Link>
-  </Container>)
-};
+      <Typography
+        variant="h4"
+        mb={5}
+        sx={{ textAlign: "center", textTransform: "uppercase" }}
+      >
+        регистрация
+      </Typography>
+      <AuthRegister />
+      <Link
+        variant="body1"
+        // component={RouterLink}
+        // to=""
+        color="text.primary"
+        sx={{ textAlign: "center", mt: 3, cursor: "pointer" }}
+      >
+        Вход
+      </Link>
+    </Container>
+  );
+}
