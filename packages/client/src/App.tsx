@@ -5,7 +5,9 @@ import Brightness4Icon from "@mui/icons-material/Brightness4";
 import Brightness7Icon from "@mui/icons-material/Brightness7";
 import { useLocalStorage } from "@/utils/useLocalStorage";
 // import { Register } from "@/pages/Register";
+// import { Register } from "@/pages/Register";
 import { Login } from "@/pages/Login";
+// import { Leaderboard } from "@/pages/Leaderboard";
 
 function App() {
   const [mode, setMode] = useLocalStorage("mode", "light");
