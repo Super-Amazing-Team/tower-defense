@@ -1,4 +1,4 @@
-import { useUserStore } from "@/store/userStore";
+import { useUserStore } from "@/store";
 
 export function Profile() {
   const logout = useUserStore((store) => store.logout);
