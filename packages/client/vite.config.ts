@@ -1,7 +1,10 @@
-import { defineConfig } from 'vite'
-import react from '@vitejs/plugin-react'
-import dotenv from 'dotenv'
-dotenv.config()
+/* eslint-disable */
+import { defineConfig } from "vite";
+import react from "@vitejs/plugin-react";
+import tsconfigPaths from "vite-tsconfig-paths";
+import eslintPlugin from "vite-plugin-eslint";
+import dotenv from "dotenv";
+dotenv.config();
 
 // https://vitejs.dev/config/
 export default defineConfig({
@@ -9,7 +12,7 @@ export default defineConfig({
     port: Number(process.env.CLIENT_PORT) || 3000,
   },
   define: {
-    __SERVER_PORT__: process.env.SERVER_PORT,
+    __SERVER_PORT: process.env.SERVER_PORT,
   },
-  plugins: [react()],
-})
+  plugins: [react(), eslintPlugin(), tsconfigPaths()],
+});
