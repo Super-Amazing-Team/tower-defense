@@ -5,7 +5,7 @@ export const Login = () => (
   <Container
     maxWidth="sm"
     sx={{
-      minHeight: "100vh",
+      flex: 1,
       display: "flex",
       flexDirection: "column",
       justifyContent: "center",
