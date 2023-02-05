@@ -1,6 +1,14 @@
-import { Link } from "react-router-dom";
+import { Link, Navigate } from "react-router-dom";
+import { useUserStore } from "@/store/userStore";
 
 export function Forum() {
+  const user = useUserStore((store) => store.user);
+  console.log("user", user);
+
+  if (!user.isAuth) {
+    return <Navigate to="/" replace />;
+  }
+
   return (
     <div>
       <h1>I&apos;m Forum Componen</h1>

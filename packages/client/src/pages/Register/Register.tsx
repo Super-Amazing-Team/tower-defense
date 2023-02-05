@@ -1,9 +1,16 @@
-// import { Link } from "react-router-dom";
+import { Navigate } from "react-router-dom";
 import { Container, Link, Typography } from "@mui/material";
+import { useUserStore } from "@/store/userStore";
 import AuthRegister from "./AuthRegister";
 
-export const Register = () => (
-  <Container
+export function Register() {
+  const user = useUserStore((store) => store.user);
+
+  if (user.isAuth) {
+    return <Navigate to="/profile" replace />;
+  }
+
+  return (<Container
     maxWidth="sm"
     sx={{
       flex: 1,
@@ -29,5 +36,5 @@ export const Register = () => (
     >
       Вход
     </Link>
-  </Container>
-);
+  </Container>)
+};
