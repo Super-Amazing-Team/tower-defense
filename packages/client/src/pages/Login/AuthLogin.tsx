@@ -1,4 +1,5 @@
-import { MouseEvent, useState } from "react";
+import type { MouseEvent } from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
