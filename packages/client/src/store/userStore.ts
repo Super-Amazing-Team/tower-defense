@@ -23,7 +23,7 @@ export const useUserStore = create<IUserStore>()(
   persist(
     (set) => ({
       user: initialUser,
-      login: (login: string, password: string, isAuth: boolean) =>
+      login: (login, password, isAuth) =>
         set(() => ({
           user: {
             login,
