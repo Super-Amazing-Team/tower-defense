@@ -1,5 +1,5 @@
-import { useUserStore } from "@/store";
 import { useNavigate } from "react-router-dom";
+import { useUserStore } from "@/store";
 
 export function Profile() {
   const logout = useUserStore((store) => store.logout);

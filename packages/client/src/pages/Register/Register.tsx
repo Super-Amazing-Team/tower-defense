@@ -1,7 +1,7 @@
 import { Navigate } from "react-router-dom";
 import { Container, Link, Typography } from "@mui/material";
-import { useUserStore } from "@/store/userStore";
 import AuthRegister from "./AuthRegister";
+import { useUserStore } from "@/store/userStore";
 
 export function Register() {
   const user = useUserStore((store) => store.user);
