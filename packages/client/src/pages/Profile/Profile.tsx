@@ -3,9 +3,7 @@ import { useUserStore } from "@/store";
 export function Profile() {
   const logout = useUserStore((store) => store.logout);
 
-  const logoutMe = (e: any): void => {
-    e.preventDefault();
-
+  const logoutMe = (e: { preventDefault: () => void }) => {
     logout();
     window.location.href = "/";
   };

@@ -1,5 +1,5 @@
 import { Outlet } from "react-router-dom";
-import { useUserStore } from "@/store/userStore";
+import { useUserStore } from "@/store";
 import { Login } from "@/pages/Login";
 
 export const ProtectedRoutes = () => {

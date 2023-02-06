@@ -10,34 +10,31 @@ interface IUser {
 interface IUserStore {
   user: IUser;
   login: (login: string, password: string, isAuth: boolean) => void;
-  logout(): void;
+  logout: () => void;
 }
+
+const initialUser = {
+  login: "",
+  password: "",
+  isAuth: false,
+};
 
 export const useUserStore = create<IUserStore>()(
   persist(
     (set) => ({
-      user: {
-        login: "",
-        password: "",
-        isAuth: false,
-      },
+      user: initialUser,
       login: (login: string, password: string, isAuth: boolean) =>
-        set(({ user }) => ({
+        set(() => ({
           user: {
             login,
             password,
             isAuth: true,
           },
         })),
-      logout() {
-        set({
-          user: {
-            login: "",
-            password: "",
-            isAuth: false,
-          },
-        });
-      },
+      logout: () =>
+        set(() => ({
+          user: initialUser,
+        })),
     }),
     { name: "userStore", version: 1 },
   ),
