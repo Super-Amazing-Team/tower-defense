@@ -17,6 +17,8 @@ importers:
       '@babel/plugin-transform-react-jsx': 7.20.13
       '@emotion/react': 11.10.5
       '@emotion/styled': 11.10.5
+      '@hookform/resolvers': 2.9.10
+      '@mui/icons-material': 5.11.0
       '@mui/material': 5.11.7
       '@testing-library/react': 13.3.0
       '@types/jest': 29.4.0
@@ -41,19 +43,25 @@ importers:
       prettier: 2.8.3
       react: 18.2.0
       react-dom: 18.2.0
+      react-hook-form: 7.43.0
       ts-jest: 29.0.5
       typescript: 4.9.5
       vite: 4.1.1
       vite-plugin-eslint: 1.8.1
       vite-tsconfig-paths: 4.0.5
+      zod: 3.20.2
       zustand: 4.3.2
     dependencies:
       '@emotion/react': 11.10.5_pte3zt6n5zgo5uk2zhqp2inzau
       '@emotion/styled': 11.10.5_io2usftwqhlygpkdj24buzgqwm
+      '@hookform/resolvers': 2.9.10_react-hook-form@7.43.0
+      '@mui/icons-material': 5.11.0_hrsdchzn6r7fow4ecp5hbqds6q
       '@mui/material': 5.11.7_soexg2hcxjwpx3srtr7o6bja4a
       dotenv: 16.0.2
       react: 18.2.0
       react-dom: 18.2.0_react@18.2.0
+      react-hook-form: 7.43.0_react@18.2.0
+      zod: 3.20.2
       zustand: 4.3.2_react@18.2.0
     devDependencies:
       '@babel/core': 7.20.12
@@ -1856,6 +1864,14 @@ packages:
     resolution: {integrity: sha512-k2Ty1JcVojjJFwrg/ThKi2ujJ7XNLYaFGNB/bWT9wGR+oSMJHMa5w+CUq6p/pVrKeNNgA7pCqEcjSnHVoqJQFw==}
     dev: true
 
+  /@hookform/resolvers/2.9.10_react-hook-form@7.43.0:
+    resolution: {integrity: sha512-JIL1DgJIlH9yuxcNGtyhsWX/PgNltz+5Gr6+8SX9fhXc/hPbEIk6wPI82nhgvp3uUb6ZfAM5mqg/x7KR7NAb+A==}
+    peerDependencies:
+      react-hook-form: ^7.0.0
+    dependencies:
+      react-hook-form: 7.43.0_react@18.2.0
+    dev: false
+
   /@humanwhocodes/config-array/0.10.7:
     resolution: {integrity: sha512-MDl6D6sBsaV452/QSdX+4CXIjZhIcI0PELsxUjk4U828yd58vk3bTIvk/6w5FY+4hIy9sLW0sfrV7K7Kc++j/w==}
     engines: {node: '>=10.10.0'}
@@ -2961,6 +2977,23 @@ packages:
 
   /@mui/core-downloads-tracker/5.11.7:
     resolution: {integrity: sha512-lZgX7XQTk0zVcpwEa80r+T4y09dosnUxWvFPSikU/2Hh5wnyNOek8WfJwGCNsaRiXJHMi5eHY+z8oku4u5lgNw==}
+    dev: false
+
+  /@mui/icons-material/5.11.0_hrsdchzn6r7fow4ecp5hbqds6q:
+    resolution: {integrity: sha512-I2LaOKqO8a0xcLGtIozC9xoXjZAto5G5gh0FYUMAlbsIHNHIjn4Xrw9rvjY20vZonyiGrZNMAlAXYkY6JvhF6A==}
+    engines: {node: '>=12.0.0'}
+    peerDependencies:
+      '@mui/material': ^5.0.0
+      '@types/react': ^17.0.0 || ^18.0.0
+      react: ^17.0.0 || ^18.0.0
+    peerDependenciesMeta:
+      '@types/react':
+        optional: true
+    dependencies:
+      '@babel/runtime': 7.20.13
+      '@mui/material': 5.11.7_soexg2hcxjwpx3srtr7o6bja4a
+      '@types/react': 18.0.17
+      react: 18.2.0
     dev: false
 
   /@mui/material/5.11.7_soexg2hcxjwpx3srtr7o6bja4a:
@@ -9529,6 +9562,15 @@ packages:
       react: 18.2.0
       scheduler: 0.23.0
 
+  /react-hook-form/7.43.0_react@18.2.0:
+    resolution: {integrity: sha512-/rVEz7T0gLdSFwPqutJ1kn2e0sQNyb9ci/hmwEYr2YG0KF/LSuRLvNrf9QWJM+gj88CjDpDW5Bh/1AD7B2+z9Q==}
+    engines: {node: '>=12.22.0'}
+    peerDependencies:
+      react: ^16.8.0 || ^17 || ^18
+    dependencies:
+      react: 18.2.0
+    dev: false
+
   /react-is/16.13.1:
     resolution: {integrity: sha512-24e6ynE2H+OKt4kqsOvNd8kBpV65zoxbA4BVsEOB3ARVWQki/DHzaUoC5KuON/BiccDaCCTZBuOcfZs70kR8bQ==}
 
@@ -11124,6 +11166,10 @@ packages:
     resolution: {integrity: sha512-rVksvsnNCdJ/ohGc6xgPwyN8eheCxsiLM8mxuE/t/mOVqJewPuO1miLpTHQiRgTKCLexL4MeAFVagts7HmNZ2Q==}
     engines: {node: '>=10'}
     dev: true
+
+  /zod/3.20.2:
+    resolution: {integrity: sha512-1MzNQdAvO+54H+EaK5YpyEy0T+Ejo/7YLHS93G3RnYWh5gaotGHwGeN/ZO687qEDU2y4CdStQYXVHIgrUl5UVQ==}
+    dev: false
 
   /zustand/4.3.2_react@18.2.0:
     resolution: {integrity: sha512-rd4haDmlwMTVWVqwvgy00ny8rtti/klRoZjFbL/MAcDnmD5qSw/RZc+Vddstdv90M5Lv6RPgWvm1Hivyn0QgJw==}

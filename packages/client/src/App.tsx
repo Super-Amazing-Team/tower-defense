@@ -1,52 +1,60 @@
-import { useEffect } from "react";
+import { useMemo } from "react";
+import { Box, createTheme, IconButton, ThemeProvider } from "@mui/material";
 import CSSBaseLine from "@mui/material/CssBaseline";
-import { Box, Grid, Typography, Button } from "@mui/material";
-
-import { useBearsStore } from "@/store";
-
-function DummyTestComponent() {
-  const bears = useBearsStore((store) => store.bears);
-  const addOne = useBearsStore((store) => store.addOne);
-  const resetPopulation = useBearsStore((store) => store.resetPopulation);
-
-  return (
-    <Box sx={{ width: "100vw", height: "100vh" }}>
-      <Grid
-        container
-        justifyContent="center"
-        alignItems="center"
-        flexDirection="column"
-        sx={{ height: "100%" }}
-      >
-        <Typography>Вот сколько медведей мы сосчитали: {bears}</Typography>
-        <Box>
-          <Button variant="contained" onClick={addOne}>
-            Сосчитать еще одного
-          </Button>
-          <Button color="error" onClick={resetPopulation}>
-            Начать заново
-          </Button>
-        </Box>
-      </Grid>
-    </Box>
-  );
-}
+import Brightness4Icon from "@mui/icons-material/Brightness4";
+import Brightness7Icon from "@mui/icons-material/Brightness7";
+import { useLocalStorage } from "@/utils/useLocalStorage";
+// import { Register } from "@/pages/Register";
+// import { Register } from "@/pages/Register";
+import { Login } from "@/pages/Login";
+// import { Leaderboard } from "@/pages/Leaderboard";
 
 function App() {
-  useEffect(() => {
-    const fetchServerData = async () => {
-      const url = `http://localhost:${__SERVER_PORT}`;
-      const response = await fetch(url);
-      const data = await response.json();
-      console.log(data);
-    };
+  const [mode, setMode] = useLocalStorage("mode", "light");
+  const colorMode = useMemo(
+    () => ({
+      toggleColorMode: () => {
+        setMode((prevMode: string) =>
+          prevMode === "light" ? "dark" : "light",
+        );
+      },
+    }),
+    [setMode],
+  );
 
-    fetchServerData();
-  }, []);
+  const theme = useMemo(
+    () =>
+      createTheme({
+        palette: {
+          mode,
+        },
+      }),
+    [mode],
+  );
   return (
-    <CSSBaseLine>
-      <DummyTestComponent />
-    </CSSBaseLine>
+    <ThemeProvider theme={theme}>
+      <CSSBaseLine>
+        <Box
+          sx={{ display: "flex", flexDirection: "column", minHeight: "100vh" }}
+        >
+          <Box>
+            <IconButton
+              sx={{ mx: 1 }}
+              onClick={colorMode.toggleColorMode}
+              color="inherit"
+            >
+              {theme.palette.mode === "dark" ? (
+                <Brightness7Icon />
+              ) : (
+                <Brightness4Icon />
+              )}
+            </IconButton>
+            {theme.palette.mode} mode
+          </Box>
+          <Login />
+        </Box>
+      </CSSBaseLine>
+    </ThemeProvider>
   );
 }
 
