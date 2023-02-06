@@ -1,6 +1,7 @@
-pre-commit:
+pre-push:
   parallel: true
   commands:
     lint:
-      glob: '*.{ts,tsx}'
-      run: pnpm eslint {staged_files}
+      run: pnpm lint
+    test:
+      run: pnpm test

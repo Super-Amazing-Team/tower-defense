@@ -3,7 +3,7 @@ import { Box, createTheme, IconButton, ThemeProvider } from "@mui/material";
 import CSSBaseLine from "@mui/material/CssBaseline";
 import Brightness4Icon from "@mui/icons-material/Brightness4";
 import Brightness7Icon from "@mui/icons-material/Brightness7";
-import { useLocalStorage } from "@/utils/useLocalStorage";
+import { useLocalStorage, Snackbar } from "@/utils";
 // import { Register } from "@/pages/Register";
 // import { Register } from "@/pages/Register";
 import { Login } from "@/pages/Login";
@@ -53,6 +53,7 @@ function App() {
           </Box>
           <Login />
         </Box>
+        <Snackbar />
       </CSSBaseLine>
     </ThemeProvider>
   );
