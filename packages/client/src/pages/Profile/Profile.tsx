@@ -1,11 +1,13 @@
 import { useUserStore } from "@/store";
+import { useNavigate } from "react-router-dom";
 
 export function Profile() {
   const logout = useUserStore((store) => store.logout);
+  const navigate = useNavigate();
 
   const logoutMe = (e: { preventDefault: () => void }) => {
     logout();
-    window.location.href = "/";
+    navigate("/");
   };
 
   return (
