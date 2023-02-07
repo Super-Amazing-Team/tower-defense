@@ -1,28 +1,21 @@
-import {
-  Avatar,
-  Button,
-  ButtonGroup,
-  Container,
-  Dialog,
-  DialogActions,
-} from "@mui/material";
+import { Avatar, Button, ButtonGroup, Container, Dialog } from "@mui/material";
 import React from "react";
 import FormProfile from "@/pages/Profile/FormProfile";
 import { useProfileStore } from "@/store";
-import EditPasswordModal from "@/pages/Profile/EditPasswordModal";
+import EditPasswordForm from "@/pages/Profile/EditPasswordForm";
 
 export function Profile() {
   const user = useProfileStore((store) => store.user);
   const isEditModeState = useProfileStore((store) => store.isEditMode);
   const setIsEditMode = useProfileStore((store) => store.updateEditMode);
-  const [open, setOpen] = React.useState(false);
+  const [openEditPasswordModal, setOpenEditPasswordModal] =
+    React.useState(false);
 
-  const handleOpenModal = () => {
-    setOpen(true);
+  const handleOpenModalEditPassword = () => {
+    setOpenEditPasswordModal(true);
   };
-
-  const handleCloseModal = () => {
-    setOpen(false);
+  const handleCloseEditPasswordModal = () => {
+    setOpenEditPasswordModal(false);
   };
   const handleEditMode = () => {
     setIsEditMode(true);
@@ -32,11 +25,19 @@ export function Profile() {
     <Button key="one" onClick={handleEditMode}>
       Редактировать
     </Button>,
-    <Button key="two" onClick={handleOpenModal}>
+    <Button key="two" onClick={handleOpenModalEditPassword}>
       Изменить пароль
     </Button>,
     <Button key="three">Выход</Button>,
   ];
+
+  function handleCloseModalEditAvatar() {
+    console.log("handleCloseModalEditAvatar");
+  }
+
+  function onChangeInputFile(event: React.ChangeEvent<HTMLInputElement>) {
+    console.log(`Saving ${event.target.value}`);
+  }
 
   return (
     <Container
@@ -54,6 +55,7 @@ export function Profile() {
         sx={{ width: 64, height: 64, m: "0 auto" }}
       />
       <Button
+        component="label"
         size="small"
         variant="contained"
         color="primary"
@@ -64,6 +66,13 @@ export function Profile() {
         }}
       >
         ЗАГРУЗИТЬ ФОТО
+        <input
+          onChange={onChangeInputFile}
+          hidden
+          accept="image/*"
+          multiple
+          type="file"
+        />
       </Button>
       <FormProfile isEditMode={isEditModeState} user={user} />
 
@@ -82,18 +91,14 @@ export function Profile() {
       )}
 
       <Dialog
-        open={open}
-        onClose={handleCloseModal}
+        open={openEditPasswordModal}
+        onClose={handleCloseEditPasswordModal}
         aria-labelledby="alert-dialog-title"
         aria-describedby="alert-dialog-description"
       >
-        <EditPasswordModal />
-        <DialogActions>
-          <Button onClick={handleCloseModal}>Disagree</Button>
-          <Button onClick={handleCloseModal} autoFocus>
-            Agree
-          </Button>
-        </DialogActions>
+        <EditPasswordForm
+          onCloseModalEditPassword={handleCloseEditPasswordModal}
+        />
       </Dialog>
     </Container>
   );

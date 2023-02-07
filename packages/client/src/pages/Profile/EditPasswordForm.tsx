@@ -1,5 +1,5 @@
 import type { MouseEvent } from "react";
-import { useState } from "react";
+import React, { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -12,6 +12,8 @@ import {
   FormControl,
   FormHelperText,
   Typography,
+  Button,
+  DialogActions,
 } from "@mui/material";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
@@ -24,7 +26,11 @@ const schema = z.object({
 
 type TSchema = z.infer<typeof schema>;
 
-const EditPasswordModal = () => {
+export interface IEditPasswordFormProps {
+  onCloseModalEditPassword: () => void;
+}
+
+const EditPasswordForm = (props: IEditPasswordFormProps) => {
   const [isShowOldPassword, setIsShowOldPassword] = useState<boolean>(false);
   const [isShowNewPassword, setIsShowNewPassword] = useState<boolean>(false);
   const [isShowConfirmPassword, setIsShowConfirmPassword] =
@@ -50,6 +56,10 @@ const EditPasswordModal = () => {
     event.preventDefault();
   };
 
+  const handleCloseEditPasswordModal = () => {
+    props.onCloseModalEditPassword();
+  };
+
   const {
     register,
     handleSubmit,
@@ -60,7 +70,8 @@ const EditPasswordModal = () => {
   });
 
   const onSubmit = (data: TSchema) => {
-    // console.log(data);
+    console.log(data);
+    handleCloseEditPasswordModal();
   };
 
   return (
@@ -75,7 +86,7 @@ const EditPasswordModal = () => {
               htmlFor="outlined-adornment-old-password"
               error={Boolean(errors.oldPassword)}
             >
-              Password
+              Old Password
             </InputLabel>
             <OutlinedInput
               autoComplete="current-password"
@@ -106,7 +117,7 @@ const EditPasswordModal = () => {
               htmlFor="outlined-adornment-new-password"
               error={Boolean(errors.newPassword)}
             >
-              Password
+              New Password
             </InputLabel>
             <OutlinedInput
               autoComplete="new-password"
@@ -137,7 +148,7 @@ const EditPasswordModal = () => {
               htmlFor="outlined-adornment-confirm-password"
               error={Boolean(errors.confirmNewPassword)}
             >
-              Password
+              New Password
             </InputLabel>
             <OutlinedInput
               autoComplete="new-password"
@@ -165,8 +176,14 @@ const EditPasswordModal = () => {
           </FormControl>
         </Grid>
       </Grid>
+      <DialogActions>
+        <Button onClick={handleCloseEditPasswordModal} autoFocus>
+          Закрыть
+        </Button>
+        <Button type="submit">Изменить</Button>
+      </DialogActions>
     </form>
   );
 };
 
-export default EditPasswordModal;
+export default EditPasswordForm;

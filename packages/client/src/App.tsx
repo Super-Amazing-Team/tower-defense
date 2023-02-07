@@ -6,7 +6,8 @@ import Brightness7Icon from "@mui/icons-material/Brightness7";
 import { useLocalStorage, Snackbar } from "@/utils";
 // import { Register } from "@/pages/Register";
 // import { Register } from "@/pages/Register";
-import { Login } from "@/pages/Login";
+// import { Login } from "@/pages/Login";
+import { Profile } from "@/pages/Profile";
 // import { Leaderboard } from "@/pages/Leaderboard";
 
 function App() {
@@ -51,7 +52,7 @@ function App() {
             </IconButton>
             {theme.palette.mode} mode
           </Box>
-          <Login />
+          <Profile />
         </Box>
         <Snackbar />
       </CSSBaseLine>
