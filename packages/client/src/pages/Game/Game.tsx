@@ -1,4 +1,4 @@
-import React, { PropsWithChildren, useEffect, useRef, useState } from "react";
+import { FC, PropsWithChildren, useEffect, useRef, useState } from "react";
 import TDEngine, { ITDEngine, IWaveGenerator } from "./engine/TDEngine";
 import Tower from "@/pages/Game/towers/Tower";
 import Enemy from "@/pages/Game/enemies/Enemy";
@@ -14,7 +14,7 @@ export interface IGameProps extends PropsWithChildren {
   isEnoughMoney?: boolean;
 }
 
-export const Game: React.FC<IGameProps> = ({ engine = new TDEngine() }) => {
+export const Game: FC<IGameProps> = ({ engine = new TDEngine() }) => {
   // canvas ref
   const canvas = useRef<HTMLCanvasElement>(null);
   const mapCanvas = useRef<HTMLCanvasElement>(null);
