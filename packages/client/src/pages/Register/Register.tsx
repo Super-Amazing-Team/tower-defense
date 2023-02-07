@@ -1,13 +1,14 @@
-import { Navigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 import { Container, Link, Typography } from "@mui/material";
 import AuthRegister from "./AuthRegister";
 import { useUserStore } from "@/store/userStore";
 
 export function Register() {
   const user = useUserStore((store) => store.user);
+  const navigate = useNavigate();
 
   if (user.isAuth) {
-    return <Navigate to="/profile" replace />;
+    navigate("/profile");
   }
 
   return (
