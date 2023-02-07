@@ -1,7 +1,7 @@
 import React, { MouseEvent, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
+import { z } from "zod";
 import {
   Button,
   FormControl,
@@ -59,7 +59,7 @@ const AuthRegister = () => {
             type="text"
             placeholder="Вася"
             fullWidth
-            helperText={errors.first_name?.message}
+            helperText={errors.first_name?.message || " "}
             error={Boolean(errors.first_name)}
             {...register("first_name")}
           />
@@ -70,7 +70,7 @@ const AuthRegister = () => {
             type="text"
             placeholder="Иванов"
             fullWidth
-            helperText={errors.second_name?.message}
+            helperText={errors.second_name?.message || " "}
             error={Boolean(errors.second_name)}
             {...register("second_name")}
           />
@@ -81,7 +81,7 @@ const AuthRegister = () => {
             type="email"
             placeholder="Enter email address"
             fullWidth
-            helperText={errors.email?.message}
+            helperText={errors.email?.message || " "}
             error={Boolean(errors.email)}
             {...register("email")}
           />
@@ -92,7 +92,7 @@ const AuthRegister = () => {
             type="text"
             placeholder="Enter login"
             fullWidth
-            helperText={errors.login?.message}
+            helperText={errors.login?.message || " "}
             error={Boolean(errors.login)}
             {...register("login")}
           />
@@ -103,7 +103,7 @@ const AuthRegister = () => {
             type="tel"
             placeholder="Enter phone"
             fullWidth
-            helperText={errors.phone?.message}
+            helperText={errors.phone?.message || " "}
             error={Boolean(errors.phone)}
             {...register("phone")}
           />
@@ -135,7 +135,9 @@ const AuthRegister = () => {
               error={Boolean(errors.password)}
               {...register("password")}
             />
-            <FormHelperText error>{errors.password?.message}</FormHelperText>
+            <FormHelperText error>
+              {errors.password?.message || " "}
+            </FormHelperText>
           </FormControl>
         </Grid>
         <Grid item xs={12}>

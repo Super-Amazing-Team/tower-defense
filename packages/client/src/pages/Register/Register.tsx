@@ -1,33 +1,42 @@
-// import { Link } from "react-router-dom";
+import { Navigate } from "react-router-dom";
 import { Container, Link, Typography } from "@mui/material";
 import AuthRegister from "./AuthRegister";
+import { useUserStore } from "@/store/userStore";
 
-export const Register = () => (
-  <Container
-    maxWidth="sm"
-    sx={{
-      flex: 1,
-      display: "flex",
-      flexDirection: "column",
-      justifyContent: "center",
-    }}
-  >
-    <Typography
-      variant="h4"
-      mb={5}
-      sx={{ textAlign: "center", textTransform: "uppercase" }}
+export function Register() {
+  const user = useUserStore((store) => store.user);
+
+  if (user.isAuth) {
+    return <Navigate to="/profile" replace />;
+  }
+
+  return (
+    <Container
+      maxWidth="sm"
+      sx={{
+        flex: 1,
+        display: "flex",
+        flexDirection: "column",
+        justifyContent: "center",
+      }}
     >
-      регистрация
-    </Typography>
-    <AuthRegister />
-    <Link
-      variant="body1"
-      // component={RouterLink}
-      // to=""
-      color="text.primary"
-      sx={{ textAlign: "center", mt: 3, cursor: "pointer" }}
-    >
-      Вход
-    </Link>
-  </Container>
-);
+      <Typography
+        variant="h4"
+        mb={5}
+        sx={{ textAlign: "center", textTransform: "uppercase" }}
+      >
+        регистрация
+      </Typography>
+      <AuthRegister />
+      <Link
+        variant="body1"
+        // component={RouterLink}
+        // to=""
+        color="text.primary"
+        sx={{ textAlign: "center", mt: 3, cursor: "pointer" }}
+      >
+        Вход
+      </Link>
+    </Container>
+  );
+}

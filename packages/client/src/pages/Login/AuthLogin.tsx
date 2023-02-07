@@ -2,7 +2,7 @@ import type { MouseEvent } from "react";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
+import { z } from "zod";
 import {
   Button,
   Grid,
@@ -25,9 +25,9 @@ const schema = z.object({
 type TSchema = z.infer<typeof schema>;
 
 const AuthLogin = () => {
-  const [showPassword, setShowPassword] = useState(false);
+  const [isShowPassword, setIsShowPassword] = useState<boolean>(false);
   const handleClickShowPassword = () => {
-    setShowPassword(!showPassword);
+    setIsShowPassword((prevProps) => !prevProps);
   };
 
   const handleMouseDownPassword = (event: MouseEvent) => {
@@ -58,7 +58,7 @@ const AuthLogin = () => {
             fullWidth
             {...register("login")}
             error={Boolean(errors.login)}
-            helperText={errors.login?.message}
+            helperText={errors.login?.message || " "}
           />
         </Grid>
         <Grid item xs={12}>
@@ -71,7 +71,7 @@ const AuthLogin = () => {
             </InputLabel>
             <OutlinedInput
               id="outlined-adornment-password"
-              type={showPassword ? "text" : "password"}
+              type={isShowPassword ? "text" : "password"}
               endAdornment={
                 <InputAdornment position="end">
                   <IconButton
@@ -80,7 +80,7 @@ const AuthLogin = () => {
                     onMouseDown={handleMouseDownPassword}
                     edge="end"
                   >
-                    {showPassword ? <VisibilityOff /> : <Visibility />}
+                    {isShowPassword ? <VisibilityOff /> : <Visibility />}
                   </IconButton>
                 </InputAdornment>
               }
@@ -88,7 +88,9 @@ const AuthLogin = () => {
               error={Boolean(errors.password)}
               {...register("password")}
             />
-            <FormHelperText error>{errors.password?.message}</FormHelperText>
+            <FormHelperText error>
+              {errors.password?.message || " "}
+            </FormHelperText>
           </FormControl>
         </Grid>
 
