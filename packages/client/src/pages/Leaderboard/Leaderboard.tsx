@@ -1,5 +1,5 @@
-import { ChangeEvent, useState } from "react";
-import type { MouseEvent } from "react";
+import { useState } from "react";
+import type { MouseEvent, ChangeEvent } from "react";
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
 import TableCell from "@mui/material/TableCell";
