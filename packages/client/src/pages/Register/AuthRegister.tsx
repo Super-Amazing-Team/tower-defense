@@ -47,7 +47,7 @@ const AuthRegister = () => {
   });
 
   const onSubmit = (data: TSchema) => {
-    // console.log(data);
+    console.log(data);
   };
 
   return (
