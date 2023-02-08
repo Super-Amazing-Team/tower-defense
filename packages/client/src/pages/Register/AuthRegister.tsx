@@ -28,9 +28,9 @@ const schema = z.object({
 type TSchema = z.infer<typeof schema>;
 
 const AuthRegister = () => {
-  const [showPassword, setShowPassword] = useState(false);
+  const [isShowPassword, setIsShowPassword] = useState(false);
   const handleClickShowPassword = () => {
-    setShowPassword(!showPassword);
+    setIsShowPassword(!isShowPassword);
   };
 
   const handleMouseDownPassword = (event: MouseEvent) => {
@@ -118,7 +118,7 @@ const AuthRegister = () => {
             </InputLabel>
             <OutlinedInput
               id="outlined-adornment-password"
-              type={showPassword ? "text" : "password"}
+              type={isShowPassword ? "text" : "password"}
               endAdornment={
                 <InputAdornment position="end">
                   <IconButton
@@ -127,7 +127,7 @@ const AuthRegister = () => {
                     onMouseDown={handleMouseDownPassword}
                     edge="end"
                   >
-                    {showPassword ? <VisibilityOff /> : <Visibility />}
+                    {isShowPassword ? <VisibilityOff /> : <Visibility />}
                   </IconButton>
                 </InputAdornment>
               }

@@ -19,7 +19,7 @@ interface IOpenSnackbarProps {
 }
 
 interface IState extends Required<IOpenSnackbarProps> {
-  open: boolean;
+  isOpen: boolean;
 }
 
 interface IStore extends IState {
@@ -28,7 +28,7 @@ interface IStore extends IState {
 }
 
 const initialState: IState = {
-  open: false,
+  isOpen: false,
   message: "",
   severity: "success",
   button: null,
@@ -60,7 +60,7 @@ const initialState: IState = {
 export const useSnackbarStore = create<IStore>()((set) => ({
   ...initialState,
   closeSnackbar() {
-    set({ open: false });
+    set({ isOpen: false });
   },
   openSnackbar({
     message = "",
@@ -69,7 +69,7 @@ export const useSnackbarStore = create<IStore>()((set) => ({
     anchorOrigin = { vertical: "top", horizontal: "right" },
   }: IOpenSnackbarProps) {
     set({
-      open: true,
+      isOpen: true,
       message,
       severity,
       button,

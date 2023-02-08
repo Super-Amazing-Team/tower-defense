@@ -109,6 +109,12 @@ module.exports = {
         format: ["PascalCase"],
         prefix: ["T"],
       },
+      {
+        selector: "variable",
+        types: ["boolean"],
+        format: ["PascalCase"],
+        prefix: ["is"],
+      },
     ],
     "prettier/prettier": [
       "error",
