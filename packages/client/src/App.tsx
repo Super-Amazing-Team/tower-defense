@@ -14,6 +14,7 @@ import { Page404 } from "@/pages/Page404";
 import { Page500 } from "@/pages/Page500";
 import { Layout } from "@/layout";
 import { useLayoutStore } from "@/store";
+import TDEngine from "@/pages/Game/engine/TDEngine";
 
 function App() {
   const mode = useLayoutStore((store) => store.colorMode);
@@ -45,7 +46,7 @@ function App() {
                 <Route path="/leaderboard" element={<Leaderboard />} />
                 <Route element={<ProtectedRoutes />}>
                   <Route path="/profile" element={<Profile />} />
-                  <Route path="/game" element={<Game />} />
+                  <Route path="/game" element={<Game engine={new TDEngine()} />} />
                   <Route path="/forum" element={<Forum />} />
                   <Route path="/forum/:id" element={<Topic />} />
                 </Route>
