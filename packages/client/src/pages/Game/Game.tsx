@@ -141,6 +141,8 @@ export const Game: FC<IGameProps> = ({ engine = new TDEngine() }) => {
       setIsNotEnoughMoney(engine.isNotEnoughMoney);
       if (!engine.lives) {
         setIsGameOver(true);
+      } else {
+        setIsGameOver(false);
       }
 
       // enemy init || move
@@ -148,43 +150,34 @@ export const Game: FC<IGameProps> = ({ engine = new TDEngine() }) => {
         if (!engine.waveGenerator?.waveTimerBetweenWaves) {
           // UI countdown between waves
           engine.waveGenerator?.countdown();
-          setTimeout(() => {
+          engine.waveGenerator!.waveTimerBetweenWaves = setTimeout(() => {
             engine.waveGenerator?.init();
           }, engine.waveGenerator?.waveTimeoutBetweenWaves);
         }
-      }
-
-      // isWaveInProgress?
-      if (
-        engine.lives > 0 &&
-        engine.enemies?.length === 0 &&
-        engine.waveGenerator?.waveParams.isWaveInProgress
-      ) {
-        engine.waveGenerator.waveParams.isWaveInProgress = false;
-        if (!engine.waveGenerator.waveTimerBetweenWaves) {
-          // UI countdown between waves
-          engine.waveGenerator.countdown();
-          setTimeout(() => {
-            engine.clearMemory();
-            engine.waveGenerator?.spawnEnemies();
-          }, engine.waveGenerator.waveTimeoutBetweenWaves);
-        }
-      } else if (
-        engine.lives > 0 &&
-        engine.enemies?.length === 0 &&
-        !engine.waveGenerator?.waveParams.isWaveInProgress &&
-        engine.waveGenerator?.isInitialized &&
-        !engine.waveGenerator.waveTimerBetweenWaves
-      ) {
-        if (!engine.waveGenerator.isRunOnce) {
-          // single call
-          engine.waveGenerator!.isRunOnce = true;
-
+      } else {
+        // isWaveInProgress?
+        if (
+          engine.enemies?.length === 0 &&
+          engine.waveGenerator?.waveParams.isWaveInProgress
+        ) {
+          engine.waveGenerator.waveParams.isWaveInProgress = false;
           engine.waveGenerator!.waveCountdown! = Math.floor(
             engine.waveGenerator!.waveTimeoutBetweenWaves / 1000,
           );
-          if (engine.waveGenerator?.waveCountdownTimer!) {
-            clearInterval(engine.waveGenerator?.waveCountdownTimer!);
+          if (!engine.waveGenerator.waveTimerBetweenWaves) {
+            // UI countdown between waves
+            engine.waveGenerator.waveCountdownTimer = setInterval(() => {
+              if (engine.waveGenerator!.waveCountdown > 0) {
+                engine.waveGenerator!.waveCountdown -= 1;
+              } else {
+                clearInterval(engine.waveGenerator?.waveCountdownTimer!);
+                engine.waveGenerator!.isUICountdown = false;
+              }
+            }, 1000);
+            setTimeout(() => {
+              engine.clearMemory();
+              engine.waveGenerator?.spawnEnemies();
+            }, engine.waveGenerator.waveTimeoutBetweenWaves);
           }
         }
       }
@@ -437,9 +430,7 @@ export const Game: FC<IGameProps> = ({ engine = new TDEngine() }) => {
             <span>{`Current wave: ${wave}`}</span>&nbsp;
             <span>{`Lives left: ${lives}`}</span>&nbsp;
             <span>{`Killed enemies: ${score}`}</span>&nbsp;
-            <span
-              style={{ color: `${isNotEnoughMoney ? "red" : ""}` }}
-            >{`Money: $${money}`}</span>
+            <span>{`Money: $${money}`}</span>
             &nbsp;
           </p>
           <p>
@@ -478,6 +469,9 @@ export const Game: FC<IGameProps> = ({ engine = new TDEngine() }) => {
         </div>
         <div>
           <button
+            disabled={
+              !engine.isEnoughMoney(engine.towerOneParam.towerParams.price)
+            }
             onClick={() => {
               engine.buildFirstTower();
             }}
@@ -485,6 +479,9 @@ export const Game: FC<IGameProps> = ({ engine = new TDEngine() }) => {
             Build 1 level tower(${engine.towerOneParam.towerParams.price})
           </button>
           <button
+            disabled={
+              !engine.isEnoughMoney(engine.towerTwoParam.towerParams.price)
+            }
             onClick={() => {
               engine.buildSecondTower();
             }}
@@ -492,6 +489,9 @@ export const Game: FC<IGameProps> = ({ engine = new TDEngine() }) => {
             Build 2 level tower(${engine.towerTwoParam.towerParams.price})
           </button>
           <button
+            disabled={
+              !engine.isEnoughMoney(engine.towerThreeParam.towerParams.price)
+            }
             onClick={() => {
               engine.buildThirdTower();
             }}

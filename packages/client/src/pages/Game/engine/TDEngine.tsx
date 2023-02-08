@@ -60,7 +60,7 @@ class WaveGenerator {
       hpCoefficient: engine.initialGameParams.hpCoefficient,
       speedCoefficient: engine.initialGameParams.speedCoefficient,
       enemyBountyCoefficient: 1,
-      enemyCountCoefficient: 10,
+      enemyCountCoefficient: 5,
       endWave: engine.initialGameParams.endWave,
       startWave: 1,
       enemyCount: engine.initialGameParams.enemiesPerWave,
@@ -69,22 +69,9 @@ class WaveGenerator {
     public waveTimeoutBetweenWaves: IWaveGenerator["waveTimeoutBetweenWaves"] = 5000,
     public waveCountdownTimer: IWaveGenerator["waveCountdownTimer"] = null,
     public waveCountdown: IWaveGenerator["waveCountdown"] = 0,
-    public isRunOnce = false,
+    public isUICountdown = false,
   ) {
     this.waveCountdown = Math.floor(this.waveTimeoutBetweenWaves / 1000);
-  }
-
-  public countdown() {
-    if (!this.waveCountdownTimer) {
-      this.waveCountdownTimer = setInterval(() => {
-        if (this.waveCountdown > 0) {
-          this.waveCountdown -= 1;
-        } else {
-          clearInterval(this.waveCountdownTimer!);
-          this.isRunOnce = false;
-        }
-      }, 1000);
-    }
   }
 
   public repeatEnemy = (times: number) => {
@@ -170,6 +157,7 @@ class WaveGenerator {
 
   public init() {
     if (!this.isInitialized) {
+      this.waveParams.currentWave = 1;
       // fill enemies array
       this.engine.enemies = this.repeatEnemy(
         this.waveParams.enemyCount +
@@ -188,11 +176,9 @@ class WaveGenerator {
         });
       });
       this.isInitialized = true;
-      this.waveParams.currentWave = 1;
       this.waveParams.isWaveInProgress = true;
-      // wave timers
+      clearTimeout(this.waveTimerBetweenWaves!);
       this.waveTimerBetweenWaves = null;
-      this.waveCountdownTimer = null;
     }
   }
 
@@ -209,8 +195,6 @@ class WaveGenerator {
         this.waveParams.enemyCount +
           this.waveParams.enemyCountCoefficient * this.waveParams.currentWave,
       );
-      // wave timers
-      //clearInterval(this.waveCountdownTimer!);
     }
 
     // draw enemies
@@ -223,10 +207,21 @@ class WaveGenerator {
         y: 0,
       });
     });
-
-    // increment wave
-    this.waveTimerBetweenWaves = null;
+    clearTimeout(this.waveTimerBetweenWaves!);
     this.waveParams.isWaveInProgress = true;
+  }
+
+  public countdown() {
+    if (!this.waveCountdownTimer) {
+      this.waveCountdownTimer = setInterval(() => {
+        if (this.waveCountdown > 0) {
+          this.waveCountdown -= 1;
+        } else {
+          clearInterval(this.waveCountdownTimer!);
+          this.isUICountdown = false;
+        }
+      }, 1000);
+    }
   }
 }
 
@@ -418,6 +413,11 @@ class TDEngine {
   }
 
   public restartGame() {
+    clearInterval(this.waveGenerator!.waveCountdownTimer!);
+    clearTimeout(this.waveGenerator!.waveTimerBetweenWaves!);
+    this.waveGenerator!.waveCountdownTimer = null;
+    this.waveGenerator!.waveTimerBetweenWaves = null;
+    this.waveGenerator!.isInitialized = false;
     this.enemies = [];
     this.towers = [];
     this.projectiles = [];
@@ -430,13 +430,14 @@ class TDEngine {
     this.lives = this.initialGameParams.lives;
     this.score = 0;
     // spawner
-    if (this.waveGenerator!.waveTimerBetweenWaves) {
-      clearInterval(this.waveGenerator!.waveTimerBetweenWaves!);
-    }
+    this.waveGenerator!.waveParams.currentWave = 1;
     this.waveGenerator!.waveCountdown = Math.floor(
       this.waveGenerator!.waveTimeoutBetweenWaves / 1000,
     );
-    this.waveGenerator!.isInitialized = false;
+    setTimeout(() => {
+      this.waveGenerator!.waveParams.isWaveInProgress = false;
+      this.waveGenerator!.isUICountdown = false;
+    }, this.waveGenerator!.waveTimeoutBetweenWaves);
   }
 
   public clearMemory() {
@@ -457,19 +458,16 @@ class TDEngine {
     }
 
     if (e.key === "1") {
-      if (!this.isCanBuild) {
-        this.buildFirstTower();
-      }
+      this.draftTower = null;
+      this.buildFirstTower();
     }
     if (e.key === "2") {
-      if (!this.isCanBuild) {
-        this.buildSecondTower();
-      }
+      this.draftTower = null;
+      this.buildSecondTower();
     }
     if (e.key === "3") {
-      if (!this.isCanBuild) {
-        this.buildThirdTower();
-      }
+      this.draftTower = null;
+      this.buildThirdTower();
     }
     if (e.key === "4") {
       // release all tower target
@@ -509,42 +507,48 @@ class TDEngine {
   }
 
   public buildFirstTower = () => {
-    this.isCanBuild = true;
-    this.draftTower = new Tower(
-      this,
-      this.towerSprites.levelOne!,
-      this.projectileSprites.levelOne!,
-      this.projectileHitSprites.levelOne!,
-      this.draftBuildCoordinates,
-      this.towerOneParam.towerParams,
-      this.towerOneParam.projectileParams,
-    );
+    if (this.isEnoughMoney(this.towerOneParam.towerParams.price)) {
+      this.isCanBuild = true;
+      this.draftTower = new Tower(
+        this,
+        this.towerSprites.levelOne!,
+        this.projectileSprites.levelOne!,
+        this.projectileHitSprites.levelOne!,
+        this.draftBuildCoordinates,
+        this.towerOneParam.towerParams,
+        this.towerOneParam.projectileParams,
+      );
+    }
   };
 
   public buildSecondTower = () => {
-    this.isCanBuild = true;
-    this.draftTower = new Tower(
-      this,
-      this.towerSprites.levelTwo!,
-      this.projectileSprites.levelTwo!,
-      this.projectileHitSprites.levelTwo!,
-      this.draftBuildCoordinates,
-      this.towerTwoParam.towerParams,
-      this.towerTwoParam.projectileParams,
-    );
+    if (this.isEnoughMoney(this.towerTwoParam.towerParams.price)) {
+      this.isCanBuild = true;
+      this.draftTower = new Tower(
+        this,
+        this.towerSprites.levelTwo!,
+        this.projectileSprites.levelTwo!,
+        this.projectileHitSprites.levelTwo!,
+        this.draftBuildCoordinates,
+        this.towerTwoParam.towerParams,
+        this.towerTwoParam.projectileParams,
+      );
+    }
   };
 
   public buildThirdTower = () => {
-    this.isCanBuild = true;
-    this.draftTower = new Tower(
-      this,
-      this.towerSprites.levelThree!,
-      this.projectileSprites.levelThree!,
-      this.projectileHitSprites.levelThree!,
-      this.draftBuildCoordinates,
-      this.towerThreeParam.towerParams,
-      this.towerThreeParam.projectileParams,
-    );
+    if (this.isEnoughMoney(this.towerThreeParam.towerParams.price)) {
+      this.isCanBuild = true;
+      this.draftTower = new Tower(
+        this,
+        this.towerSprites.levelThree!,
+        this.projectileSprites.levelThree!,
+        this.projectileHitSprites.levelThree!,
+        this.draftBuildCoordinates,
+        this.towerThreeParam.towerParams,
+        this.towerThreeParam.projectileParams,
+      );
+    }
   };
 
   public findClosestTile(coordinates: ITwoDCoordinates) {
@@ -610,6 +614,14 @@ class TDEngine {
   public gameWindowKeydown = (e: KeyboardEvent) => {
     this.manageHotkeys(e);
   };
+
+  public isEnoughMoney(towerPrice: ITower["towerParams"]["price"]) {
+    if (this.money >= towerPrice!) {
+      return true;
+    }
+    this.isNotEnoughMoney = true;
+    return false;
+  }
 
   public draftShowTower() {
     if (this.isCanBuild) {
