@@ -16,7 +16,7 @@ import { useLayoutStore } from "@/store";
 export function Sidebar() {
   const openSidebar = useLayoutStore((store) => store.openSidebar);
   const setCloseSidebar = useLayoutStore((store) => store.setCloseSidebar);
-  const closeDrawer = () => (event: KeyboardEvent | MouseEvent) => {
+  const closeDrawer = (event: KeyboardEvent | MouseEvent) => {
     if (
       event.type === "keydown" &&
       ((event as KeyboardEvent).key === "Tab" ||
@@ -29,13 +29,13 @@ export function Sidebar() {
   };
 
   return (
-    <Drawer open={openSidebar} onClose={closeDrawer()}>
+    <Drawer open={openSidebar} onClose={closeDrawer}>
       <Toolbar />
       <Box
         sx={{ width: 250 }}
         role="presentation"
-        onClick={closeDrawer()}
-        onKeyDown={closeDrawer()}
+        onClick={closeDrawer}
+        onKeyDown={closeDrawer}
       >
         <List>
           {["leaderboard", "register"].map((text, index) => (
