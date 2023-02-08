@@ -3,6 +3,7 @@
   "private": true,
   "scripts": {
     "bootstrap": "node init.mjs && pnpm i",
+    "check": "pnpm dlx lefthook run pre-push",
     "build": "lerna run build",
     "dev:client": "lerna run dev  --scope=client",
     "dev:server": "lerna run dev --scope=server",
