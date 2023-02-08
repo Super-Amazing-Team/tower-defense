@@ -5,6 +5,39 @@ import Enemy from "@/pages/Game/enemies/Enemy";
 import Map from "@/pages/Game/maps/Map";
 import Projectile from "@/pages/Game/projectiles/Projectile";
 
+// polyfill
+if (!window.requestIdleCallback) {
+  // @ts-ignore
+  window.requestIdleCallback = function (
+    callback: IdleRequestCallback,
+    options: Record<string, string | number> = {},
+  ): NodeJS.Timeout {
+    // debug
+    console.log("gotcha!");
+    //
+    let relaxation = 1;
+    let timeout = options?.timeout || relaxation;
+    let start = performance.now();
+    return setTimeout(function () {
+      callback({
+        get didTimeout() {
+          return options.timeout
+            ? false
+            : performance.now() - start - relaxation > timeout;
+        },
+        timeRemaining: function () {
+          return Math.max(0, relaxation + (performance.now() - start));
+        },
+      });
+    }, relaxation);
+  };
+}
+if (!window.cancelIdleCallback) {
+  window.cancelIdleCallback = function (id) {
+    clearTimeout(id);
+  };
+}
+
 export interface IGameProps extends PropsWithChildren {
   engine?: TDEngine;
   lives?: number;
