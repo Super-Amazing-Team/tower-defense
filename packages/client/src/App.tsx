@@ -15,6 +15,7 @@ import { Leaderboard } from "@/pages/Leaderboard";
 import { Profile } from "@/pages/Profile";
 import { Page404 } from "@/pages/Page404";
 import { Page500 } from "@/pages/Page500";
+import TDEngine from "@/pages/Game/engine/TDEngine";
 
 function App() {
   const [mode, setMode] = useLocalStorage("mode", "light");
@@ -70,8 +71,11 @@ function App() {
               <Route path="*" element={<Page404 />} />
               <Route path="/page500" element={<Page500 />} />
               <Route element={<ProtectedRoutes />}>
+                <Route
+                  path="/game"
+                  element={<Game engine={new TDEngine()} />}
+                />
                 <Route path="/profile" element={<Profile />} />
-                <Route path="/game" element={<Game />} />
                 <Route path="/forum" element={<Forum />} />
                 <Route path="/forum/:id" element={<Topic />} />
               </Route>

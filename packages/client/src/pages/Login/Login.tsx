@@ -1,5 +1,5 @@
 import { Container, Typography, Link } from "@mui/material";
-import { Navigate, useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router-dom";
 // import { FormEvent } from "react";
 import AuthLogin from "./AuthLogin";
 import { useUserStore } from "@/store/userStore";
@@ -10,22 +10,22 @@ export function Login() {
   const navigate = useNavigate();
 
   // const loginMe = (e: FormEvent<HTMLFormElement>) => {
-  //   const loginInput = document.querySelector<HTMLInputElement>("input#login");
-  //   const passwordInput =
-  //     document.querySelector<HTMLInputElement>("input#password");
+  //   const loginInput: HTMLInputElement = document.getElementById("login");
+  //   const passwordInput: HTMLInputElement =
+  //     document.getElementById("password");
 
   //   try {
   //     login(loginInput!.value, passwordInput!.value, true);
   //     navigate("/profile");
   //   } catch (err) {
   //     throw new Error(
-  //     `Woops, something is broken! Can't login a user with username ${loginInput!.value}!`,
+  //     `Woops, something is broken! Can't log in a user with username ${loginInput!.value}!`,
   //     );
   //   }
   // };
 
   if (user.isAuth) {
-    return <Navigate to="/profile" replace />;
+    navigate("/profile");
   }
 
   return (
