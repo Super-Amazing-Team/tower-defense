@@ -11,7 +11,7 @@ export function Profile() {
   const user = useProfileStore((store) => store.user);
   const isEditModeState = useProfileStore((store) => store.isEditMode);
   const setIsEditMode = useProfileStore((store) => store.updateEditMode);
-  const [openEditPasswordModal, setOpenEditPasswordModal] =
+  const [isOpenEditPasswordModal, setOpenEditPasswordModal] =
     React.useState(false);
 
   const handleOpenModalEditPassword = () => {
@@ -101,7 +101,7 @@ export function Profile() {
       )}
 
       <Dialog
-        open={openEditPasswordModal}
+        open={isOpenEditPasswordModal}
         onClose={handleCloseEditPasswordModal}
         aria-labelledby="alert-dialog-title"
         aria-describedby="alert-dialog-description"
