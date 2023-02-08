@@ -46,7 +46,10 @@ function App() {
                 <Route path="/leaderboard" element={<Leaderboard />} />
                 <Route element={<ProtectedRoutes />}>
                   <Route path="/profile" element={<Profile />} />
-                  <Route path="/game" element={<Game engine={new TDEngine()} />} />
+                  <Route
+                    path="/game"
+                    element={<Game engine={new TDEngine()} />}
+                  />
                   <Route path="/forum" element={<Forum />} />
                   <Route path="/forum/:id" element={<Topic />} />
                 </Route>

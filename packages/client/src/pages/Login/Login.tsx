@@ -1,7 +1,8 @@
+// import { FormEvent } from "react";
 import { Container, Typography, Link } from "@mui/material";
 import { Link as RouterLink, useNavigate } from "react-router-dom";
-// import { FormEvent } from "react";
 import AuthLogin from "./AuthLogin";
+import { useUserStore } from "@/store";
 
 export function Login() {
   const user = useUserStore((store) => store.user);
