@@ -3,7 +3,7 @@ import { useSnackbarStore } from "@/store";
 
 export function Snackbar() {
   const {
-    open,
+    isOpen,
     message,
     severity,
     button,
@@ -13,7 +13,7 @@ export function Snackbar() {
 
   return (
     <MuiSnackbar
-      open={open}
+      open={isOpen}
       autoHideDuration={4000}
       onClose={handleClose}
       anchorOrigin={anchorOrigin}
