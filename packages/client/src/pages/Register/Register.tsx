@@ -1,4 +1,4 @@
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link as RouterLink } from "react-router-dom";
 import { Container, Link, Typography } from "@mui/material";
 import AuthRegister from "./AuthRegister";
 import { useUserStore } from "@/store/userStore";
@@ -31,8 +31,8 @@ export function Register() {
       <AuthRegister />
       <Link
         variant="body1"
-        // component={RouterLink}
-        // to=""
+        component={RouterLink}
+        to="/"
         color="text.primary"
         sx={{ textAlign: "center", mt: 3, cursor: "pointer" }}
       >

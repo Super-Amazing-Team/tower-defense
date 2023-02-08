@@ -1,8 +1,8 @@
-import { Container, Typography, Link } from "@mui/material";
-import { useNavigate } from "react-router-dom";
 // import { FormEvent } from "react";
+import { Container, Typography, Link } from "@mui/material";
+import { Link as RouterLink, useNavigate } from "react-router-dom";
 import AuthLogin from "./AuthLogin";
-import { useUserStore } from "@/store/userStore";
+import { useUserStore } from "@/store";
 
 export function Login() {
   const user = useUserStore((store) => store.user);
@@ -44,8 +44,8 @@ export function Login() {
       <AuthLogin />
       <Link
         variant="body1"
-        // component={RouterLink}
-        // to=""
+        component={RouterLink}
+        to="/register"
         color="text.primary"
         sx={{ textAlign: "center", mt: 3, cursor: "pointer" }}
       >

@@ -1,11 +1,8 @@
 import { useMemo } from "react";
-import { Box, createTheme, IconButton, ThemeProvider } from "@mui/material";
+import { Box, createTheme, ThemeProvider } from "@mui/material";
 import CSSBaseLine from "@mui/material/CssBaseline";
-import Brightness4Icon from "@mui/icons-material/Brightness4";
-import Brightness7Icon from "@mui/icons-material/Brightness7";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import { ProtectedRoutes } from "./utils/ProtectedRoutes";
-import { useLocalStorage, Snackbar } from "@/utils";
+import { Snackbar, ProtectedRoutes } from "@/utils";
 import { Login } from "@/pages/Login";
 import { Register } from "@/pages/Register";
 import { Forum } from "@/pages/Forum";
@@ -15,20 +12,12 @@ import { Leaderboard } from "@/pages/Leaderboard";
 import { Profile } from "@/pages/Profile";
 import { Page404 } from "@/pages/Page404";
 import { Page500 } from "@/pages/Page500";
+import { Layout } from "@/layout";
+import { useLayoutStore } from "@/store";
 import TDEngine from "@/pages/Game/engine/TDEngine";
 
 function App() {
-  const [mode, setMode] = useLocalStorage("mode", "light");
-  const colorMode = useMemo(
-    () => ({
-      toggleColorMode: () => {
-        setMode((prevMode: string) =>
-          prevMode === "light" ? "dark" : "light",
-        );
-      },
-    }),
-    [setMode],
-  );
+  const mode = useLayoutStore((store) => store.colorMode);
 
   const theme = useMemo(
     () =>
@@ -50,35 +39,24 @@ function App() {
               minHeight: "100vh",
             }}
           >
-            <Box>
-              <IconButton
-                sx={{ mx: 1 }}
-                onClick={colorMode.toggleColorMode}
-                color="inherit"
-              >
-                {theme.palette.mode === "dark" ? (
-                  <Brightness7Icon />
-                ) : (
-                  <Brightness4Icon />
-                )}
-              </IconButton>
-              {theme.palette.mode} mode
-            </Box>
             <Routes>
-              <Route path="/" element={<Login />} />
-              <Route path="/register" element={<Register />} />
-              <Route path="/leaderboard" element={<Leaderboard />} />
-              <Route path="*" element={<Page404 />} />
-              <Route path="/page500" element={<Page500 />} />
-              <Route element={<ProtectedRoutes />}>
-                <Route
-                  path="/game"
-                  element={<Game engine={new TDEngine()} />}
-                />
-                <Route path="/profile" element={<Profile />} />
-                <Route path="/forum" element={<Forum />} />
-                <Route path="/forum/:id" element={<Topic />} />
+              <Route element={<Layout />}>
+                <Route path="/" element={<Login />} />
+                <Route path="/register" element={<Register />} />
+                <Route path="/leaderboard" element={<Leaderboard />} />
+                <Route element={<ProtectedRoutes />}>
+                  <Route path="/profile" element={<Profile />} />
+                  <Route
+                    path="/game"
+                    element={<Game engine={new TDEngine()} />}
+                  />
+                  <Route path="/forum" element={<Forum />} />
+                  <Route path="/forum/:id" element={<Topic />} />
+                </Route>
               </Route>
+
+              <Route path="/page500" element={<Page500 />} />
+              <Route path="*" element={<Page404 />} />
             </Routes>
           </Box>
           <Snackbar />
