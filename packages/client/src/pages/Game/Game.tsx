@@ -12,9 +12,6 @@ if (!window.requestIdleCallback) {
     callback: IdleRequestCallback,
     options: Record<string, string | number> = {},
   ): NodeJS.Timeout {
-    // debug
-    console.log("gotcha!");
-    //
     let relaxation = 1;
     let timeout = options?.timeout || relaxation;
     let start = performance.now();
