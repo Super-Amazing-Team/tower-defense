@@ -35,7 +35,7 @@ const FormProfile = (props: IFormProfileProps) => {
 
   const onSubmit = (data: TSchema) => {
     setIsEditMode(false);
-    // console.log(data);
+    console.log(data);
   };
 
   return (

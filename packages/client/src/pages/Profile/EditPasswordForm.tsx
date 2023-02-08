@@ -18,11 +18,21 @@ import {
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
 
-const schema = z.object({
-  oldPassword: z.string().min(6).max(20),
-  newPassword: z.string().min(6).max(20),
-  confirmNewPassword: z.string().min(6).max(20),
-});
+const schema = z
+  .object({
+    oldPassword: z.string().min(6).max(20),
+    newPassword: z.string().min(6).max(20),
+    confirmNewPassword: z.string().min(6).max(20),
+  })
+  .superRefine(({ confirmNewPassword, newPassword }, ctx) => {
+    if (confirmNewPassword !== newPassword) {
+      ctx.addIssue({
+        code: "custom",
+        message: "Пароли не совпадают",
+        path: ["confirmNewPassword"],
+      });
+    }
+  });
 
 type TSchema = z.infer<typeof schema>;
 
