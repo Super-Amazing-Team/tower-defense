@@ -154,23 +154,13 @@ class Tower {
   }
 
   public isEnemyInRange(enemy: Enemy) {
-    const distance =
-      (enemy.currentPosition.x -
-        this.currentPosition.x +
-        this.towerParams.width) *
-        (enemy.currentPosition.x -
-          this.currentPosition.x +
-          this.towerParams.width) +
-      (enemy.currentPosition.y -
-        this.currentPosition.y +
-        this.towerParams.height) *
-        (enemy.currentPosition.y -
-          this.currentPosition.y +
-          this.towerParams.height);
-    if (
-      distance <
-      this.towerParams.attackRange * this.towerParams.attackRange
-    ) {
+    const xDistance =
+      enemy.currentPosition.x - this.currentPosition.x + this.towerParams.width;
+    const yDistance =
+      enemy.currentPosition.y -
+      this.currentPosition.y +
+      this.towerParams.height;
+    if (Math.hypot(xDistance, yDistance) < this.towerParams.attackRange) {
       this.target = enemy;
       return true;
     }
@@ -236,7 +226,7 @@ class Tower {
   }
 
   public destroy() {
-    this.engine.towers!.filter((tower) => this !== tower);
+    this.engine.towers = this.engine.towers!.filter((tower) => this !== tower);
   }
 }
 

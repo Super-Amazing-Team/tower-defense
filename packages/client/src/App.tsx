@@ -70,8 +70,11 @@ function App() {
               <Route path="/leaderboard" element={<Leaderboard />} />
               <Route path="*" element={<Page404 />} />
               <Route path="/page500" element={<Page500 />} />
-              <Route path="/game" element={<Game engine={new TDEngine()} />} />
               <Route element={<ProtectedRoutes />}>
+                <Route
+                  path="/game"
+                  element={<Game engine={new TDEngine()} />}
+                />
                 <Route path="/profile" element={<Profile />} />
                 <Route path="/forum" element={<Forum />} />
                 <Route path="/forum/:id" element={<Topic />} />
