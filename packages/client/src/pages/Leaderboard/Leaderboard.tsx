@@ -12,7 +12,7 @@ import {
   TableFooter,
   TablePagination,
 } from "@mui/material";
-import TablePaginationActions from "@mui/material/TablePagination/TablePaginationActions";
+//import TablePaginationActions from "@mui/material/TablePagination/TablePaginationActions";
 import { ChangeEvent, useState } from "react";
 
 function createData(position: number, name: string, points: number) {
@@ -104,7 +104,7 @@ export function Leaderboard() {
                 }}
                 onPageChange={handleChangePage}
                 onRowsPerPageChange={handleChangeRowsPerPage}
-                ActionsComponent={TablePaginationActions}
+                //ActionsComponent={TablePaginationActions}
               />
             </TableRow>
           </TableFooter>
