@@ -6,5 +6,5 @@ export const ProtectedRoutes = () => {
   const user = useUserStore((store) => store.user);
 
   // TODO: handle error message with snackbar
-  return true ? <Outlet /> : <Login />;
+  return user.isAuth ? <Outlet /> : <Login />;
 };
