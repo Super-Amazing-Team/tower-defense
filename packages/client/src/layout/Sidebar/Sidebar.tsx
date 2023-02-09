@@ -14,7 +14,7 @@ import Toolbar from "@mui/material/Toolbar";
 import { useLayoutStore } from "@/store";
 
 export function Sidebar() {
-  const openSidebar = useLayoutStore((store) => store.openSidebar);
+  const isOpenSidebar = useLayoutStore((store) => store.openSidebar);
   const setCloseSidebar = useLayoutStore((store) => store.setCloseSidebar);
   const closeDrawer = (event: KeyboardEvent | MouseEvent) => {
     if (
@@ -29,7 +29,7 @@ export function Sidebar() {
   };
 
   return (
-    <Drawer open={openSidebar} onClose={closeDrawer}>
+    <Drawer open={isOpenSidebar} onClose={closeDrawer}>
       <Toolbar />
       <Box
         sx={{ width: 250 }}

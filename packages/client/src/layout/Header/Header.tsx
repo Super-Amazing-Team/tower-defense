@@ -13,7 +13,7 @@ import { useLayoutStore } from "@/store";
 export function Header() {
   const colorMode = useLayoutStore((store) => store.colorMode);
   const setColorMode = useLayoutStore((store) => store.setColorMode);
-  const openSidebar = useLayoutStore((store) => store.openSidebar);
+  const isOpenSidebar = useLayoutStore((store) => store.openSidebar);
   const toggleSidebar = useLayoutStore((store) => store.toggleSidebar);
   const theme = useTheme();
 
@@ -29,7 +29,7 @@ export function Header() {
           }}
           sx={{ mr: 2 }}
         >
-          {openSidebar ? <Close /> : <MenuIcon />}
+          {isOpenSidebar ? <Close /> : <MenuIcon />}
         </IconButton>
         <Typography variant="h6" noWrap component="div" sx={{ flexGrow: 1 }}>
           tower-defense
