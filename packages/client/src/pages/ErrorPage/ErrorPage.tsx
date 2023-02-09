@@ -1,8 +1,6 @@
 import { useNavigate } from "react-router-dom";
 import { Box, Button, Container, Typography } from "@mui/material";
-import errorNotFoundImage from "../../assets/images/404.svg";
-import errorServerImage from "../../assets/images/500.svg";
-import errorImage from "../../assets/images/image_error.png";
+import { Error404, Error500, ErrorPageImg } from "@/utils/icons";
 
 export interface IErrorPageProps {
   error: ErrorType;
@@ -33,15 +31,19 @@ export function ErrorPage(props: IErrorPageProps) {
         alignItems: "center",
       }}
     >
-      <Box>
-        <img
-          alt="An unexpected error has occurred"
-          src={
-            props.error === ErrorType.ERROR_NOT_FOUND
-              ? errorNotFoundImage
-              : errorServerImage
-          }
-        />
+      <Box
+        sx={{
+          display: "flex",
+          flexDirection: "column",
+          alignItems: "center",
+        }}
+      >
+        <p>An unexpected error has occurred</p>
+        {props.error === ErrorType.ERROR_NOT_FOUND ? (
+          <Error404 />
+        ) : (
+          <Error500 />
+        )}
       </Box>
       <Typography mb={5}>
         {props.error === ErrorType.ERROR_NOT_FOUND
@@ -57,8 +59,8 @@ export function ErrorPage(props: IErrorPageProps) {
       >
         Back
       </Button>
-      <Box>
-        <img alt="An unexpected error has occurred" src={errorImage} />
+      <Box mt={5}>
+        <ErrorPageImg />
       </Box>
     </Container>
   );
