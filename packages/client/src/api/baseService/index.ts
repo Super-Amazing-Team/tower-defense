@@ -70,4 +70,6 @@ class ApiService implements IApiService {
   }
 }
 
-export default new ApiService("https://ya-praktikum.tech/api/v2");
+export default axios.create({
+  baseURL: "https://ya-praktikum.tech/api/v2"
+})
