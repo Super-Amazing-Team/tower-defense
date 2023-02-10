@@ -1,5 +1,4 @@
-import { useState } from "react";
-import type { MouseEvent, ChangeEvent } from "react";
+import { useEffect, useState } from "react";
 import Table from "@mui/material/Table";
 import TableBody from "@mui/material/TableBody";
 import TableCell from "@mui/material/TableCell";
@@ -11,40 +10,30 @@ import {
   Container,
   Typography,
   TableFooter,
-  TablePagination,
+  Select,
+  MenuItem,
+  SelectChangeEvent,
+  Stack,
 } from "@mui/material";
-
-function createData(position: number, name: string, points: number) {
-  return { position, name, points };
-}
-
-const rows = [
-  createData(1, "Frozen yoghurt", 159),
-  createData(2, "Ice cream sandwich", 237),
-  createData(3, "Eclair", 262),
-  createData(4, "Cupcake", 305),
-  createData(5, "Gingerbread", 356),
-];
+import { useLeaderboardStore } from "@/store/LeaderboardStore";
 
 export function Leaderboard() {
-  const [page, setPage] = useState(0);
-  const [rowsPerPage, setRowsPerPage] = useState(5);
+  const [rowsPerPage, setRowsPerPage] = useState("5");
+  const leaderboardAll = useLeaderboardStore((store) => store.leaderboardAll);
+  const getLeaderboardAll = useLeaderboardStore(
+    (store) => store.getLeaderboardAll,
+  );
 
-  const emptyRows =
-    page > 0 ? Math.max(0, (1 + page) * rowsPerPage - rows.length) : 0;
+  useEffect(() => {
+    getLeaderboardAll({
+      ratingFieldName: "score",
+      cursor: 0,
+      limit: parseInt(rowsPerPage, 10),
+    });
+  }, [getLeaderboardAll, rowsPerPage]);
 
-  const handleChangePage = (
-    event: MouseEvent<HTMLButtonElement> | null,
-    newPage: number,
-  ) => {
-    setPage(newPage);
-  };
-
-  const handleChangeRowsPerPage = (
-    event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>,
-  ) => {
-    setRowsPerPage(parseInt(event.target.value, 10));
-    setPage(0);
+  const handleChange = (event: SelectChangeEvent) => {
+    setRowsPerPage(event.target.value);
   };
 
   return (
@@ -69,41 +58,50 @@ export function Leaderboard() {
             </TableRow>
           </TableHead>
           <TableBody>
-            {rows.map((row) => (
-              <TableRow
-                key={row.name}
-                sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
-              >
-                <TableCell component="th" scope="row">
-                  {row.position}
-                </TableCell>
-                <TableCell>{row.name}</TableCell>
-                <TableCell>{row.points}</TableCell>
-              </TableRow>
-            ))}
-            {emptyRows > 0 && (
-              <TableRow style={{ height: 53 * emptyRows }}>
-                <TableCell colSpan={6} />
-              </TableRow>
-            )}
+            {Array.isArray(leaderboardAll) &&
+              leaderboardAll.map(({ data: row }, index) => {
+                const key = `${row.score} ${index}`;
+                return (
+                  <TableRow
+                    key={key}
+                    sx={{ "&:last-child td, &:last-child th": { border: 0 } }}
+                  >
+                    <TableCell component="th" scope="row">
+                      {index + 1}
+                    </TableCell>
+                    <TableCell sx={{ maxWidth: "300px" }}>
+                      <Typography noWrap>
+                        {row.name || row.username || row.login || ""}
+                      </Typography>
+                    </TableCell>
+                    <TableCell>{row.score}</TableCell>
+                  </TableRow>
+                );
+              })}
           </TableBody>
           <TableFooter>
             <TableRow>
-              <TablePagination
-                rowsPerPageOptions={[5, 10, 25, { label: "All", value: -1 }]}
-                colSpan={3}
-                count={rows.length}
-                rowsPerPage={rowsPerPage}
-                page={page}
-                SelectProps={{
-                  inputProps: {
-                    "aria-label": "rows per page",
-                  },
-                  native: true,
-                }}
-                onPageChange={handleChangePage}
-                onRowsPerPageChange={handleChangeRowsPerPage}
-              />
+              <TableCell />
+              <TableCell />
+              <TableCell padding="none">
+                <Stack
+                  direction="row"
+                  justifyContent="flex-end"
+                  alignItems="center"
+                  spacing={2}
+                >
+                  <Typography>Показывать по</Typography>
+                  <Select
+                    value={rowsPerPage}
+                    onChange={handleChange}
+                    variant="standard"
+                  >
+                    <MenuItem value={5}>5</MenuItem>
+                    <MenuItem value={10}>10</MenuItem>
+                    <MenuItem value={25}>25</MenuItem>
+                  </Select>
+                </Stack>
+              </TableCell>
             </TableRow>
           </TableFooter>
         </Table>
