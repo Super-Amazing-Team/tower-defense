@@ -1,7 +1,7 @@
 import { create } from "zustand";
-import { ApiClient } from "@/api";
+import { getAllLeaderboard } from "@/api";
 
-interface IBearsStore {
+interface ILeaderboardStore {
   leaderboardAll: unknown[] | unknown;
   getLeaderboardAll(body: {
     ratingFieldName: string;
@@ -10,10 +10,10 @@ interface IBearsStore {
   }): Promise<void>;
 }
 
-export const useLeaderboardStore = create<IBearsStore>()((set) => ({
+export const useLeaderboardStore = create<ILeaderboardStore>()((set) => ({
   leaderboardAll: [],
   getLeaderboardAll: async (body) => {
-    const response = await ApiClient.getAllLeaderboard(body);
-    set({ leaderboardAll: await response.data });
+    const response = await getAllLeaderboard(body);
+    set({ leaderboardAll: response.data });
   },
 }));

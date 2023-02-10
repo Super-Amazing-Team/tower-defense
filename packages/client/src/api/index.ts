@@ -1,1 +1,1 @@
-export { default as ApiClient } from "./ApiClient";
+export { getAllLeaderboard } from "./ApiClient";
