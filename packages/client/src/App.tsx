@@ -22,7 +22,7 @@ function App() {
 
   useEffect(() => {
     fetchUser();
-  });
+  }, [fetchUser]);
 
   const theme = useMemo(
     () =>
