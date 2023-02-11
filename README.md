@@ -81,3 +81,7 @@
 
 Если вам понадобится только один сервис, просто уточните какой в команде
 `docker compose up {sevice_name}`, например `docker compose up server`
+
+## Netlify deploy
+
+Посмотреть как выглядит приложение можно [здесь](https://startling-bienenstitch-c29e13.netlify.app/).
