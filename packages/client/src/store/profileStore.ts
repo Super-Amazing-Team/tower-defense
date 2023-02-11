@@ -1,18 +1,24 @@
 import { create } from "zustand";
+import { TNullable } from "@/utils";
+import { changeUserPassword } from "@/api/ApiClient";
+import { useSnackbarStore } from "@/store/snackbarStore";
+import { IEError } from "@/types";
 
 export interface IProfileUser {
   email: string;
   login: string;
   first_name: string;
   second_name: string;
-  phone?: string;
-  avatar?: string;
+  phone?: TNullable<string>;
+  avatar?: TNullable<string>;
+  display_name?: TNullable<string>;
 }
 export interface IProfileStore {
   user: IProfileUser;
   isEditMode: boolean;
   updateUserProfile(value: IProfileUser): void;
   updateEditMode(val: boolean): void;
+  updatePassword: (body: { oldPassword: string; newPassword: string }) => void;
 }
 
 const userConst: IProfileUser = {
@@ -33,5 +39,15 @@ export const useProfileStore = create<IProfileStore>()((set) => ({
   },
   updateEditMode(isEditMode: boolean) {
     set({ isEditMode });
+  },
+  updatePassword: async (body) => {
+    try {
+      await changeUserPassword(body);
+    } catch (error: unknown) {
+      useSnackbarStore.getState().openSnackbar({
+        message: (error as IEError).response.data.reason,
+        severity: "error",
+      });
+    }
   },
 }));

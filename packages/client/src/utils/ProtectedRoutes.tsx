@@ -1,10 +1,24 @@
-import { Outlet } from "react-router-dom";
+import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { useUserStore } from "@/store";
-import { Login } from "@/pages/Login";
 
 export const ProtectedRoutes = () => {
+  const location = useLocation();
   const user = useUserStore((store) => store.user);
 
-  // TODO: handle error message with snackbar
-  return user.isAuth ? <Outlet /> : <Login />;
+  return user.isAuth ? (
+    <Outlet />
+  ) : (
+    <Navigate to="/" state={{ from: location }} replace />
+  );
+};
+
+export const ProtectedToAuth = () => {
+  const location = useLocation();
+  const user = useUserStore((store) => store.user);
+
+  return user.isAuth ? (
+    <Navigate to="/profile" state={{ from: location }} replace />
+  ) : (
+    <Outlet />
+  );
 };
