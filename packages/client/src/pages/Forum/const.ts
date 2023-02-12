@@ -1,11 +1,62 @@
-export interface IForum {
+export interface IForumInfo {
   title: string;
   id: number;
 }
 export interface IDataNamesChats {
-  data: IForum[];
+  data: IForumInfo[];
+}
+
+export interface IUser {
+  userName: string;
+  avatar: string;
+}
+
+export interface IForumMessage {
+  text: string;
+  user: IUser;
+  date: string;
+}
+
+export interface IForum {
+  title: string;
+  description: string;
+  id: number;
+  messages: IForumMessage[];
 }
 // TODO Удалить после подключения к апи
+
+export const forumMock: IForum = {
+  title: "Название Форума",
+  description:
+    "Есть много вариантов Lorem Ipsum, но большинство из них имеет не всегда приемлемые модификации, например, юмористические вставки или слова, которые даже отдалённо",
+  id: 123,
+  messages: [
+    {
+      date: "11-12-2020 13:00",
+      user: {
+        userName: "IlonMask",
+        avatar: "",
+      },
+      text: "Есть много вариантов Lorem Ipsum, но большинство из них имеет не всегда приемлемые модификации, например, юмористические вставки или слова, которые даже отдалённо не напоминают латынь. Если вам нужен Lorem Ipsum для серьёзного проекта, вы наверняка не хотите какой-нибудь",
+    },
+    {
+      date: "11-12-2020 13:10",
+      user: {
+        userName: "SuperMan",
+        avatar: "",
+      },
+      text: "Есть много вариантов Lorem Ipsum, но большинство из них имеет не всегда приемлемые модификации, например, юмористические вставки или слова, которые даже отдалённо не напоминают латынь. Если вам нужен Lorem Ipsum для серьёзного проекта, вы наверняка не хотите какой-нибудь",
+    },
+    {
+      date: "11-12-2020 13:40",
+      user: {
+        userName: "SuperMan",
+        avatar: "",
+      },
+      text: "Есть много вариантов Lorem Ipsum, но большинство из них имеет не всегда приемлемые модификации, например, юмористические вставки или слова, которые даже отдалённо не напоминают латынь. Если вам нужен Lorem Ipsum для серьёзного проекта, вы наверняка не хотите какой-нибудь",
+    },
+  ],
+};
 export const namesChatsMock: IDataNamesChats = {
   data: [
     {

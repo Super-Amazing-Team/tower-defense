@@ -1,26 +1,68 @@
-import { ListItem, ListItemButton, ListItemText } from "@mui/material";
-import { useNavigate } from "react-router-dom";
+import { useParams } from "react-router-dom";
+import React from "react";
+import { Box, Container, Typography } from "@mui/material";
+import { IForum, IForumMessage } from "@/pages/Forum/const";
+import { useTopicStore } from "@/store/forumStore";
+import { TopicMessage } from "@/pages/Topic/TopicMessage";
 
-export interface ITopicProps {
-  title: string;
-  id: number;
-}
-export function Topic(props: ITopicProps) {
-  const { title, id } = props;
+export function Topic() {
+  const params = useParams();
+  const forumMock: IForum = useTopicStore((store) => store.topic);
 
-  const navigate = useNavigate();
+  const [forum, setForum] = React.useState<IForum>();
 
-  function handleItemClick() {
-    // Обращение к апи за данными форума
-    console.log(title);
-    navigate(`/forum/${id}`);
-  }
+  React.useEffect(() => {
+    // Запрос к апи по id форума
+    setForum(forumMock);
+  }, [params.id]);
 
   return (
-    <ListItem component="div" disablePadding>
-      <ListItemButton onClick={handleItemClick}>
-        <ListItemText primary={title} />
-      </ListItemButton>
-    </ListItem>
+    <Container
+      sx={{
+        flex: 1,
+        display: "flex",
+        flexDirection: "column",
+      }}
+    >
+      {forum ? (
+        <>
+          <Box
+            sx={{
+              display: "flex",
+              borderBottom: "1px solid #dbdbdb",
+              pb: 1,
+            }}
+          >
+            <Typography
+              sx={{
+                flex: 1,
+                alignSelf: "center",
+              }}
+            >
+              {forum.title}
+            </Typography>
+            <Typography
+              sx={{
+                flex: 2,
+              }}
+            >
+              {forum.description}
+            </Typography>
+          </Box>
+          <Box>
+            {forumMock.messages.map((item: IForumMessage) => (
+              <TopicMessage
+                key={item.date}
+                text={item.text}
+                user={item.user}
+                date={item.date}
+              />
+            ))}
+          </Box>
+        </>
+      ) : (
+        <Typography>Загрузка....</Typography>
+      )}
+    </Container>
   );
 }

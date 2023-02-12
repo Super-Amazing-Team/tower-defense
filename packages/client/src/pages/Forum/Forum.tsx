@@ -1,10 +1,34 @@
 import { Box, Button, Container, List, Typography } from "@mui/material";
+import React from "react";
 import { useForumStore } from "@/store";
-import { IForum } from "@/pages/Forum/const";
-import { Topic } from "@/pages/Topic";
+import { IForumInfo } from "@/pages/Forum/const";
+import { AddNewThemeModal } from "@/pages/Forum/AddNewThemeModal";
+import { TopicSheet } from "@/pages/Forum/TopicSheet";
 
 export function Forum() {
-  const forums = useForumStore((store) => store.forums);
+  const fiveForums = useForumStore((store) => store.getFiveForums);
+  const allForums = useForumStore((store) => store.getAllForums);
+  const [isShowMore, setIsShowMore] = React.useState<boolean>(false);
+  const [isShowAddNewThemeModal, setShowAddNewThemeModal] =
+    React.useState<boolean>(false);
+  const [forums, setForums] = React.useState<IForumInfo[]>([]);
+
+  React.useEffect(() => {
+    setForums(fiveForums);
+  }, []);
+
+  function handleShowMoreButton() {
+    setIsShowMore(true);
+    setForums(allForums);
+  }
+  const handleClickOpenModal = () => {
+    setShowAddNewThemeModal(true);
+  };
+
+  function handleOnCloseModal() {
+    setShowAddNewThemeModal(false);
+  }
+
   return (
     <Container
       sx={{
@@ -28,6 +52,7 @@ export function Forum() {
       >
         <Box>
           <Button
+            onClick={handleClickOpenModal}
             component="label"
             size="small"
             variant="contained"
@@ -40,27 +65,59 @@ export function Forum() {
           >
             Добавить тему
           </Button>
-          <Box>
+          <Box
+            sx={{
+              height: "70vh",
+              maxWidth: 360,
+              bgcolor: "background.paper",
+            }}
+          >
             <Typography>Темы</Typography>
             <List
               sx={{
                 width: "100%",
-                height: "80vh",
-                maxWidth: 360,
+                maxHeight: "80%",
                 bgcolor: "background.paper",
                 overflow: "auto",
               }}
             >
-              {forums.data.map((item: IForum) => (
-                <Topic key={item.id} title={item.title} id={item.id} />
+              {forums.map((item: IForumInfo) => (
+                <TopicSheet key={item.id} title={item.title} id={item.id} />
               ))}
             </List>
+            {!isShowMore && (
+              <Button
+                component="label"
+                size="small"
+                variant="text"
+                color="primary"
+                sx={{
+                  height: "28px",
+                  m: "20px auto",
+                }}
+                onClick={handleShowMoreButton}
+              >
+                Показать ещё
+              </Button>
+            )}
           </Box>
         </Box>
-        <Box>
-          <Typography>Выберите тему для разговора</Typography>
+        <Box
+          sx={{
+            flex: 1,
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "center",
+            alignItems: "center",
+          }}
+        >
+          <Typography variant="h4">Выберите тему для разговора</Typography>
         </Box>
       </Box>
+      <AddNewThemeModal
+        isOpenAddNewThemeModal={isShowAddNewThemeModal}
+        onCloseModal={handleOnCloseModal}
+      />
     </Container>
   );
 }
