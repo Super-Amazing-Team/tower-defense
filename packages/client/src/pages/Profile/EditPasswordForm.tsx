@@ -1,5 +1,6 @@
-import type { MouseEvent } from "react";
 import React, { useState } from "react";
+import type { MouseEvent } from "react";
+import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import {
@@ -14,9 +15,9 @@ import {
   Button,
   DialogActions,
 } from "@mui/material";
-import { z } from "zod";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
+import { useProfileStore } from "@/store";
 
 const schema = z
   .object({
@@ -45,6 +46,7 @@ const EditPasswordForm = (props: IEditPasswordFormProps) => {
   const [isShowNewPassword, setIsShowNewPassword] = useState<boolean>(false);
   const [isShowConfirmPassword, setIsShowConfirmPassword] =
     useState<boolean>(false);
+  const updatePassword = useProfileStore((store) => store.updatePassword);
   const handleClickShowOldPassword = () => {
     setIsShowOldPassword((prevProps) => !prevProps);
   };
@@ -80,7 +82,7 @@ const EditPasswordForm = (props: IEditPasswordFormProps) => {
   });
 
   const onSubmit = (data: TSchema) => {
-    console.log(data);
+    updatePassword(data);
     handleCloseEditPasswordModal();
   };
 

@@ -1,21 +1,63 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
+import {
+  changeUserProfile,
+  getUserInfo,
+  logout,
+  signIn,
+  signUp,
+} from "@/api/ApiClient";
+import { useSnackbarStore } from "@/store/snackbarStore";
+import type { TNullable } from "@/utils";
+import type { IEError } from "@/types";
 
-interface IUser {
+interface IUserData {
+  first_name: string;
+  second_name: string;
+  display_name: string;
   login: string;
-  password: string;
+  email: string;
+  phone: string;
+}
+
+export interface IUser {
+  login: string;
+  avatar: TNullable<string>;
+  display_name?: string;
+  email: string;
+  first_name: string;
+  id: number;
+  phone: string;
+  second_name: string;
+
   isAuth: boolean;
 }
 
 interface IUserStore {
   user: IUser;
-  login: (login: string, password: string, isAuth: boolean) => void;
+  login: (body: { login: string; password: string }) => void;
   logout: () => void;
+  signUp: (body: {
+    first_name: string;
+    second_name: string;
+    login: string;
+    email: string;
+    password: string;
+    phone: string;
+  }) => void;
+  fetchUser: () => void;
+  updateUser: (body: IUserData) => void;
 }
 
 const initialUser = {
   login: "",
-  password: "",
+  avatar: null,
+  display_name: "",
+  email: "",
+  first_name: "",
+  id: 0,
+  phone: "",
+  second_name: "",
   isAuth: false,
 };
 
@@ -23,19 +65,92 @@ export const useUserStore = create<IUserStore>()(
   persist(
     (set) => ({
       user: initialUser,
-      login: (login, password, isAuth) =>
-        set(() => ({
-          user: {
-            login,
-            password,
-            isAuth: true,
-          },
-        })),
-      logout: () =>
+      login: async (body) => {
+        try {
+          await signIn(body);
+          const response = await getUserInfo();
+          set(() => ({
+            user: {
+              ...response.data,
+              isAuth: true,
+            },
+          }));
+        } catch (error: unknown) {
+          useSnackbarStore.getState().openSnackbar({
+            message: (error as IEError).response.data.reason,
+            severity: "error",
+          });
+        }
+      },
+      logout: async () => {
+        await logout();
         set(() => ({
           user: initialUser,
-        })),
+        }));
+      },
+      signUp: async ({
+        login,
+        password,
+        first_name,
+        second_name,
+        email,
+        phone,
+      }) => {
+        try {
+          await signUp({
+            login,
+            password,
+            first_name,
+            second_name,
+            email,
+            phone,
+          });
+          const response = await getUserInfo();
+          set(() => ({
+            user: {
+              ...response.data,
+              isAuth: true,
+            },
+          }));
+        } catch (error: unknown) {
+          useSnackbarStore.getState().openSnackbar({
+            message: (error as IEError).response.data.reason,
+            severity: "error",
+          });
+        }
+      },
+      fetchUser: async () => {
+        try {
+          const response = await getUserInfo();
+          set(() => ({
+            user: {
+              ...response.data,
+              isAuth: true,
+            },
+          }));
+        } catch (error: unknown) {
+          useSnackbarStore.getState().openSnackbar({
+            message: (error as IEError).response.data.reason,
+            severity: "error",
+          });
+        }
+      },
+      updateUser: async (body: IUserData) => {
+        try {
+          const response = await changeUserProfile(body);
+          set(() => ({
+            user: {
+              ...response.data,
+              isAuth: true,
+            },
+          }));
+        } catch {
+          set(() => ({
+            user: initialUser,
+          }));
+        }
+      },
     }),
-    { name: "userStore", version: 1 },
+    { name: "userStore", version: 1.1 },
   ),
 );
