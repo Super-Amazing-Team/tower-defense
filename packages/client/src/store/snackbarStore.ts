@@ -1,79 +1,95 @@
-import { ReactNode } from "react";
 import { create } from "zustand";
-import { TNullable } from "@/utils";
 
-type TSeverity = "success" | "warning" | "error";
-
-type TAnchorOrigin = {
-  vertical: "top" | "bottom";
-  horizontal: "left" | "right";
-};
-
-type TButton = TNullable<ReactNode>;
-
-interface IOpenSnackbarProps {
+export interface IToastProps {
+  /**
+   * Key to render multiple toasts.
+   * This is being set automatically unless specified manually.
+   */
+  key?: number;
+  /**
+   * Alert title
+   */
+  title?: string;
+  /**
+   * Alert message
+   */
   message: string;
-  severity?: TSeverity;
-  button?: TButton;
-  anchorOrigin?: TAnchorOrigin;
+  /**
+   * Custom component or html-layout
+   */
+  children?: React.ReactElement;
+  /**
+   * Indicates when the alert will disappear in ms. Defaults too 5000.
+   * Pass 0 for infinite duration.
+   */
+  duration?: number;
+  /**
+   * Alert color
+   */
+  severity?: "success" | "info" | "warning" | "error";
+  /**
+   * Alert position on the screen
+   */
+  position?: {
+    vertical?: "top" | "bottom";
+    horizontal?: "left" | "right" | "center";
+  };
+  /**
+   * On Close callback
+   */
+  onClose?: () => void;
 }
 
-interface IState extends Required<IOpenSnackbarProps> {
-  isOpen: boolean;
+interface IStore {
+  toastsPack: IToastProps[];
 }
 
-interface IStore extends IState {
-  closeSnackbar: () => void;
-  openSnackbar: (props: IOpenSnackbarProps) => void;
-}
-
-const initialState: IState = {
-  isOpen: false,
-  message: "",
-  severity: "success",
-  button: null,
-  anchorOrigin: { vertical: "top", horizontal: "right" },
-};
-
-/**
- * Extract openSnackbar and use it to call snackbar:
- * @example
- * const openSnackbar = useSnackbarStore(({ openSnackbar }) => openSnackbar)
- * openSnackbar({ message: "hello world!")
- * @example
- * const openSnackbar = useSnackbarStore(({ openSnackbar }) => openSnackbar)
- * openSnackbar({ message: "hello world!", severity: "warning" })
- * @example
- * const openSnackbar = useSnackbarStore(({ openSnackbar }) => openSnackbar)
- * openSnackbar({
- *   message: "hello world!",
- *   severity: "warning",
- *   button: (
- *     <Button onClick={() => console.log("hi!")}>Click me!</Button>
- *   ),
- *   anchorOrigin: {
- *     vertical: "bottom",
- *    horizontal: "right"
- *   }
- * })
- */
-export const useSnackbarStore = create<IStore>()((set) => ({
-  ...initialState,
-  closeSnackbar() {
-    set({ isOpen: false });
-  },
-  openSnackbar({
-    message = "",
-    severity = "success",
-    button = null,
-    anchorOrigin = { vertical: "top", horizontal: "right" },
-  }: IOpenSnackbarProps) {
-    set({
-      isOpen: true,
-      message,
-      severity,
-      button,
-      anchorOrigin,
-    });
-  },
+export const useSnackbarStore = create<IStore>()(() => ({
+  toastsPack: [],
 }));
+
+export function addToast(
+  rawToast: IToastProps | string,
+  severity: IToastProps["severity"] = "error",
+) {
+  let newToast: IToastProps;
+
+  if (typeof rawToast === "string") {
+    const defaultToast: IToastProps = {
+      key: Date.now(),
+      message: rawToast,
+      severity,
+      position: {
+        vertical: "bottom",
+        horizontal: "right",
+      },
+    };
+
+    newToast = defaultToast;
+  } else {
+    rawToast.key ??= Date.now();
+    if (severity) {
+      rawToast.severity = severity;
+    }
+    newToast = rawToast;
+  }
+
+  const { key } = newToast;
+
+  useSnackbarStore.setState((store) => {
+    const { toastsPack } = store;
+    if (toastsPack.find((toast) => toast.key === key)) {
+      return store;
+    }
+    const rest = toastsPack.length < 3 ? toastsPack : toastsPack.slice(0, -1);
+    return {
+      toastsPack: [{ ...newToast, key }, ...rest],
+    };
+  });
+}
+
+export function closeToast(key: IToastProps["key"]) {
+  useSnackbarStore.setState(({ toastsPack }) => ({
+    toastsPack: toastsPack.filter((toast) => toast.key !== key),
+  }));
+}
