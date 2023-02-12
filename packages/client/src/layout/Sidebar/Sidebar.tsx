@@ -8,14 +8,34 @@ import ListItem from "@mui/material/ListItem";
 import ListItemButton from "@mui/material/ListItemButton";
 import ListItemIcon from "@mui/material/ListItemIcon";
 import ListItemText from "@mui/material/ListItemText";
-import InboxIcon from "@mui/icons-material/MoveToInbox";
-import MailIcon from "@mui/icons-material/Mail";
 import Toolbar from "@mui/material/Toolbar";
-import { useLayoutStore } from "@/store";
+import LoginIcon from "@mui/icons-material/Login";
+import HowToRegIcon from "@mui/icons-material/HowToReg";
+import LeaderboardIcon from "@mui/icons-material/Leaderboard";
+import SportsEsportsIcon from "@mui/icons-material/SportsEsports";
+import ForumIcon from "@mui/icons-material/Forum";
+import AccountCircleIcon from "@mui/icons-material/AccountCircle";
+import LogoutIcon from "@mui/icons-material/Logout";
+import { useLayoutStore, useUserStore } from "@/store";
+
+const authMenu = [
+  { text: "game", icon: <SportsEsportsIcon />, path: "/game" },
+  { text: "leaderboard", icon: <LeaderboardIcon />, path: "/leaderboard" },
+  { text: "forum", icon: <ForumIcon />, path: "/forum" },
+  { text: "profile", icon: <AccountCircleIcon />, path: "/profile" },
+];
+
+const notAuthMenu = [
+  { text: "login", icon: <LoginIcon />, path: "/" },
+  { text: "register", icon: <HowToRegIcon />, path: "/register" },
+  { text: "leaderboard", icon: <LeaderboardIcon />, path: "/leaderboard" },
+];
 
 export function Sidebar() {
   const isOpenSidebar = useLayoutStore((store) => store.openSidebar);
   const setCloseSidebar = useLayoutStore((store) => store.setCloseSidebar);
+  const logout = useUserStore((store) => store.logout);
+  const user = useUserStore((store) => store.user);
   const closeDrawer = (event: KeyboardEvent | MouseEvent) => {
     if (
       event.type === "keydown" &&
@@ -28,6 +48,10 @@ export function Sidebar() {
     setCloseSidebar();
   };
 
+  const handlerLogout = () => {
+    logout();
+  };
+
   return (
     <Drawer open={isOpenSidebar} onClose={closeDrawer}>
       <Toolbar />
@@ -38,28 +62,30 @@ export function Sidebar() {
         onKeyDown={closeDrawer}
       >
         <List>
-          {["leaderboard", "register"].map((text, index) => (
-            <ListItem key={text} disablePadding>
-              <ListItemButton component={RouterLink} to={`/${text}`}>
-                <ListItemIcon>
-                  {index % 2 === 0 ? <InboxIcon /> : <MailIcon />}
-                </ListItemIcon>
-                <ListItemText primary={text} />
-              </ListItemButton>
-            </ListItem>
-          ))}
+          {(user.isAuth ? authMenu : notAuthMenu).map(
+            ({ text, icon, path }) => (
+              <ListItem key={text} disablePadding>
+                <ListItemButton component={RouterLink} to={path}>
+                  <ListItemIcon>{icon}</ListItemIcon>
+                  <ListItemText primary={text} />
+                </ListItemButton>
+              </ListItem>
+            ),
+          )}
         </List>
         <Divider />
-        <List>
-          <ListItem disablePadding>
-            <ListItemButton component={RouterLink} to="/">
-              <ListItemIcon>
-                <InboxIcon />
-              </ListItemIcon>
-              <ListItemText primary={"Выход"} />
-            </ListItemButton>
-          </ListItem>
-        </List>
+        {user.isAuth && (
+          <List>
+            <ListItem disablePadding>
+              <ListItemButton onClick={handlerLogout}>
+                <ListItemIcon>
+                  <LogoutIcon />
+                </ListItemIcon>
+                <ListItemText primary={"Выход"} />
+              </ListItemButton>
+            </ListItem>
+          </List>
+        )}
       </Box>
     </Drawer>
   );

@@ -1,18 +1,16 @@
-import { useNavigate } from "react-router-dom";
+import { useState } from "react";
+import type { ChangeEvent } from "react";
 import { Avatar, Button, ButtonGroup, Container, Dialog } from "@mui/material";
-import React from "react";
 import { useProfileStore, useUserStore } from "@/store";
 import FormProfile from "@/pages/Profile/FormProfile";
 import EditPasswordForm from "@/pages/Profile/EditPasswordForm";
 
 export function Profile() {
-  const navigate = useNavigate();
   const logout = useUserStore((store) => store.logout);
-  const user = useProfileStore((store) => store.user);
+  const user = useUserStore((store) => store.user);
   const isEditModeState = useProfileStore((store) => store.isEditMode);
   const setIsEditMode = useProfileStore((store) => store.updateEditMode);
-  const [isOpenEditPasswordModal, setOpenEditPasswordModal] =
-    React.useState(false);
+  const [isOpenEditPasswordModal, setOpenEditPasswordModal] = useState(false);
 
   const handleOpenModalEditPassword = () => {
     setOpenEditPasswordModal(true);
@@ -24,17 +22,13 @@ export function Profile() {
     setIsEditMode(true);
   };
 
-  function handleCloseModalEditAvatar() {
-    console.log("handleCloseModalEditAvatar");
-  }
-
-  function onChangeInputFile(event: React.ChangeEvent<HTMLInputElement>) {
+  function onChangeInputFile(event: ChangeEvent<HTMLInputElement>) {
+    // eslint-disable-next-line no-console
     console.log(`Saving ${event.target.value}`);
   }
 
-  const logoutMe = (e: { preventDefault: () => void }) => {
+  const logoutMe = () => {
     logout();
-    navigate("/");
   };
 
   const buttons = [
@@ -61,7 +55,7 @@ export function Profile() {
     >
       <Avatar
         alt={user.login}
-        src={user.avatar}
+        src={user.avatar || ""}
         sx={{ width: 64, height: 64, m: "0 auto" }}
       />
       <Button
