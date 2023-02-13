@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from "react";
+import type { FC } from "react";
 import {
   Alert,
   Stack,
@@ -7,48 +8,13 @@ import {
   Snackbar as MuiSnackbar,
 } from "@mui/material";
 import { useSnackbarStore, closeToast } from "@/store";
+import type { IToastProps } from "@/store/snackbarStore";
 
-type TToastProps = {
-  /**
-   * Key to render multiple toasts.
-   * This is being set automatically unless specified manually.
-   */
-  key?: number;
-  /**
-   * Alert title
-   */
-  title?: string;
-  /**
-   * Alert message
-   */
-  message?: string;
-  /**
-   * Custom component or html-layout
-   */
-  children?: React.ReactElement;
-  /**
-   * Indicates when the alert will disappear in ms. Defaults too 5000.
-   * Pass 0 for infinite duration.
-   */
-  duration?: number;
-  /**
-   * Alert color
-   */
-  severity?: "success" | "info" | "warning" | "error";
-  /**
-   * Alert position on the screen
-   */
-  position?: {
-    vertical?: "top" | "bottom";
-    horizontal?: "left" | "right" | "center";
-  };
-  /**
-   * On Close callback
-   */
-  onClose?: () => void;
-};
+interface IProps {
+  toast: IToastProps;
+}
 
-function SnackbarToast({ toast }: { toast: TToastProps }) {
+const SnackbarToast: FC<IProps> = ({ toast }) => {
   const TIMEOUT = 300;
 
   const [isOpen, setIsOpen] = useState(true);
@@ -61,9 +27,7 @@ function SnackbarToast({ toast }: { toast: TToastProps }) {
   }, [toast.key]);
 
   const handleClose = (_: React.SyntheticEvent | Event, reason?: string) => {
-    if (reason === "clickaway") {
-      return;
-    }
+    if (reason === "clickaway") return;
     if (toast?.onClose) {
       toast.onClose();
     }
@@ -97,7 +61,7 @@ function SnackbarToast({ toast }: { toast: TToastProps }) {
       </Alert>
     </Grow>
   );
-}
+};
 
 export function Snackbar() {
   const toastsPack = useSnackbarStore(({ toastsPack: toasts }) => toasts);
