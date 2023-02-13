@@ -24,22 +24,19 @@ function errorFallback({ error, resetErrorBoundary }: FallbackProps) {
       >
         Something went wrong
       </Typography>
-      <Grid container spacing={3}>
-        <Grid item xs={12}>
-          <Typography variant="h5" mb={3}>
-            {error?.message}
-          </Typography>
-          <Button
-            disableElevation
-            fullWidth
-            size="large"
-            variant="contained"
-            color="primary"
-            onClick={resetErrorBoundary}
-          >
-            Try again
-          </Button>
-        </Grid>
+      <Grid item xs={12}>
+        <Typography variant="h5" mb={3}>
+          {error?.message}
+        </Typography>
+        <Button
+          disableElevation
+          fullWidth
+          size="large"
+          variant="contained"
+          onClick={resetErrorBoundary}
+        >
+          Try again
+        </Button>
       </Grid>
     </Container>
   );
