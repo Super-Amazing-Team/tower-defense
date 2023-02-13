@@ -1,42 +1,16 @@
 import { create } from "zustand";
 
 export interface IToastProps {
-  /**
-   * Key to render multiple toasts.
-   * This is being set automatically unless specified manually.
-   */
   key?: number;
-  /**
-   * Alert title
-   */
   title?: string;
-  /**
-   * Alert message
-   */
   message: string;
-  /**
-   * Custom component or html-layout
-   */
   children?: React.ReactElement;
-  /**
-   * Indicates when the alert will disappear in ms. Defaults too 5000.
-   * Pass 0 for infinite duration.
-   */
   duration?: number;
-  /**
-   * Alert color
-   */
   severity?: "success" | "info" | "warning" | "error";
-  /**
-   * Alert position on the screen
-   */
   position?: {
     vertical?: "top" | "bottom";
     horizontal?: "left" | "right" | "center";
   };
-  /**
-   * On Close callback
-   */
   onClose?: () => void;
 }
 
@@ -48,6 +22,34 @@ export const useSnackbarStore = create<IStore>()(() => ({
   toastsPack: [],
 }));
 
+/**
+ * Add toast ( snackbar ).
+ * @param rawToast - can recieve string as message or config object
+ * @param severity - can recieve one of the folowing statemetns:
+ * "error" | "info" | "warning" | "success"
+ * @example
+ * addToast("Something went wrong :-("); // second argument is set to "error" by default
+ * @example
+ * addToast("You're awesome!", "success");
+ * @example
+ * const options: IToastProps = {
+ *  message: "Huge discount on gems!", // NOTE: the only required field
+ *  key: 375,
+ *  title: "Announcement!",
+ *  children: <CustomPreviewComp />,
+ *  duration: 15000,
+ *  severity: "info",
+ *  position: {
+ *    vertical: "top",
+ *    horizontal: "left",
+ *  },
+ *  onClose() {
+ *    sendInfoToTheServer("Client closed this message");
+ *  },
+ * };
+ *
+ * addToast(options);
+ */
 export function addToast(
   rawToast: IToastProps | string,
   severity: IToastProps["severity"] = "error",
@@ -82,6 +84,7 @@ export function addToast(
       return store;
     }
     const rest = toastsPack.length < 3 ? toastsPack : toastsPack.slice(0, -1);
+
     return {
       toastsPack: [{ ...newToast, key }, ...rest],
     };
