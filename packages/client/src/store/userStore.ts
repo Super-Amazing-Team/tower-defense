@@ -7,7 +7,7 @@ import {
   signIn,
   signUp,
 } from "@/api/ApiClient";
-import { useSnackbarStore } from "@/store/snackbarStore";
+import { addToast } from "@/store";
 import type { TNullable } from "@/utils";
 import type { IEError } from "@/types";
 
@@ -76,10 +76,7 @@ export const useUserStore = create<IUserStore>()(
             },
           }));
         } catch (error: unknown) {
-          useSnackbarStore.getState().openSnackbar({
-            message: (error as IEError).response.data.reason,
-            severity: "error",
-          });
+          addToast((error as IEError).response.data.reason);
         }
       },
       logout: async () => {
@@ -113,10 +110,7 @@ export const useUserStore = create<IUserStore>()(
             },
           }));
         } catch (error: unknown) {
-          useSnackbarStore.getState().openSnackbar({
-            message: (error as IEError).response.data.reason,
-            severity: "error",
-          });
+          addToast((error as IEError).response.data.reason);
         }
       },
       fetchUser: async () => {
@@ -129,10 +123,7 @@ export const useUserStore = create<IUserStore>()(
             },
           }));
         } catch (error: unknown) {
-          useSnackbarStore.getState().openSnackbar({
-            message: (error as IEError).response.data.reason,
-            severity: "error",
-          });
+          addToast((error as IEError).response.data.reason);
         }
       },
       updateUser: async (body: IUserData) => {
