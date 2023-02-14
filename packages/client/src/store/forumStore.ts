@@ -9,25 +9,29 @@ import {
 export interface IForumStore {
   forums: IDataNamesChats;
   isShowMoreForums: boolean;
-  getFiveForums: () => IForumInfo[];
-  getAllForums: () => IForumInfo[];
+  fiveForums: IForumInfo[];
+  allForums: IForumInfo[];
 }
 
 export interface ITopicStore {
   topic: IForum;
 }
 
-export const useForumStore = create<IForumStore>()((store) => ({
+const getFiveForum = () => {
+  return namesChatsMock.data.slice(0, 4);
+};
+
+const getAllForums = () => {
+  return namesChatsMock.data;
+};
+
+export const useForumStore = create<IForumStore>()((set) => ({
   forums: namesChatsMock,
   isShowMoreForums: false,
-  getFiveForums(): IForumInfo[] {
-    return namesChatsMock.data.slice(0, 4);
-  },
-  getAllForums(): IForumInfo[] {
-    return namesChatsMock.data;
-  },
+  fiveForums: getFiveForum(),
+  allForums: getAllForums(),
 }));
 
-export const useTopicStore = create<ITopicStore>()((store) => ({
+export const useTopicStore = create<ITopicStore>()((set) => ({
   topic: forumMock,
 }));

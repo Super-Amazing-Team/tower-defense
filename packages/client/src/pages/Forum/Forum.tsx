@@ -6,8 +6,8 @@ import { AddNewThemeModal } from "@/pages/Forum/AddNewThemeModal";
 import { TopicSheet } from "@/pages/Forum/TopicSheet";
 
 export function Forum() {
-  const fiveForums = useForumStore((store) => store.getFiveForums);
-  const allForums = useForumStore((store) => store.getAllForums);
+  const fiveForums = useForumStore((store) => store.fiveForums);
+  const allForums = useForumStore((store) => store.allForums);
   const [isShowMore, setIsShowMore] = React.useState<boolean>(false);
   const [isShowAddNewThemeModal, setShowAddNewThemeModal] =
     React.useState<boolean>(false);
