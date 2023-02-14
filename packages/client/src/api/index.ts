@@ -1,2 +1,1 @@
-// export { someFunction } from "./someFunction";
-export {};
+export { getAllLeaderboard } from "./ApiClient";

@@ -1,5 +1,6 @@
-import React, { MouseEvent, useState } from "react";
+import React, { useState } from "react";
 import { useForm } from "react-hook-form";
+import type { MouseEvent } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
 import {
@@ -15,6 +16,7 @@ import {
 } from "@mui/material";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
+import { useUserStore } from "@/store";
 
 const schema = z.object({
   first_name: z.string().min(3).max(20),
@@ -29,6 +31,7 @@ type TSchema = z.infer<typeof schema>;
 
 const AuthRegister = () => {
   const [isShowPassword, setIsShowPassword] = useState(false);
+  const signUp = useUserStore((store) => store.signUp);
   const handleClickShowPassword = () => {
     setIsShowPassword(!isShowPassword);
   };
@@ -47,7 +50,7 @@ const AuthRegister = () => {
   });
 
   const onSubmit = (data: TSchema) => {
-    console.log(data);
+    signUp(data);
   };
 
   return (
