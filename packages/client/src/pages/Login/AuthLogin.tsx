@@ -16,6 +16,7 @@ import {
 } from "@mui/material";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
+import { useUserStore } from "@/store";
 
 const schema = z.object({
   login: z.string().min(3).max(20),
@@ -26,6 +27,8 @@ type TSchema = z.infer<typeof schema>;
 
 const AuthLogin = () => {
   const [isShowPassword, setIsShowPassword] = useState<boolean>(false);
+  const login = useUserStore((store) => store.login);
+
   const handleClickShowPassword = () => {
     setIsShowPassword((prevProps) => !prevProps);
   };
@@ -44,7 +47,7 @@ const AuthLogin = () => {
   });
 
   const onSubmit = (data: TSchema) => {
-    console.log(data);
+    login(data);
   };
 
   return (

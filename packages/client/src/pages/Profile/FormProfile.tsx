@@ -3,16 +3,19 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Button, Grid, TextField } from "@mui/material";
-import { IProfileUser, useProfileStore } from "@/store/profileStore";
+import { useProfileStore } from "@/store/profileStore";
+import { useUserStore } from "@/store";
+import { IUser } from "@/store/userStore";
 
 export interface IFormProfileProps {
-  user: IProfileUser;
+  user: IUser;
   isEditMode: boolean;
 }
 
 const schema = z.object({
   first_name: z.string().min(3).max(20),
   second_name: z.string().min(3).max(20),
+  display_name: z.string().min(3).max(20),
   email: z.string().email(),
   login: z.string().min(3).max(20),
   phone: z.string().regex(/^[+]?[0-9]{10,15}$/),
@@ -22,20 +25,26 @@ type TSchema = z.infer<typeof schema>;
 
 const FormProfile = (props: IFormProfileProps) => {
   const setIsEditMode = useProfileStore((store) => store.updateEditMode);
-  const user = useProfileStore((store) => store.user);
+  const updateUser = useUserStore((store) => store.updateUser);
+  const user = useUserStore((store) => store.user);
 
   const {
     register,
     handleSubmit,
     formState: { errors },
   } = useForm<TSchema>({
+    defaultValues: user,
     resolver: zodResolver(schema),
     mode: "onBlur",
   });
 
   const onSubmit = (data: TSchema) => {
     setIsEditMode(false);
-    console.log(data);
+    updateUser(data);
+  };
+
+  const handleEditMode = () => {
+    setIsEditMode(false);
   };
 
   return (
@@ -47,7 +56,6 @@ const FormProfile = (props: IFormProfileProps) => {
             type="text"
             disabled={!props.isEditMode}
             placeholder="Имя"
-            defaultValue={user.first_name}
             fullWidth
             helperText={errors.first_name?.message || " "}
             error={Boolean(errors.first_name)}
@@ -58,7 +66,6 @@ const FormProfile = (props: IFormProfileProps) => {
           <TextField
             label="Фамилия"
             type="text"
-            defaultValue={user.second_name}
             placeholder="Фамилия"
             fullWidth
             disabled={!props.isEditMode}
@@ -69,9 +76,20 @@ const FormProfile = (props: IFormProfileProps) => {
         </Grid>
         <Grid item xs={12}>
           <TextField
+            label="Display Name"
+            type="text"
+            placeholder="Display Name"
+            fullWidth
+            disabled={!props.isEditMode}
+            helperText={errors.display_name?.message || " "}
+            error={Boolean(errors.display_name)}
+            {...register("display_name")}
+          />
+        </Grid>
+        <Grid item xs={12}>
+          <TextField
             label="Email address"
             type="email"
-            defaultValue={user.email}
             placeholder="Enter email address"
             fullWidth
             disabled={!props.isEditMode}
@@ -84,7 +102,6 @@ const FormProfile = (props: IFormProfileProps) => {
           <TextField
             label="Логин"
             type="text"
-            defaultValue={user.login}
             placeholder="Enter login"
             fullWidth
             disabled={!props.isEditMode}
@@ -98,7 +115,6 @@ const FormProfile = (props: IFormProfileProps) => {
             label="Телефон"
             type="tel"
             placeholder="Enter phone"
-            defaultValue={user.phone}
             fullWidth
             disabled={!props.isEditMode}
             helperText={errors.phone?.message || " "}
@@ -107,13 +123,7 @@ const FormProfile = (props: IFormProfileProps) => {
           />
         </Grid>
         {props.isEditMode && (
-          <Grid
-            item
-            xs={12}
-            sx={{
-              height: 112,
-            }}
-          >
+          <Grid item xs={12}>
             <Button
               disableElevation
               fullWidth
@@ -121,8 +131,19 @@ const FormProfile = (props: IFormProfileProps) => {
               type="submit"
               variant="contained"
               color="primary"
+              sx={{ mb: 2 }}
             >
               Сохранить
+            </Button>
+            <Button
+              disableElevation
+              fullWidth
+              size="large"
+              variant="contained"
+              color="secondary"
+              onClick={handleEditMode}
+            >
+              Отмена
             </Button>
           </Grid>
         )}

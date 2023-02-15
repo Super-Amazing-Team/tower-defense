@@ -1,8 +1,13 @@
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 import { Box, createTheme, ThemeProvider } from "@mui/material";
 import CSSBaseLine from "@mui/material/CssBaseline";
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import { Snackbar, ProtectedRoutes } from "@/utils";
+import {
+  Snackbar,
+  ProtectedRoutes,
+  ProtectedToAuth,
+  ErrorBoundary,
+} from "@/utils";
 import { Login } from "@/pages/Login";
 import { Register } from "@/pages/Register";
 import { Forum } from "@/pages/Forum";
@@ -13,11 +18,16 @@ import { Profile } from "@/pages/Profile";
 import { Page404 } from "@/pages/Page404";
 import { Page500 } from "@/pages/Page500";
 import { Layout } from "@/layout";
-import { useLayoutStore } from "@/store";
+import { useLayoutStore, useUserStore } from "@/store";
 import TDEngine from "@/pages/Game/engine/TDEngine";
 
 function App() {
   const mode = useLayoutStore((store) => store.colorMode);
+  const fetchUser = useUserStore((store) => store.fetchUser);
+
+  useEffect(() => {
+    fetchUser();
+  }, [fetchUser]);
 
   const theme = useMemo(
     () =>
@@ -29,40 +39,44 @@ function App() {
     [mode],
   );
   return (
-    <Router>
-      <ThemeProvider theme={theme}>
-        <CSSBaseLine>
-          <Box
-            sx={{
-              display: "flex",
-              flexDirection: "column",
-              minHeight: "100vh",
-            }}
-          >
-            <Routes>
-              <Route element={<Layout />}>
-                <Route path="/" element={<Login />} />
-                <Route path="/register" element={<Register />} />
-                <Route path="/leaderboard" element={<Leaderboard />} />
-                <Route element={<ProtectedRoutes />}>
-                  <Route path="/profile" element={<Profile />} />
-                  <Route
-                    path="/game"
-                    element={<Game engine={new TDEngine()} />}
-                  />
-                  <Route path="/forum" element={<Forum />} />
-                  <Route path="/forum/:id" element={<Topic />} />
+    <ThemeProvider theme={theme}>
+      <CSSBaseLine>
+        <ErrorBoundary>
+          <Router>
+            <Box
+              sx={{
+                display: "flex",
+                flexDirection: "column",
+                minHeight: "100vh",
+              }}
+            >
+              <Routes>
+                <Route element={<Layout />}>
+                  <Route element={<ProtectedToAuth />}>
+                    <Route path="/" element={<Login />} />
+                    <Route path="/register" element={<Register />} />
+                  </Route>
+                  <Route path="/leaderboard" element={<Leaderboard />} />
+                  <Route element={<ProtectedRoutes />}>
+                    <Route path="/profile" element={<Profile />} />
+                    <Route
+                      path="/game"
+                      element={<Game engine={new TDEngine()} />}
+                    />
+                    <Route path="/forum" element={<Forum />} />
+                    <Route path="/forum/:id" element={<Topic />} />
+                  </Route>
                 </Route>
-              </Route>
 
-              <Route path="/page500" element={<Page500 />} />
-              <Route path="*" element={<Page404 />} />
-            </Routes>
-          </Box>
-          <Snackbar />
-        </CSSBaseLine>
-      </ThemeProvider>
-    </Router>
+                <Route path="/page500" element={<Page500 />} />
+                <Route path="*" element={<Page404 />} />
+              </Routes>
+            </Box>
+            <Snackbar />
+          </Router>
+        </ErrorBoundary>
+      </CSSBaseLine>
+    </ThemeProvider>
   );
 }
 
