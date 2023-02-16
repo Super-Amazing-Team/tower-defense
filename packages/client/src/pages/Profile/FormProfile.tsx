@@ -1,25 +1,17 @@
 import React from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
+import { z } from "zod";
 import { Button, Grid, TextField } from "@mui/material";
 import { useProfileStore } from "@/store/profileStore";
 import { useUserStore } from "@/store";
 import { IUser } from "@/store/userStore";
+import { formProfileSchema as schema } from "@/types";
 
 export interface IFormProfileProps {
   user: IUser;
   isEditMode: boolean;
 }
-
-const schema = z.object({
-  first_name: z.string().min(3).max(20),
-  second_name: z.string().min(3).max(20),
-  display_name: z.string().min(3).max(20),
-  email: z.string().email(),
-  login: z.string().min(3).max(20),
-  phone: z.string().regex(/^[+]?[0-9]{10,15}$/),
-});
 
 type TSchema = z.infer<typeof schema>;
 

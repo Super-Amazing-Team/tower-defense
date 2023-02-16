@@ -1,1 +1,1 @@
-export { getAllLeaderboard } from "./ApiClient";
+export { ApiClient } from "./ApiClient";

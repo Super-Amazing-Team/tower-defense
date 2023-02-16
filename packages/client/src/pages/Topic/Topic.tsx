@@ -14,10 +14,7 @@ import { z } from "zod";
 import { IForum, IForumMessage } from "@/pages/Forum/const";
 import { useTopicStore } from "@/store/forumStore";
 import { TopicMessage } from "@/pages/Topic/TopicMessage";
-
-const schema = z.object({
-  message: z.string().min(3).max(300),
-});
+import { newForumMsgSchema as schema } from "@/types";
 
 type TSchema = z.infer<typeof schema>;
 

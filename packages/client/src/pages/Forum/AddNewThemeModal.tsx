@@ -11,11 +11,7 @@ import React from "react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-
-const schema = z.object({
-  title: z.string().min(3).max(30),
-  theme: z.string().min(6).max(300),
-});
+import { newForumThemeSchema as schema } from "@/types";
 
 type TSchema = z.infer<typeof schema>;
 export interface IAddNewThemeModalProps {
