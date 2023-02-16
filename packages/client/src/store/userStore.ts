@@ -63,7 +63,7 @@ const initialUser = {
 
 export const useUserStore = create<IUserStore>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       user: initialUser,
       login: async (body) => {
         try {
@@ -79,8 +79,8 @@ export const useUserStore = create<IUserStore>()(
           addToast((error as IEError).response.data.reason);
         }
       },
-      logout: async () => {
-        await logout();
+      async logout() {
+        await logout().catch((err) => console.error("Failed to logout: ", err));
         set(() => ({
           user: initialUser,
         }));
@@ -115,6 +115,7 @@ export const useUserStore = create<IUserStore>()(
       },
       fetchUser: async () => {
         try {
+          if (!navigator.onLine) return;
           const response = await getUserInfo();
           set(() => ({
             user: {
@@ -123,6 +124,7 @@ export const useUserStore = create<IUserStore>()(
             },
           }));
         } catch (error: unknown) {
+          get().logout();
           addToast((error as IEError).response.data.reason);
         }
       },

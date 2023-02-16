@@ -2,7 +2,7 @@
   "compilerOptions": {
     "target": "ESNext",
     "useDefineForClassFields": true,
-    "lib": ["DOM", "DOM.Iterable", "ESNext"],
+    "lib": ["DOM", "DOM.Iterable", "ESNext", "WebWorker"],
     "types": ["vite/client", "jest"],
     "allowJs": false,
     "skipLibCheck": true,
@@ -26,7 +26,8 @@
     "src/types",
     "vite.config.ts",
     "jest.config.js",
-    ".eslintrc.cjs"
+    ".eslintrc.cjs",
+    "serviceWorker.ts"
   ],
   "references": [{ "path": "./tsconfig.node.json" }]
 }
