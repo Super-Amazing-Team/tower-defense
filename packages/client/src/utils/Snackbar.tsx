@@ -36,9 +36,7 @@ const SnackbarToast: FC<IProps> = ({ toast }) => {
 
   useEffect(() => {
     if (toast.duration !== 0) {
-      setTimeout(() => {
-        close();
-      }, toast.duration || 6000);
+      setTimeout(close, toast.duration || 6000);
     }
   }, [close, toast.duration]);
 

@@ -17,16 +17,12 @@ import {
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import { useUserStore } from "@/store";
-
-const schema = z.object({
-  login: z.string().min(3).max(20),
-  password: z.string().min(6).max(20),
-});
+import { loginSchema as schema } from "@/types";
 
 type TSchema = z.infer<typeof schema>;
 
 const AuthLogin = () => {
-  const [isShowPassword, setIsShowPassword] = useState<boolean>(false);
+  const [isShowPassword, setIsShowPassword] = useState(false);
   const login = useUserStore((store) => store.login);
 
   const handleClickShowPassword = () => {

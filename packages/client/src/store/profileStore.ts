@@ -1,6 +1,7 @@
 import { create } from "zustand";
 import { TNullable } from "@/utils";
-import { changeUserPassword } from "@/api/ApiClient";
+// import { changeUserPassword } from "@/api";
+import { ApiClient } from "@/api";
 import { addToast } from "@/store";
 import { IEError } from "@/types";
 
@@ -42,7 +43,7 @@ export const useProfileStore = create<IProfileStore>()((set) => ({
   },
   updatePassword: async (body) => {
     try {
-      await changeUserPassword(body);
+      await ApiClient.changeUserPassword(body);
     } catch (error: unknown) {
       addToast((error as IEError).response.data.reason);
     }

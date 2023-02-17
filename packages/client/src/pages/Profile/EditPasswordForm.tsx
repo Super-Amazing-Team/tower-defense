@@ -1,5 +1,4 @@
-import React, { useState } from "react";
-import type { MouseEvent } from "react";
+import { useState } from "react";
 import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -18,54 +17,29 @@ import {
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import { useProfileStore } from "@/store";
-
-const schema = z
-  .object({
-    oldPassword: z.string().min(6).max(20),
-    newPassword: z.string().min(6).max(20),
-    confirmNewPassword: z.string().min(6).max(20),
-  })
-  .superRefine(({ confirmNewPassword, newPassword }, ctx) => {
-    if (confirmNewPassword !== newPassword) {
-      ctx.addIssue({
-        code: "custom",
-        message: "Пароли не совпадают",
-        path: ["confirmNewPassword"],
-      });
-    }
-  });
+import { editPassSchema as schema } from "@/types";
 
 type TSchema = z.infer<typeof schema>;
 
-export interface IEditPasswordFormProps {
+interface IEditPasswordFormProps {
   onCloseModalEditPassword: () => void;
 }
 
 const EditPasswordForm = (props: IEditPasswordFormProps) => {
-  const [isShowOldPassword, setIsShowOldPassword] = useState<boolean>(false);
-  const [isShowNewPassword, setIsShowNewPassword] = useState<boolean>(false);
-  const [isShowConfirmPassword, setIsShowConfirmPassword] =
-    useState<boolean>(false);
+  const [isShowOldPassword, setIsShowOldPassword] = useState(false);
+  const [isShowNewPassword, setIsShowNewPassword] = useState(false);
+  const [isShowConfirmPassword, setIsShowConfirmPassword] = useState(false);
   const updatePassword = useProfileStore((store) => store.updatePassword);
   const handleClickShowOldPassword = () => {
     setIsShowOldPassword((prevProps) => !prevProps);
-  };
-  const handleMouseDownOldPassword = (event: MouseEvent) => {
-    event.preventDefault();
   };
 
   const handleClickShowNewPassword = () => {
     setIsShowNewPassword((prevProps) => !prevProps);
   };
-  const handleMouseDownNewPassword = (event: MouseEvent) => {
-    event.preventDefault();
-  };
 
   const handleClickShowConfirmPassword = () => {
     setIsShowConfirmPassword((prevProps) => !prevProps);
-  };
-  const handleMouseDownConfirmPassword = (event: MouseEvent) => {
-    event.preventDefault();
   };
 
   const handleCloseEditPasswordModal = () => {
@@ -109,7 +83,6 @@ const EditPasswordForm = (props: IEditPasswordFormProps) => {
                   <IconButton
                     aria-label="toggle password visibility"
                     onClick={handleClickShowOldPassword}
-                    onMouseDown={handleMouseDownOldPassword}
                     edge="end"
                   >
                     {isShowOldPassword ? <VisibilityOff /> : <Visibility />}
@@ -140,7 +113,6 @@ const EditPasswordForm = (props: IEditPasswordFormProps) => {
                   <IconButton
                     aria-label="toggle password visibility"
                     onClick={handleClickShowNewPassword}
-                    onMouseDown={handleMouseDownNewPassword}
                     edge="end"
                   >
                     {isShowNewPassword ? <VisibilityOff /> : <Visibility />}
@@ -171,7 +143,6 @@ const EditPasswordForm = (props: IEditPasswordFormProps) => {
                   <IconButton
                     aria-label="toggle password visibility"
                     onClick={handleClickShowConfirmPassword}
-                    onMouseDown={handleMouseDownConfirmPassword}
                     edge="end"
                   >
                     {isShowConfirmPassword ? <VisibilityOff /> : <Visibility />}
