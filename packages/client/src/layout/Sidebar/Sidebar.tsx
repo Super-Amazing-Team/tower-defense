@@ -17,25 +17,26 @@ import ForumIcon from "@mui/icons-material/Forum";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import LogoutIcon from "@mui/icons-material/Logout";
 import { useLayoutStore, useUserStore } from "@/store";
+import { TRoutes as R } from "@/types";
 
 const authMenu = [
-  { text: "game", icon: <SportsEsportsIcon />, path: "/game" },
-  { text: "leaderboard", icon: <LeaderboardIcon />, path: "/leaderboard" },
-  { text: "forum", icon: <ForumIcon />, path: "/forum" },
-  { text: "profile", icon: <AccountCircleIcon />, path: "/profile" },
+  { text: "game", icon: <SportsEsportsIcon />, path: R.game },
+  { text: "leaderboard", icon: <LeaderboardIcon />, path: R.leaderboard },
+  { text: "forum", icon: <ForumIcon />, path: R.forum },
+  { text: "profile", icon: <AccountCircleIcon />, path: R.profile },
 ];
 
 const notAuthMenu = [
-  { text: "login", icon: <LoginIcon />, path: "/" },
-  { text: "register", icon: <HowToRegIcon />, path: "/register" },
-  { text: "leaderboard", icon: <LeaderboardIcon />, path: "/leaderboard" },
+  { text: "login", icon: <LoginIcon />, path: R.login },
+  { text: "register", icon: <HowToRegIcon />, path: R.register },
+  { text: "leaderboard", icon: <LeaderboardIcon />, path: R.leaderboard },
 ];
 
 export function Sidebar() {
   const isOpenSidebar = useLayoutStore((store) => store.openSidebar);
   const setCloseSidebar = useLayoutStore((store) => store.setCloseSidebar);
   const logout = useUserStore((store) => store.logout);
-  const user = useUserStore((store) => store.user);
+  const { isAuth } = useUserStore((store) => store.user);
   const closeDrawer = (event: KeyboardEvent | MouseEvent) => {
     if (
       event.type === "keydown" &&
@@ -48,10 +49,6 @@ export function Sidebar() {
     setCloseSidebar();
   };
 
-  const handlerLogout = () => {
-    logout();
-  };
-
   return (
     <Drawer open={isOpenSidebar} onClose={closeDrawer}>
       <Toolbar />
@@ -62,22 +59,20 @@ export function Sidebar() {
         onKeyDown={closeDrawer}
       >
         <List>
-          {(user.isAuth ? authMenu : notAuthMenu).map(
-            ({ text, icon, path }) => (
-              <ListItem key={text} disablePadding>
-                <ListItemButton component={RouterLink} to={path}>
-                  <ListItemIcon>{icon}</ListItemIcon>
-                  <ListItemText primary={text} />
-                </ListItemButton>
-              </ListItem>
-            ),
-          )}
+          {(isAuth ? authMenu : notAuthMenu).map(({ text, icon, path }) => (
+            <ListItem key={text} disablePadding>
+              <ListItemButton component={RouterLink} to={path}>
+                <ListItemIcon>{icon}</ListItemIcon>
+                <ListItemText primary={text} />
+              </ListItemButton>
+            </ListItem>
+          ))}
         </List>
         <Divider />
-        {user.isAuth && (
+        {isAuth && (
           <List>
             <ListItem disablePadding>
-              <ListItemButton onClick={handlerLogout}>
+              <ListItemButton onClick={logout}>
                 <ListItemIcon>
                   <LogoutIcon />
                 </ListItemIcon>

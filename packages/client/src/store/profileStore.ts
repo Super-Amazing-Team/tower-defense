@@ -1,7 +1,8 @@
 import { create } from "zustand";
 import { TNullable } from "@/utils";
-import { changeUserPassword } from "@/api/ApiClient";
-import { useSnackbarStore } from "@/store/snackbarStore";
+// import { changeUserPassword } from "@/api";
+import { ApiClient } from "@/api";
+import { addToast } from "@/store";
 import { IEError } from "@/types";
 
 export interface IProfileUser {
@@ -42,12 +43,9 @@ export const useProfileStore = create<IProfileStore>()((set) => ({
   },
   updatePassword: async (body) => {
     try {
-      await changeUserPassword(body);
+      await ApiClient.changeUserPassword(body);
     } catch (error: unknown) {
-      useSnackbarStore.getState().openSnackbar({
-        message: (error as IEError).response.data.reason,
-        severity: "error",
-      });
+      addToast((error as IEError).response.data.reason);
     }
   },
 }));

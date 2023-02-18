@@ -17,7 +17,7 @@ export function ErrorPage(props: IErrorPageProps) {
   const errorServerErrorTitle: string = "INTERNAL SERVER ERROR";
 
   function handleButtonBack() {
-    navigate(-1);
+    navigate("/");
   }
 
   return (

@@ -24,9 +24,7 @@ export function Header() {
           color="inherit"
           aria-label="open drawer"
           edge="start"
-          onClick={() => {
-            toggleSidebar();
-          }}
+          onClick={toggleSidebar}
           sx={{ mr: 2 }}
         >
           {isOpenSidebar ? <Close /> : <MenuIcon />}

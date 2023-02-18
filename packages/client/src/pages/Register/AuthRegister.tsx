@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { useForm } from "react-hook-form";
 import type { MouseEvent } from "react";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -17,15 +17,7 @@ import {
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import { useUserStore } from "@/store";
-
-const schema = z.object({
-  first_name: z.string().min(3).max(20),
-  second_name: z.string().min(3).max(20),
-  email: z.string().email(),
-  login: z.string().min(3).max(20),
-  phone: z.string().regex(/^[+]?[0-9]{10,15}$/),
-  password: z.string().min(6).max(20),
-});
+import { registerSchema as schema } from "@/types";
 
 type TSchema = z.infer<typeof schema>;
 
@@ -49,12 +41,8 @@ const AuthRegister = () => {
     mode: "onBlur",
   });
 
-  const onSubmit = (data: TSchema) => {
-    signUp(data);
-  };
-
   return (
-    <form noValidate onSubmit={handleSubmit(onSubmit)}>
+    <form noValidate onSubmit={handleSubmit(signUp)}>
       <Grid container spacing={3}>
         <Grid item xs={12}>
           <TextField
