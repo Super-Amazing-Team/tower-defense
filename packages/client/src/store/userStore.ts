@@ -115,7 +115,7 @@ export const useUserStore = create<IUserStore>()(
           const response = await getUserInfo();
           set(() => ({
             user: {
-              ...response.data,
+              ...response,
               isAuth: true,
             },
           }));
