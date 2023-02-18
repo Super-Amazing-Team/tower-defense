@@ -25,7 +25,7 @@
     "src",
     "src/types",
     "vite.config.ts",
-    "jest.config.ts",
+    "jest.config.js",
     ".eslintrc.cjs",
     "serviceWorker.ts"
   ],
