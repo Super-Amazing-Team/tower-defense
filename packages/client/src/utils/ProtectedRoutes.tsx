@@ -3,9 +3,9 @@ import { useUserStore } from "@/store";
 
 export const ProtectedRoutes = () => {
   const location = useLocation();
-  const user = useUserStore((store) => store.user);
+  const { isAuth } = useUserStore((store) => store.user);
 
-  return user.isAuth ? (
+  return isAuth ? (
     <Outlet />
   ) : (
     <Navigate to="/" state={{ from: location }} replace />
@@ -14,9 +14,9 @@ export const ProtectedRoutes = () => {
 
 export const ProtectedToAuth = () => {
   const location = useLocation();
-  const user = useUserStore((store) => store.user);
+  const { isAuth } = useUserStore((store) => store.user);
 
-  return user.isAuth ? (
+  return isAuth ? (
     <Navigate to="/profile" state={{ from: location }} replace />
   ) : (
     <Outlet />

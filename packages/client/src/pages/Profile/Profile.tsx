@@ -27,10 +27,6 @@ export function Profile() {
     console.log(`Saving ${event.target.value}`);
   }
 
-  const logoutMe = () => {
-    logout();
-  };
-
   const buttons = [
     <Button key="one" onClick={handleEditMode}>
       Редактировать
@@ -38,7 +34,7 @@ export function Profile() {
     <Button key="two" onClick={handleOpenModalEditPassword}>
       Изменить пароль
     </Button>,
-    <Button key="three" onClick={logoutMe}>
+    <Button key="three" onClick={logout}>
       Выход
     </Button>,
   ];

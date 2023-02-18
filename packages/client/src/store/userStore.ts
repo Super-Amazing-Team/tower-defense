@@ -1,12 +1,6 @@
 import { create } from "zustand";
 import { persist } from "zustand/middleware";
-import {
-  changeUserProfile,
-  getUserInfo,
-  logout,
-  signIn,
-  signUp,
-} from "@/api/ApiClient";
+import { ApiClient } from "@/api/ApiClient";
 import { addToast } from "@/store";
 import type { TNullable } from "@/utils";
 import type { IEError } from "@/types";
@@ -49,6 +43,8 @@ interface IUserStore {
   updateUser: (body: IUserData) => void;
 }
 
+const { changeUserProfile, getUserInfo, logout, signIn, signUp } = ApiClient;
+
 const initialUser = {
   login: "",
   avatar: null,
@@ -68,10 +64,10 @@ export const useUserStore = create<IUserStore>()(
       login: async (body) => {
         try {
           await signIn(body);
-          const response = await getUserInfo();
+          const data = await getUserInfo();
           set(() => ({
             user: {
-              ...response.data,
+              ...data,
               isAuth: true,
             },
           }));
@@ -102,10 +98,10 @@ export const useUserStore = create<IUserStore>()(
             email,
             phone,
           });
-          const response = await getUserInfo();
+          const data = await getUserInfo();
           set(() => ({
             user: {
-              ...response.data,
+              ...data,
               isAuth: true,
             },
           }));
@@ -130,10 +126,10 @@ export const useUserStore = create<IUserStore>()(
       },
       updateUser: async (body: IUserData) => {
         try {
-          const response = await changeUserProfile(body);
+          const data = await changeUserProfile(body);
           set(() => ({
             user: {
-              ...response.data,
+              ...data,
               isAuth: true,
             },
           }));
