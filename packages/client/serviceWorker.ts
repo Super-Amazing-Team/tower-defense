@@ -1,14 +1,23 @@
+import type { TRoutes } from "./src/types";
+
 export declare const self: ServiceWorkerGlobalScope;
 
 // <=== NOTE: Settings ===>
 
-const version = "v0.0.2";
+const version = "v0.0.3";
 const project = "super-amazing-team-tower-defense";
 
 const CACHE_NAME = `${version}::${project}`;
-const FILE_LIST = ["/"];
+const FILE_LIST = [
+  "/",
+  "/register",
+  "/leaderboard",
+  "/profile",
+  "/game",
+  "/forum",
+  "/page500",
+] satisfies (typeof TRoutes)[keyof typeof TRoutes][];
 const API_PATH = "/api/v2";
-const TIMEOUT = 4000;
 
 // <=== NOTE: END ===>
 
@@ -28,7 +37,7 @@ async function onMessage(event: ExtendableMessageEvent) {
 async function onActivate() {
   const cacheKeys = await caches.keys();
   const deleteArr = cacheKeys.reduce<Promise<boolean>[]>(
-    (arr, key) => (key === CACHE_NAME ? [...arr, caches.delete(key)] : arr),
+    (arr, key) => (key !== CACHE_NAME ? [...arr, caches.delete(key)] : arr),
     [],
   );
   await Promise.all(deleteArr);
@@ -36,14 +45,8 @@ async function onActivate() {
 
 async function onFetch(request: Request) {
   try {
-    const timeoutId = setTimeout(() => {
-      // throw new Error(`time is out: ${request.url}`);
-      throw new Error("time is out");
-    }, TIMEOUT);
-
     const cache = await caches.open(CACHE_NAME);
     const response = await fetch(request.url);
-    clearTimeout(timeoutId);
     await cache.put(request.url, response.clone());
     return response;
   } catch (err) {
@@ -72,13 +75,11 @@ self.addEventListener("message", (event) => {
 self.addEventListener("activate", (event) => {
   self.clients.claim();
 
-  // event.waitUntil(onActivate());
+  event.waitUntil(onActivate());
 });
 
 self.addEventListener("fetch", (event) => {
   const { request } = event;
-
-  console.log("request: ", request);
 
   const isHttp = request.url.indexOf("http") === 0;
   const isGet = request.method === "GET";
@@ -86,7 +87,7 @@ self.addEventListener("fetch", (event) => {
 
   if (!isHttp || !isGet || !isApiPath) return;
 
-  event.respondWith(onFetch(request));
+  event.respondWith(onFetch(request).catch());
 });
 
 // <=== NOTE: END ===>

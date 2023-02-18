@@ -2,6 +2,7 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { ApiClient } from "@/api/ApiClient";
 import { addToast } from "@/store";
+import { checkOnLine } from "@/utils";
 import type { TNullable } from "@/utils";
 import type { IEError } from "@/types";
 
@@ -76,6 +77,8 @@ export const useUserStore = create<IUserStore>()(
         }
       },
       async logout() {
+        const isOnLine = await checkOnLine();
+        if (!isOnLine) return;
         await logout().catch((err) => console.error("Failed to logout: ", err));
         set(() => ({
           user: initialUser,
@@ -111,7 +114,6 @@ export const useUserStore = create<IUserStore>()(
       },
       fetchUser: async () => {
         try {
-          if (!navigator.onLine) return;
           const response = await getUserInfo();
           set(() => ({
             user: {
