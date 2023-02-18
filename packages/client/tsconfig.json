@@ -18,14 +18,14 @@
     "jsx": "react-jsx",
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"]
+      "@/*": ["src/*"]
     }
   },
   "include": [
     "src",
     "src/types",
     "vite.config.ts",
-    "jest.config.js",
+    "jest.config.ts",
     ".eslintrc.cjs",
     "serviceWorker.ts"
   ],

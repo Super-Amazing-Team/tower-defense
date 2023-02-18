@@ -1,5 +1,5 @@
 export async function registerSW() {
-  if (import.meta.env.MODE === "development") return;
+  if (!process.env.SW_ENABLED) return;
 
   if (!("serviceWorker" in navigator)) {
     console.warn("Your browser boesn't support ServiceWorker");
