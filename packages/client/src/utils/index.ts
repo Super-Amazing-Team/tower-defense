@@ -4,3 +4,4 @@ export { ProtectedRoutes } from "./ProtectedRoutes";
 export { ErrorBoundary } from "./ErrorBoundary";
 export { ProtectedToAuth } from "./ProtectedRoutes";
 export { registerSW } from "./serviceWorker";
+export { checkOnLine } from "./checkOnline";
