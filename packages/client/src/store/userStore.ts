@@ -79,10 +79,14 @@ export const useUserStore = create<IUserStore>()(
       async logout() {
         const isOnLine = await checkOnLine();
         if (!isOnLine) return;
-        await logout().catch((err) => console.error("Failed to logout: ", err));
-        set(() => ({
-          user: initialUser,
-        }));
+        try {
+          await logout();
+          set(() => ({
+            user: initialUser,
+          }));
+        } catch (err) {
+          console.error("Failed to logout: ", err);
+        }
       },
       signUp: async ({
         login,
@@ -114,10 +118,10 @@ export const useUserStore = create<IUserStore>()(
       },
       fetchUser: async () => {
         try {
-          const response = await getUserInfo();
+          const data = await getUserInfo();
           set(() => ({
             user: {
-              ...response,
+              ...data,
               isAuth: true,
             },
           }));

@@ -6,14 +6,14 @@ import { checkOnLine } from "@/utils";
 
 export const ApiClient: IApiClient = {
   async signIn(body) {
-    const isOnLine = await checkOnLine();
-    if (isOnLine) {
-      return APIService.post("/auth/signin", body);
-    }
-    return Promise.reject();
+    return APIService.post("/auth/signin", body);
   },
   async logout() {
-    return APIService.post("/auth/logout");
+    const isOnLine = await checkOnLine();
+    if (isOnLine) {
+      return APIService.post("/auth/logout");
+    }
+    return Promise.reject();
   },
   async signUp(body) {
     const { data } = await APIService.post<z.infer<typeof registerSchema>>(

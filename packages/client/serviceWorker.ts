@@ -4,7 +4,7 @@ export declare const self: ServiceWorkerGlobalScope;
 
 // <=== NOTE: Settings ===>
 
-const version = "v0.0.3";
+const version = "v0.0.1";
 const project = "super-amazing-team-tower-defense";
 
 const CACHE_NAME = `${version}::${project}`;
