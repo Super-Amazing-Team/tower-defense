@@ -1,0 +1,64 @@
+{
+  "root": true,
+  "env": {
+    "node": true,
+    "es2021": true
+  },
+  "extends": [
+    "airbnb-base",
+    "prettier",
+    "plugin:node/recommended",
+    "eslint:recommended",
+    "plugin:@typescript-eslint/recommended"
+  ],
+  "plugins": ["@typescript-eslint"],
+  "parser": "@typescript-eslint/parser",
+  "parserOptions": {
+    "ecmaVersion": 2021
+  },
+  "rules": {
+    "@typescript-eslint/ban-ts-comment": "warn",
+    "@typescript-eslint/no-require-imports": "error",
+    "import/prefer-default-export": "off",
+    "import/extensions": ["off"],
+    "import/no-unresolved": "off",
+    "no-plusplus": "off",
+    "quotes": ["error", "double"],
+    "radix": "off",
+    "func-names": "off",
+    "no-case-declarations": "off",
+    "no-nested-ternary": "off",
+    "no-empty": "off",
+    "consistent-return": ["error", { "treatUndefinedAsUnspecified": true }],
+    "no-debugger": "warn",
+    "spaced-comment": "off",
+    "camelcase": "off",
+    "no-underscore-dangle": "off",
+    "no-await-in-loop": "off",
+    "import/no-mutable-exports": "off",
+    "node/exports-style": "error",
+    "node/no-unsupported-features/es-syntax": "off",
+    "node/no-missing-import": "off",
+    // "no-console": "off",
+    "no-console": ["warn", { "allow": ["warn", "error"] }],
+    "no-warning-comments": [
+      "off",
+      // "warn",
+      {
+        "terms": [
+          "BUG",
+          "HACK",
+          "FIXME",
+          "TODO",
+          "CHECK",
+          "DELETE",
+          "FIX",
+          "FIXIT",
+          "DEL",
+          "REMOVE",
+          "JUNK"
+        ]
+      }
+    ]
+  }
+}
