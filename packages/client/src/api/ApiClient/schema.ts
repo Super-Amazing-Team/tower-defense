@@ -12,5 +12,5 @@ export const userSchema = z.object({
   login: z.string(),
   email: z.string(),
   phone: z.string(),
-  avatar: z.string(),
+  avatar: z.string().nullable(),
 });

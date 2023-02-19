@@ -41,6 +41,7 @@ interface IUserStore {
   }) => void;
   fetchUser: () => void;
   updateUser: (body: IUserData) => void;
+  updateAvatar: (body: FormData) => void;
 }
 
 const { changeUserProfile, getUserInfo, logout, signIn, signUp } = ApiClient;
@@ -118,8 +119,10 @@ export const useUserStore = create<IUserStore>()(
               isAuth: true,
             },
           }));
-        } catch (error: unknown) {
-          addToast((error as IEError).response.data.reason);
+        } catch {
+          set(() => ({
+            user: initialUser,
+          }));
         }
       },
       updateUser: async (body: IUserData) => {
@@ -135,6 +138,19 @@ export const useUserStore = create<IUserStore>()(
           set(() => ({
             user: initialUser,
           }));
+        }
+      },
+      updateAvatar: async (body) => {
+        try {
+          const { data } = await ApiClient.updateAvatar(body);
+          set(() => ({
+            user: {
+              ...data,
+              isAuth: true,
+            },
+          }));
+        } catch (error: unknown) {
+          addToast((error as IEError).response.data.reason);
         }
       },
     }),

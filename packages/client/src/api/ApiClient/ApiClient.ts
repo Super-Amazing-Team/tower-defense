@@ -39,4 +39,7 @@ export const ApiClient: IApiClient = {
   async changeUserPassword(body) {
     return APIService.put("/user/password", body);
   },
+  async updateAvatar(body) {
+    return APIService.put("/user/profile/avatar", body);
+  },
 };
