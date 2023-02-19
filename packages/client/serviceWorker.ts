@@ -36,7 +36,14 @@ async function onFetch(request: Request) {
   } catch (err) {
     const cashedRequest = await caches.match(request.url);
 
-    return cashedRequest || Promise.reject(new Error("no-match"));
+    return (
+      cashedRequest ||
+      Promise.reject(
+        new Error(
+          `Can't find cached response for this request: ${request.url}`,
+        ),
+      )
+    );
   }
 }
 
