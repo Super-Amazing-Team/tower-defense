@@ -6,10 +6,20 @@ dotenv.config();
 const require = createRequire(import.meta.url);
 const { compilerOptions } = require("./tsconfig.json");
 
+const parseEnv = () =>
+  Object.fromEntries(
+    Object.entries(process.env).map(([key, val]) => {
+      if (val === "true") return [key, true];
+      if (val === "false") return [key, false];
+      if (!isNaN(val)) return [key, +val];
+      return [key, val];
+    }),
+  );
+
 export const sharedGlobals = {
   __SERVER_PORT: process.env.SERVER_PORT,
   __DEV_MODE: process.env.DEV_MODE,
-  "process.env": process.env,
+  "process.env": parseEnv(),
 };
 
 const config = {
