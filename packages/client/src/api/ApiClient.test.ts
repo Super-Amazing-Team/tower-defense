@@ -121,11 +121,11 @@ describe("ApiClient", () => {
     });
 
     test("should login registered user", async () => {
-      const a = MOCK.cache.user;
+      const data = MOCK.cache.user;
 
       let res;
       try {
-        res = await ApiClient.signIn(a);
+        res = await ApiClient.signIn(data);
       } catch {
         res = false;
       }
