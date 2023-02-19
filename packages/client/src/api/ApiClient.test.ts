@@ -1,5 +1,5 @@
 import type { AxiosError } from "axios";
-import { signUp, signIn, getAllLeaderboard } from "./ApiClient";
+import { ApiClient } from "./ApiClient";
 
 describe("ApiClient", () => {
   test("should return data signUp", async () => {
@@ -13,7 +13,7 @@ describe("ApiClient", () => {
     };
     let err;
     try {
-      await signUp(body);
+      await ApiClient.signUp(body);
     } catch (error) {
       const { response } = error as AxiosError<{ reason: string }>;
       if (response?.data.reason) {
@@ -31,7 +31,7 @@ describe("ApiClient", () => {
     };
     let err;
     try {
-      await signIn(body);
+      await ApiClient.signIn(body);
     } catch (error) {
       const { response } = error as AxiosError<{ reason: string }>;
       if (response?.data) {
@@ -50,7 +50,7 @@ describe("ApiClient", () => {
     };
     let err;
     try {
-      await getAllLeaderboard(body);
+      await ApiClient.getAllLeaderboard(body);
     } catch (error) {
       const { response } = error as AxiosError<{ reason: string }>;
       if (response?.data.reason) {
