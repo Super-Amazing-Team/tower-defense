@@ -1,3 +1,5 @@
+import { TRoutes } from "@/types";
+
 export async function registerSW() {
   if (!process.env.SW_ENABLED) return;
 
@@ -15,10 +17,16 @@ export async function registerSW() {
 
       if (!registration.installing) return;
 
+      const here = window.location.origin;
+      const pages = Object.values(TRoutes).map(
+        (route) => `${window.location.href}${route}`,
+      );
+
       const data = {
         type: "CACHE_URLS",
         payload: [
-          window.location.href,
+          here,
+          ...pages,
           ...performance.getEntriesByType("resource").map((r) => r.name),
         ],
       };

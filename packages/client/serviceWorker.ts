@@ -1,5 +1,3 @@
-import type { TRoutes } from "./src/types";
-
 export declare const self: ServiceWorkerGlobalScope;
 
 // <=== NOTE: Settings ===>
@@ -8,25 +6,11 @@ const version = "v0.0.1";
 const project = "super-amazing-team-tower-defense";
 
 const CACHE_NAME = `${version}::${project}`;
-const FILE_LIST = [
-  "/",
-  "/register",
-  "/leaderboard",
-  "/profile",
-  "/game",
-  "/forum",
-  "/page500",
-] satisfies (typeof TRoutes)[keyof typeof TRoutes][];
 const API_PATH = "/api/v2";
 
 // <=== NOTE: END ===>
 
 // <=== NOTE: Handlers ===>
-
-async function onInstall() {
-  const cache = await caches.open(CACHE_NAME);
-  await cache.addAll(FILE_LIST);
-}
 
 async function onMessage(event: ExtendableMessageEvent) {
   const cache = await caches.open(CACHE_NAME);
@@ -62,8 +46,6 @@ async function onFetch(request: Request) {
 
 self.addEventListener("install", async (event) => {
   self.skipWaiting();
-
-  event.waitUntil(onInstall());
 });
 
 self.addEventListener("message", (event) => {
