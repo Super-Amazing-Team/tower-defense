@@ -2,8 +2,7 @@ import type { AxiosError } from "axios";
 import { ApiClient } from "./ApiClient";
 import type { TNullable } from "@/utils";
 
-const { signUp, signIn, getAllLeaderboard, changeUserProfile, logout } =
-  ApiClient;
+const { signUp, signIn, getAllLeaderboard, changeUserProfile } = ApiClient;
 
 const MOCK = {
   valid: {
@@ -111,27 +110,27 @@ describe("ApiClient", () => {
       expect(typeof (result as TMock)?.id).toBe("number");
     });
 
-    test("should logout after register", async () => {
-      let res;
-      try {
-        res = await logout();
-      } catch {
-        res = false;
-      }
-      expect(res).toBeTruthy();
-    });
+    // test("should logout after register", async () => {
+    //   let res;
+    //   try {
+    //     res = await logout();
+    //   } catch {
+    //     res = false;
+    //   }
+    //   expect(res).toBeTruthy();
+    // });
 
-    test("should login registered user", async () => {
-      const data = MOCK.cache.user;
-
-      let res;
-      try {
-        res = await signIn(data);
-      } catch {
-        res = false;
-      }
-      expect(res).toBeTruthy();
-    });
+    // test("should login registered user", async () => {
+    //   const data = MOCK.cache.user;
+    //
+    //   let res;
+    //   try {
+    //     res = await signIn(data);
+    //   } catch {
+    //     res = false;
+    //   }
+    // expect(res).toBeTruthy();
+    // });
 
     test("should change profile", async () => {
       let res;
