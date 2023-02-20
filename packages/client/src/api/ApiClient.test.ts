@@ -2,7 +2,8 @@ import type { AxiosError } from "axios";
 import { ApiClient } from "./ApiClient";
 import type { TNullable } from "@/utils";
 
-const { signUp, signIn, getAllLeaderboard } = ApiClient;
+const { signUp, signIn, getAllLeaderboard, changeUserProfile, logout } =
+  ApiClient;
 
 const MOCK = {
   valid: {
@@ -86,14 +87,14 @@ describe("ApiClient", () => {
 
   describe("Work with registered user", () => {
     test("should register random user", async () => {
-      type TMock = TNullable<Awaited<ReturnType<typeof ApiClient.signUp>>>;
+      type TMock = TNullable<Awaited<ReturnType<typeof signUp>>>;
       const mockUser = MOCK.valid.register;
       let attempts = 3;
       let result: TMock = null;
       async function attempt() {
         try {
           if (!attempts) return;
-          result = await ApiClient.signUp(mockUser);
+          result = await signUp(mockUser);
         } catch {
           attempts--;
           attempt();
@@ -113,7 +114,7 @@ describe("ApiClient", () => {
     test("should logout after register", async () => {
       let res;
       try {
-        res = await ApiClient.logout();
+        res = await logout();
       } catch {
         res = false;
       }
@@ -125,7 +126,7 @@ describe("ApiClient", () => {
 
       let res;
       try {
-        res = await ApiClient.signIn(data);
+        res = await signIn(data);
       } catch {
         res = false;
       }
@@ -135,7 +136,7 @@ describe("ApiClient", () => {
     test("should change profile", async () => {
       let res;
       try {
-        res = await ApiClient.changeUserProfile(MOCK.valid.updateProfile);
+        res = await changeUserProfile(MOCK.valid.updateProfile);
       } catch (err) {
         res = false;
       }
