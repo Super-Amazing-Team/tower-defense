@@ -2,13 +2,18 @@ import { z } from "zod";
 import APIService from "../baseService";
 import { IApiClient } from "./types";
 import { registerSchema, userSchema } from "./schema";
+import { checkOnLine } from "@/utils";
 
 export const ApiClient: IApiClient = {
   async signIn(body) {
     return APIService.post("/auth/signin", body);
   },
   async logout() {
-    return APIService.post("/auth/logout");
+    const isOnLine = await checkOnLine();
+    if (isOnLine) {
+      return APIService.post("/auth/logout");
+    }
+    return Promise.reject();
   },
   async signUp(body) {
     const { data } = await APIService.post<z.infer<typeof registerSchema>>(
