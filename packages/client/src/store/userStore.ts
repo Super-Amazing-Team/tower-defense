@@ -45,8 +45,6 @@ interface IUserStore {
   updateAvatar: (body: FormData) => void;
 }
 
-const { changeUserProfile, getUserInfo, logout, signIn, signUp } = ApiClient;
-
 const initialUser = {
   login: "",
   avatar: null,
