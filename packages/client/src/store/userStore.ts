@@ -149,7 +149,7 @@ export const useUserStore = create<IUserStore>()(
       },
       updateAvatar: async (body) => {
         try {
-          const { data } = await ApiClient.updateAvatar(body);
+          const data = await ApiClient.updateAvatar(body);
           set(() => ({
             user: {
               ...data,

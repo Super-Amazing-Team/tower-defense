@@ -41,5 +41,5 @@ export interface IApiClient {
   getUserInfo(): Promise<z.infer<typeof userSchema>>;
   changeUserProfile(body: ITuneUser): Promise<z.infer<typeof userSchema>>;
   changeUserPassword(body: IChangePass): Promise<void>;
-  updateAvatar(body: FormData): Promise<{ data: z.infer<typeof userSchema> }>;
+  updateAvatar(body: FormData): Promise<z.infer<typeof userSchema>>;
 }
