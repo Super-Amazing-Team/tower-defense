@@ -4,7 +4,7 @@ import { Avatar, Button, ButtonGroup, Container, Dialog } from "@mui/material";
 import { useProfileStore, useUserStore } from "@/store";
 import FormProfile from "@/pages/Profile/FormProfile";
 import EditPasswordForm from "@/pages/Profile/EditPasswordForm";
-import { baseUrlRes } from "@/constants";
+import { baseUrl } from "@/constants";
 
 export function Profile() {
   const [isOpenEditPasswordModal, setOpenEditPasswordModal] = useState(false);
@@ -57,7 +57,7 @@ export function Profile() {
     >
       <Avatar
         alt={user.login}
-        src={`${baseUrlRes}${user.avatar}` || ""}
+        src={`${baseUrl}/resources${user.avatar}` || ""}
         sx={{ width: 64, height: 64, m: "0 auto" }}
       />
       <Button

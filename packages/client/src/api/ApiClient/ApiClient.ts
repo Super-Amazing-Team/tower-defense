@@ -45,6 +45,8 @@ export const ApiClient: IApiClient = {
     return APIService.put("/user/password", body);
   },
   async updateAvatar(body) {
-    return APIService.put("/user/profile/avatar", body);
+    const { data } = await APIService.put("/user/profile/avatar", body);
+    await userSchema.parseAsync(data);
+    return data;
   },
 };

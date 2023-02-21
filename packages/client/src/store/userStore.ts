@@ -134,8 +134,9 @@ export const useUserStore = create<IUserStore>()(
       updateUser: async (body: IUserData) => {
         try {
           const data = await changeUserProfile(body);
-          set(() => ({
+          set(({ user }) => ({
             user: {
+              ...user,
               ...data,
               isAuth: true,
             },
