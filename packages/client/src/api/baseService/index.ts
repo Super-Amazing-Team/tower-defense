@@ -1,9 +1,10 @@
 import axios from "axios";
 import { baseUrl } from "@/constants";
 
-const instance = axios.create({ baseURL: baseUrl });
-
-instance.defaults.withCredentials = true;
-instance.defaults.headers.common["Access-Control-Allow-Origin"] = "*";
-
-export default instance;
+export default axios.create({
+  baseURL: baseUrl,
+  headers: {
+    "Access-Control-Allow-Origin": "*",
+  },
+  withCredentials: true,
+});
