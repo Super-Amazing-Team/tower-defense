@@ -2,6 +2,7 @@ import { useState } from "react";
 import type { ChangeEvent } from "react";
 import { Avatar, Button, ButtonGroup, Container, Dialog } from "@mui/material";
 import { useProfileStore, useUserStore } from "@/store";
+import { joinUrl } from "@/utils";
 import FormProfile from "@/pages/Profile/FormProfile";
 import EditPasswordForm from "@/pages/Profile/EditPasswordForm";
 import { baseUrl } from "@/constants";
@@ -57,9 +58,7 @@ export function Profile() {
     >
       <Avatar
         alt={user.login}
-        src={
-          new URL(`/api/v2/resources${user.avatar}`, baseUrl).toString() || ""
-        }
+        src={joinUrl(baseUrl, `/api/v2/resources${user.avatar}`) || ""}
         sx={{ width: 64, height: 64, m: "0 auto" }}
       />
       <Button
