@@ -57,7 +57,9 @@ export function Profile() {
     >
       <Avatar
         alt={user.login}
-        src={`${baseUrl}/resources${user.avatar}` || ""}
+        src={
+          new URL(`/api/v2/resources${user.avatar}`, baseUrl).toString() || ""
+        }
         sx={{ width: 64, height: 64, m: "0 auto" }}
       />
       <Button
