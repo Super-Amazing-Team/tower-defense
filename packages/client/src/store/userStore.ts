@@ -65,8 +65,8 @@ export const useUserStore = create<IUserStore>()(
       user: initialUser,
       login: async (body) => {
         try {
-          await signIn(body);
-          const data = await getUserInfo();
+          await ApiClient.signIn(body);
+          const data = await ApiClient.getUserInfo();
           set(() => ({
             user: {
               ...data,
@@ -81,7 +81,7 @@ export const useUserStore = create<IUserStore>()(
         const isOnLine = await checkOnLine();
         if (!isOnLine) return;
         try {
-          await logout();
+          await ApiClient.logout();
           set(() => ({
             user: initialUser,
           }));
@@ -98,7 +98,7 @@ export const useUserStore = create<IUserStore>()(
         phone,
       }) => {
         try {
-          await signUp({
+          await ApiClient.signUp({
             login,
             password,
             first_name,
@@ -106,7 +106,7 @@ export const useUserStore = create<IUserStore>()(
             email,
             phone,
           });
-          const data = await getUserInfo();
+          const data = await ApiClient.getUserInfo();
           set(() => ({
             user: {
               ...data,
@@ -119,7 +119,7 @@ export const useUserStore = create<IUserStore>()(
       },
       fetchUser: async () => {
         try {
-          const data = await getUserInfo();
+          const data = await ApiClient.getUserInfo();
           set(() => ({
             user: {
               ...data,
@@ -133,7 +133,7 @@ export const useUserStore = create<IUserStore>()(
       },
       updateUser: async (body: IUserData) => {
         try {
-          const data = await changeUserProfile(body);
+          const data = await ApiClient.changeUserProfile(body);
           set(({ user }) => ({
             user: {
               ...user,
