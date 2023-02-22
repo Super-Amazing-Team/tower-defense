@@ -2,15 +2,18 @@ import { useState } from "react";
 import type { ChangeEvent } from "react";
 import { Avatar, Button, ButtonGroup, Container, Dialog } from "@mui/material";
 import { useProfileStore, useUserStore } from "@/store";
+import { joinUrl } from "@/utils";
 import FormProfile from "@/pages/Profile/FormProfile";
 import EditPasswordForm from "@/pages/Profile/EditPasswordForm";
+import { baseUrl } from "@/constants";
 
 export function Profile() {
+  const [isOpenEditPasswordModal, setOpenEditPasswordModal] = useState(false);
   const logout = useUserStore((store) => store.logout);
+  const updateAvatar = useUserStore((store) => store.updateAvatar);
   const user = useUserStore((store) => store.user);
   const isEditModeState = useProfileStore((store) => store.isEditMode);
   const setIsEditMode = useProfileStore((store) => store.updateEditMode);
-  const [isOpenEditPasswordModal, setOpenEditPasswordModal] = useState(false);
 
   const handleOpenModalEditPassword = () => {
     setOpenEditPasswordModal(true);
@@ -23,8 +26,12 @@ export function Profile() {
   };
 
   function onChangeInputFile(event: ChangeEvent<HTMLInputElement>) {
-    // eslint-disable-next-line no-console
-    console.log(`Saving ${event.target.value}`);
+    const { files } = event.target;
+    if (files && files.length > 0) {
+      const formData = new FormData();
+      formData.append("avatar", files[0]);
+      updateAvatar(formData);
+    }
   }
 
   const buttons = [
@@ -51,7 +58,7 @@ export function Profile() {
     >
       <Avatar
         alt={user.login}
-        src={user.avatar || ""}
+        src={joinUrl(baseUrl, `/api/v2/resources${user.avatar}`) || ""}
         sx={{ width: 64, height: 64, m: "0 auto" }}
       />
       <Button
@@ -68,6 +75,7 @@ export function Profile() {
         ЗАГРУЗИТЬ ФОТО
         <input
           onChange={onChangeInputFile}
+          name="avatar"
           hidden
           accept="image/*"
           multiple
