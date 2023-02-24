@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import styles from "./GameUI.module.css";
+import styles from "@/pages/Game/components/GameUI/GameUI.module.css";
 import TDEngine, { IWaveGenerator } from "@/pages/Game/engine/TDEngine";
 interface IGameUI {
   engine: TDEngine;
