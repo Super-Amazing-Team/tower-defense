@@ -1,8 +1,4 @@
-import TDEngine, {
-  ITwoDCoordinates,
-  TTowerSpriteElements,
-  TTowerSpriteTypes,
-} from "../engine/TDEngine";
+import { ITwoDCoordinates } from "../engine/TDEngine";
 import Enemy from "../enemies/Enemy";
 import Tower, { ITower } from "../towers/Tower";
 

@@ -113,7 +113,7 @@ const GameUi: React.FC<IGameUI> = ({
             engine.buildTower("one", 0);
           }}
         >
-          Build 1 level tower($
+          Tower 1 level 1($
           {engine.predefinedTowerParams.one!.towerParams.price})
         </button>
         <button
@@ -141,6 +141,170 @@ const GameUi: React.FC<IGameUI> = ({
         >
           Build 3 level tower($
           {engine.predefinedTowerParams.one!.towerParams.price})
+        </button>
+      </div>
+      <div>
+        <button
+          disabled={
+            !engine.isEnoughMoney(
+              engine.predefinedTowerParams.one!.towerParams.price,
+            )
+          }
+          onClick={() => {
+            engine.buildTower("one", 0);
+          }}
+        >
+          Tower 1 level 1($
+          {engine.predefinedTowerParams.one!.towerParams.price})
+        </button>
+        <button
+          disabled={
+            !engine.isEnoughMoney(
+              engine.predefinedTowerParams.one!.towerParams.price,
+            )
+          }
+          onClick={() => {
+            engine.buildTower("one", 1);
+          }}
+        >
+          Tower 1 level 2($
+          {engine.predefinedTowerParams.one!.towerParams.price})
+        </button>
+        <button
+          disabled={
+            !engine.isEnoughMoney(
+              engine.predefinedTowerParams.one!.towerParams.price,
+            )
+          }
+          onClick={() => {
+            engine.buildTower("one", 2);
+          }}
+        >
+          Tower 1 level 3($
+          {engine.predefinedTowerParams.one!.towerParams.price})
+        </button>
+      </div>
+      <div>
+        <button
+          disabled={
+            !engine.isEnoughMoney(
+              engine.predefinedTowerParams.two!.towerParams.price,
+            )
+          }
+          onClick={() => {
+            engine.buildTower("two", 0);
+          }}
+        >
+          Tower 2 level 1($
+          {engine.predefinedTowerParams.two!.towerParams.price})
+        </button>
+        <button
+          disabled={
+            !engine.isEnoughMoney(
+              engine.predefinedTowerParams.two!.towerParams.price,
+            )
+          }
+          onClick={() => {
+            engine.buildTower("two", 1);
+          }}
+        >
+          Tower 2 level 2($
+          {engine.predefinedTowerParams.two!.towerParams.price})
+        </button>
+        <button
+          disabled={
+            !engine.isEnoughMoney(
+              engine.predefinedTowerParams.two!.towerParams.price,
+            )
+          }
+          onClick={() => {
+            engine.buildTower("two", 2);
+          }}
+        >
+          Tower 2 level 3($
+          {engine.predefinedTowerParams.two!.towerParams.price})
+        </button>
+      </div>
+      <div>
+        <button
+          disabled={
+            !engine.isEnoughMoney(
+              engine.predefinedTowerParams.three!.towerParams.price,
+            )
+          }
+          onClick={() => {
+            engine.buildTower("three", 0);
+          }}
+        >
+          Tower 3 level 1($
+          {engine.predefinedTowerParams.three!.towerParams.price})
+        </button>
+        <button
+          disabled={
+            !engine.isEnoughMoney(
+              engine.predefinedTowerParams.three!.towerParams.price,
+            )
+          }
+          onClick={() => {
+            engine.buildTower("three", 1);
+          }}
+        >
+          Tower 3 level 2($
+          {engine.predefinedTowerParams.three!.towerParams.price})
+        </button>
+        <button
+          disabled={
+            !engine.isEnoughMoney(
+              engine.predefinedTowerParams.three!.towerParams.price,
+            )
+          }
+          onClick={() => {
+            engine.buildTower("three", 2);
+          }}
+        >
+          Tower 3 level 3($
+          {engine.predefinedTowerParams.three!.towerParams.price})
+        </button>
+      </div>
+      <div>
+        <button
+          disabled={
+            !engine.isEnoughMoney(
+              engine.predefinedTowerParams.four!.towerParams.price,
+            )
+          }
+          onClick={() => {
+            engine.buildTower("four", 0);
+          }}
+        >
+          Tower 4 level 1($
+          {engine.predefinedTowerParams.four!.towerParams.price})
+        </button>
+        <button
+          disabled={
+            !engine.isEnoughMoney(
+              engine.predefinedTowerParams.four!.towerParams.price,
+            )
+          }
+          onClick={() => {
+            engine.buildTower("four", 1);
+          }}
+        >
+          Tower 4 level 2($
+          {engine.predefinedTowerParams.four!.towerParams.price})
+        </button>
+        <button
+          disabled={
+            !engine.isEnoughMoney(
+              engine.predefinedTowerParams.four!.towerParams.price,
+            )
+          }
+          onClick={() => {
+            engine.buildTower("four", 2);
+          }}
+        >
+          Tower 4 level 3($
+          {engine.predefinedTowerParams.four!.towerParams.price})
         </button>
       </div>
     </div>
