@@ -15,18 +15,19 @@ import {
   Forum,
   Topic,
   Game,
-  TDEngine,
   Leaderboard,
   Profile,
   Page404,
   Page500,
 } from "@/pages";
+import TDEngine from "@/pages/Game/engine/TDEngine";
 import { Layout } from "@/layout";
 import { useLayoutStore, useUserStore } from "@/store";
 
 function App() {
   const mode = useLayoutStore((store) => store.colorMode);
   const fetchUser = useUserStore((store) => store.fetchUser);
+  const engine = new TDEngine();
 
   useEffect(() => {
     fetchUser();
@@ -62,10 +63,7 @@ function App() {
                   <Route path={R.leaderboard} element={<Leaderboard />} />
                   <Route element={<ProtectedRoutes />}>
                     <Route path={R.profile} element={<Profile />} />
-                    <Route
-                      path={R.game}
-                      element={<Game engine={new TDEngine()} />}
-                    />
+                    <Route path={R.game} element={<Game engine={engine} />} />
                     <Route path={R.forum} element={<Forum />} />
                     <Route path={R.topic} element={<Topic />} />
                   </Route>
