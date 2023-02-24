@@ -2,7 +2,7 @@ import { TPartialRecord } from "@/pages/Game/engine/TDEngine";
 
 export type TSoundType = "gameStart" | "enemyHit" | "gameEnded" | "waveEnded";
 export interface ISound {
-  context: AudioContext;
+  context: HTMLAudioElement;
   buffer: AudioBuffer | null;
   soundArr: TPartialRecord<TSoundType, HTMLAudioElement>;
   soundSourceArr: TPartialRecord<TSoundType, string>;
@@ -10,7 +10,7 @@ export interface ISound {
 }
 class Sound {
   constructor(
-    public context: ISound["context"] = new AudioContext(),
+    public context: ISound["context"] = document.createElement("audio"),
     public soundSourceArr: ISound["soundSourceArr"] = {
       gameStart: "/sound/gameStart.mp3",
     },
