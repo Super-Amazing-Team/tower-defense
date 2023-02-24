@@ -1,5 +1,4 @@
 import React, { useEffect, useState } from "react";
-import styles from "@/pages/Game/components/GameUI/GameUI.module.css";
 import TDEngine, { IWaveGenerator } from "@/pages/Game/engine/TDEngine";
 interface IGameUI {
   engine: TDEngine;
@@ -54,7 +53,7 @@ const GameUi: React.FC<IGameUI> = ({
   }, []);
 
   return (
-    <div className={styles["b-game-status"]}>
+    <div className="b-game-status">
       {isGameOver && <h1>GAME IS OVER!</h1>}
       <div>
         <p>
