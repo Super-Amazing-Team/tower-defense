@@ -18,7 +18,7 @@ interface IUserData {
 export interface IUser {
   login: string;
   avatar: TNullable<string>;
-  display_name?: string;
+  display_name?: TNullable<string>;
   email: string;
   first_name: string;
   id: number;
@@ -126,7 +126,6 @@ export const useUserStore = create<IUserStore>()(
           }));
         } catch (error: unknown) {
           get().logout();
-          addToast((error as IEError).response.data.reason);
         }
       },
       updateUser: async (body: IUserData) => {
