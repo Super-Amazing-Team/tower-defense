@@ -11,6 +11,7 @@ interface IGameUI {
   score?: number;
   money?: number;
   wave?: IWaveGenerator["waveParams"]["currentWave"];
+  waveCountdown?: IWaveGenerator["waveCountdown"];
   isEnoughMoney?: boolean;
 }
 const GameUi: React.FC<IGameUI> = ({
@@ -29,7 +30,7 @@ const GameUi: React.FC<IGameUI> = ({
   const [wave, setWave] = useState<IGameUI["wave"]>(
     engine.waveGenerator?.waveParams.currentWave,
   );
-  const [countdown, setCountdown] = useState(
+  const [countdown, setCountdown] = useState<IGameUI["waveCountdown"]>(
     engine.waveGenerator?.waveCountdown,
   );
   const [enemiesLeft, setEnemiesLeft] = useState<IGameUI["wave"]>(
