@@ -24,10 +24,12 @@ import TDEngine from "@/pages/Game/engine/TDEngine";
 import { Layout } from "@/layout";
 import { useLayoutStore, useUserStore } from "@/store";
 
-function App() {
+// create engine instance
+const engine = new TDEngine();
+
+const App = () => {
   const mode = useLayoutStore((store) => store.colorMode);
   const fetchUser = useUserStore((store) => store.fetchUser);
-  const engine = new TDEngine();
 
   useEffect(() => {
     fetchUser();
@@ -62,8 +64,8 @@ function App() {
                   </Route>
                   <Route path={R.leaderboard} element={<Leaderboard />} />
                   <Route element={<ProtectedRoutes />}>
-                    <Route path={R.profile} element={<Profile />} />
                     <Route path={R.game} element={<Game engine={engine} />} />
+                    <Route path={R.profile} element={<Profile />} />
                     <Route path={R.forum} element={<Forum />} />
                     <Route path={R.topic} element={<Topic />} />
                   </Route>
@@ -79,6 +81,6 @@ function App() {
       </CSSBaseLine>
     </ThemeProvider>
   );
-}
+};
 
 export default App;

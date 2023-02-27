@@ -28,8 +28,8 @@ class Projectile {
       this.tower.projectileParams?.dimensions[this.tower.upgradeLevel]
         .projectileHeight / 2;
     this.currentPosition = {
-      x: Math.floor(this.tower.towerParams.fireFromCoords.x),
-      y: Math.floor(this.tower.towerParams.fireFromCoords.y),
+      x: Math.floor(this.tower.towerParams.fireFromCoords!.x),
+      y: Math.floor(this.tower.towerParams.fireFromCoords!.y),
     };
   }
 
@@ -85,7 +85,7 @@ class Projectile {
       context.clearRect(0, 0, canvasHypot, canvasHypot);
       context.beginPath();
       context.translate(canvasHypot / 2, canvasHypot / 2);
-      context.rotate(this.tower.towerParams.firingAngle - 1);
+      context.rotate(this.tower.towerParams.firingAngle! - 1);
       context.drawImage(canvas, -canvasHypot / 2, -canvasHypot / 2);
       context.closePath();
       context.restore();

@@ -27,30 +27,45 @@ export interface ITower {
     attackRange: number;
     baseWidth: number;
     baseHeight: number;
+    constructionWidth: number;
+    constructionHeight: number;
+    constructionFrameLimit: number;
     dimensions: Record<TTowerParamsDimensions, number>[];
     cannonFrameLimit: number;
-    isSelected: boolean;
-    rectCenterX: number;
-    rectCenterY: number;
+    isSelected?: boolean;
+    rectCenterX?: number;
+    rectCenterY?: number;
     strokeStyle: string;
-    firingAngle: number;
+    firingAngle?: number;
     prevFiringAngle?: number;
-    fireFromCoords: ITwoDCoordinates;
+    fireFromCoords?: ITwoDCoordinates;
     price?: number;
+    maxUpgradeLevel?: number;
   };
   projectileParams: {
     acceleration: number;
     projectileSpeed: number;
-    targetX: number;
-    targetY: number;
-    rectCenterX: number;
-    rectCenterY: number;
+    rectCenterX?: number;
+    rectCenterY?: number;
     dimensions: Record<TProjectileParamsDimensions, number>[];
     projectileFrameLimit: number;
     impactFrameLimit: number;
   };
   image: CanvasImageSource;
   attackIntervalTimer: NodeJS.Timer | null;
+  renderParams: {
+    cannonOffset: ITwoDCoordinates;
+    cannonFrameLimit: number;
+    cannonCurrentFrame: number;
+    isCannonAnimate: boolean;
+    isConstructing: boolean;
+    isConstructonEnd: boolean;
+    constructingCurrentFrame: number;
+    constructionProgressTime: number;
+    constructionProgressTimer: NodeJS.Timer | null;
+    constructionTimeout: number;
+    constructionTimer: NodeJS.Timer | null;
+  };
 }
 
 class Tower {
@@ -72,6 +87,9 @@ class Tower {
       attackRange: 120,
       baseWidth: 64,
       baseHeight: 128,
+      constructionWidth: 192,
+      constructionHeight: 256,
+      constructionFrameLimit: 6,
       dimensions: [
         {
           cannonWidth: 64,
@@ -96,17 +114,15 @@ class Tower {
       isSelected: false,
       rectCenterX: 0,
       rectCenterY: 0,
-      strokeStyle: "rgba(0, 255, 0, 0.2)",
-      firingAngle: 0,
+      strokeStyle: "green",
       prevFiringAngle: 0,
       fireFromCoords: { x: 0, y: 0 },
+      maxUpgradeLevel: 3,
       price: 15,
     },
     public projectileParams: ITower["projectileParams"] = {
       acceleration: 1.2,
       projectileSpeed: 0.1,
-      targetX: 0,
-      targetY: 0,
       rectCenterX: 0,
       rectCenterY: 0,
       dimensions: [
@@ -132,18 +148,25 @@ class Tower {
       projectileFrameLimit: 3,
       impactFrameLimit: 6,
     },
-    public renderParams = {
-      cannonWeaponArr: "levelOneWeapon",
-      cannonProjectileArr: "levelOneProjectile",
+    public renderParams: ITower["renderParams"] = {
       cannonOffset: { x: 0, y: 0 },
       cannonFrameLimit: 6,
       cannonCurrentFrame: 0,
       isCannonAnimate: false,
+      isConstructing: false,
+      isConstructonEnd: false,
+      constructingCurrentFrame: 0,
+      constructionProgressTime: 0,
+      constructionProgressTimer: null,
+      constructionTimeout: 5000,
+      constructionTimer: null,
     },
     public attackIntervalTimer: ITower["attackIntervalTimer"] = null,
   ) {
+    // set center params
     this.towerParams.rectCenterX = this.towerParams.baseWidth / 2;
     this.towerParams.rectCenterY = this.towerParams.baseWidth / 2;
+    // set cannon offsets
     this.renderParams.cannonOffset.x =
       this.engine.predefinedTowerParams[this.type]?.towerParams?.dimensions[
         this.upgradeLevel
@@ -152,6 +175,40 @@ class Tower {
       this.engine.predefinedTowerParams[this.type]?.towerParams?.dimensions[
         this.upgradeLevel
       ].cannonOffsetY!;
+    // set upgrade timeout
+    this.renderParams.constructionTimeout = this.upgradeLevel
+      ? this.renderParams.constructionTimeout * this.upgradeLevel
+      : this.renderParams.constructionTimeout;
+    // set firing coords
+    if (!this.towerParams.fireFromCoords) {
+      this.towerParams.fireFromCoords = { x: 0, y: 0 };
+    }
+  }
+
+  public getNextConstructionFrame(
+    limit = this.towerParams.constructionFrameLimit - 1,
+  ) {
+    if (this.renderParams.isConstructing) {
+      if (this.renderParams.isConstructonEnd) {
+        if (this.renderParams.constructingCurrentFrame < limit) {
+          this.renderParams.constructingCurrentFrame += 1;
+        } else {
+          this.renderParams.isConstructing = false;
+          this.renderParams.isConstructonEnd = false;
+          this.engine.clearContext(this.engine.context?.tower!);
+          this.engine.towers?.forEach((tower) => {
+            tower.draw();
+          });
+        }
+      } else {
+        if (this.renderParams.constructingCurrentFrame < limit) {
+          this.renderParams.constructingCurrentFrame += 1;
+        } else {
+          this.renderParams.constructingCurrentFrame = 0;
+        }
+      }
+    }
+    return this.renderParams.constructingCurrentFrame;
   }
 
   public getNextCannonFrame() {
@@ -171,6 +228,89 @@ class Tower {
     return this.renderParams.cannonCurrentFrame;
   }
 
+  public drawConstructionProgress(
+    context: CanvasRenderingContext2D = this.engine.context!.constructing!,
+  ) {
+    context.fillStyle = "white";
+    context.font = "14px sans-serif";
+    context.textAlign = "center";
+    context.fillText(
+      `${Math.floor(
+        (this.renderParams.constructionProgressTime /
+          this.renderParams?.constructionTimeout) *
+          100,
+      )}%`,
+      this.currentPosition.x - this.towerParams.baseWidth / 2,
+      this.currentPosition.y - 10,
+      this.towerParams.baseWidth,
+    );
+  }
+
+  public drawConstructing(
+    context: CanvasRenderingContext2D = this.engine.context!.constructing!,
+  ) {
+    if (this.renderParams.isConstructing) {
+      if (
+        !this.renderParams!.constructionTimer &&
+        !this.renderParams.isConstructonEnd
+      ) {
+        // increment construction progress time
+        if (!this.renderParams.constructionProgressTimer) {
+          this.renderParams!.constructionProgressTimer = setInterval(() => {
+            this.renderParams.constructionProgressTime += 250;
+          }, 250);
+        }
+        this.renderParams!.constructionTimer = setTimeout(() => {
+          // clear timeout timer
+          clearTimeout(this.renderParams!.constructionTimer!);
+          this.renderParams!.constructionTimer = null;
+          // clear construction progress timer && time
+          clearInterval(this.renderParams.constructionProgressTimer!);
+          this.renderParams.constructionProgressTimer = null;
+          this.renderParams.constructionProgressTime = 0;
+          // set construction animation to beginning
+          this.renderParams.constructingCurrentFrame = 0;
+          this.renderParams.isConstructonEnd = true;
+        }, this.renderParams?.constructionTimeout);
+      }
+      // tower base
+      context.beginPath();
+      if (this.renderParams.isConstructonEnd) {
+        context.drawImage(
+          (
+            this.engine.towerSprites[this.type]!.canvasArr?.constructionEnd[
+              this.upgradeLevel
+            ]! as HTMLCanvasElement[]
+          )[this.getNextConstructionFrame()],
+          this.currentPosition.x -
+            (this.towerParams.constructionWidth - this.towerParams.baseWidth),
+          this.currentPosition.y -
+            (this.towerParams.constructionHeight -
+              this.towerParams.baseHeight / 2),
+          this.towerParams.constructionWidth,
+          this.towerParams.constructionHeight,
+        );
+      } else {
+        context.drawImage(
+          (
+            this.engine.towerSprites[this.type]!.canvasArr?.construction[
+              this.upgradeLevel
+            ]! as HTMLCanvasElement[]
+          )[this.getNextConstructionFrame()],
+          this.currentPosition.x -
+            (this.towerParams.constructionWidth - this.towerParams.baseWidth),
+          this.currentPosition.y -
+            (this.towerParams.constructionHeight -
+              this.towerParams.baseHeight / 2),
+          this.towerParams.constructionWidth,
+          this.towerParams.constructionHeight,
+        );
+        this.drawConstructionProgress();
+      }
+      context.closePath();
+    }
+  }
+
   public drawBase(
     context: CanvasRenderingContext2D = this.engine.context!.tower!,
   ) {
@@ -187,15 +327,23 @@ class Tower {
     );
     // is tower selected?
     if (this.towerParams.isSelected) {
-      context.strokeStyle = "red";
-      context.lineWidth = 1;
-      context.strokeRect(
-        this.currentPosition.x - this.engine.map?.mapParams?.gridStep!,
-        this.currentPosition.y - this.engine.map?.mapParams?.gridStep!,
-        this.engine.map?.mapParams?.gridStep!,
-        this.engine.map?.mapParams?.gridStep!,
-      );
+      this.drawSelection();
     }
+    context.closePath();
+  }
+
+  public drawSelection(
+    context: CanvasRenderingContext2D = this.engine.context!.selection!,
+  ) {
+    context.beginPath();
+    context.strokeStyle = "red";
+    context.lineWidth = 2;
+    context.strokeRect(
+      this.currentPosition.x - this.engine.map?.mapParams?.gridStep! - 1,
+      this.currentPosition.y - this.engine.map?.mapParams?.gridStep! - 1,
+      this.engine.map?.mapParams?.gridStep! + 2,
+      this.engine.map?.mapParams?.gridStep! + 2,
+    );
     context.closePath();
   }
 
@@ -212,7 +360,7 @@ class Tower {
         this.towerParams.baseWidth / 2 +
         this.towerParams.dimensions[this.upgradeLevel].cannonOffsetY,
     );
-    context.rotate(this.towerParams.firingAngle - 1.2);
+    context.rotate(this.towerParams.firingAngle! - 1.2);
     context.translate(
       -(this.towerParams.dimensions[this.upgradeLevel].cannonWidth / 2),
       -(this.towerParams.dimensions[this.upgradeLevel].cannonHeight / 2),
@@ -237,13 +385,13 @@ class Tower {
         this.towerParams.baseWidth +
         this.towerParams.baseWidth / 2 +
         (this.towerParams.dimensions[this.upgradeLevel].cannonWidth / 4) *
-          Math.cos(this.towerParams.firingAngle - Math.PI),
+          Math.cos(this.towerParams.firingAngle! - Math.PI),
       y:
         this.currentPosition.y -
         this.towerParams.baseHeight +
         this.towerParams.baseWidth / 2 +
         (this.towerParams.dimensions[this.upgradeLevel].cannonHeight / 4) *
-          Math.sin(this.towerParams.firingAngle - Math.PI),
+          Math.sin(this.towerParams.firingAngle! - Math.PI),
     };
     /*
     // debug
@@ -293,10 +441,15 @@ class Tower {
 
   // tower 2d representation
   public draw() {
-    // tower base
-    this.drawBase(this.engine.context!.tower!);
-    // tower cannon
-    this.drawCannon(this.engine.context!.cannon!);
+    if (this.renderParams.isConstructing) {
+      // tower base
+      this.drawConstructing(this.engine.context!.build!);
+    } else {
+      // tower base
+      this.drawBase(this.engine.context!.tower!);
+      // tower cannon
+      this.drawCannon(this.engine.context!.cannon!);
+    }
   }
 
   public setAttackInterval = () => {
@@ -346,7 +499,7 @@ class Tower {
       (enemy.currentPosition.y + enemy.enemyParams.height! / 2);
     if (Math.hypot(xDistance, yDistance) < this.towerParams.attackRange) {
       this.target = enemy;
-      if (!this.attackIntervalTimer) {
+      if (!this.attackIntervalTimer && !this.renderParams.isConstructing) {
         this.setAttackInterval();
       }
       return true;
