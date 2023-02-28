@@ -2,6 +2,7 @@ import { create } from "zustand";
 import { persist } from "zustand/middleware";
 import { ApiClient } from "@/api/ApiClient";
 import { addToast } from "@/store";
+import { checkOnLine } from "@/utils";
 import type { TNullable } from "@/utils";
 import type { IEError } from "@/types";
 
@@ -17,7 +18,7 @@ interface IUserData {
 export interface IUser {
   login: string;
   avatar: TNullable<string>;
-  display_name?: string;
+  display_name?: TNullable<string>;
   email: string;
   first_name: string;
   id: number;
@@ -41,9 +42,8 @@ interface IUserStore {
   }) => void;
   fetchUser: () => void;
   updateUser: (body: IUserData) => void;
+  updateAvatar: (body: FormData) => void;
 }
-
-const { changeUserProfile, getUserInfo, logout, signIn, signUp } = ApiClient;
 
 const initialUser = {
   login: "",
@@ -63,8 +63,8 @@ export const useUserStore = create<IUserStore>()(
       user: initialUser,
       login: async (body) => {
         try {
-          await signIn(body);
-          const data = await getUserInfo();
+          await ApiClient.signIn(body);
+          const data = await ApiClient.getUserInfo();
           set(() => ({
             user: {
               ...data,
@@ -75,11 +75,17 @@ export const useUserStore = create<IUserStore>()(
           addToast((error as IEError).response.data.reason);
         }
       },
-      logout: async () => {
-        await logout();
-        set(() => ({
-          user: initialUser,
-        }));
+      async logout() {
+        const isOnLine = await checkOnLine();
+        if (!isOnLine) return;
+        try {
+          await ApiClient.logout();
+          set(() => ({
+            user: initialUser,
+          }));
+        } catch (err) {
+          console.error("Failed to logout: ", err);
+        }
       },
       signUp: async ({
         login,
@@ -90,7 +96,7 @@ export const useUserStore = create<IUserStore>()(
         phone,
       }) => {
         try {
-          await signUp({
+          await ApiClient.signUp({
             login,
             password,
             first_name,
@@ -98,7 +104,7 @@ export const useUserStore = create<IUserStore>()(
             email,
             phone,
           });
-          const data = await getUserInfo();
+          const data = await ApiClient.getUserInfo();
           set(() => ({
             user: {
               ...data,
@@ -111,7 +117,7 @@ export const useUserStore = create<IUserStore>()(
       },
       fetchUser: async () => {
         try {
-          const data = await getUserInfo();
+          const data = await ApiClient.getUserInfo();
           set(() => ({
             user: {
               ...data,
@@ -119,14 +125,17 @@ export const useUserStore = create<IUserStore>()(
             },
           }));
         } catch (error: unknown) {
-          addToast((error as IEError).response.data.reason);
+          set(() => ({
+            user: initialUser,
+          }));
         }
       },
       updateUser: async (body: IUserData) => {
         try {
-          const data = await changeUserProfile(body);
-          set(() => ({
+          const data = await ApiClient.changeUserProfile(body);
+          set(({ user }) => ({
             user: {
+              ...user,
               ...data,
               isAuth: true,
             },
@@ -135,6 +144,19 @@ export const useUserStore = create<IUserStore>()(
           set(() => ({
             user: initialUser,
           }));
+        }
+      },
+      updateAvatar: async (body) => {
+        try {
+          const data = await ApiClient.updateAvatar(body);
+          set(() => ({
+            user: {
+              ...data,
+              isAuth: true,
+            },
+          }));
+        } catch (error: unknown) {
+          addToast((error as IEError).response.data.reason);
         }
       },
     }),

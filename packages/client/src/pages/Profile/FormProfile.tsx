@@ -25,7 +25,7 @@ const FormProfile = (props: IFormProfileProps) => {
     handleSubmit,
     formState: { errors },
   } = useForm<TSchema>({
-    defaultValues: user,
+    defaultValues: { ...user, display_name: user.display_name ?? "" },
     resolver: zodResolver(schema),
     mode: "onBlur",
   });
