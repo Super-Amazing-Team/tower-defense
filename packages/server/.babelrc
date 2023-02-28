@@ -1,0 +1,11 @@
+{
+  "plugins": [
+    "react-refresh/babel",
+    "@babel/plugin-transform-typescript"
+  ],
+  "presets": [
+    "@babel/preset-typescript",
+    "@babel/preset-env",
+    ["@babel/preset-react", { "development": true, "runtime": "automatic" }]
+  ]
+}

@@ -19,12 +19,17 @@
     "noUnusedLocals": true,
     "forceConsistentCasingInFileNames": true,
     "importsNotUsedAsValues": "error",
-    "lib": ["es2021", "esnext.asynciterable"],
-    "types": ["node", "jest"],
+    "lib": [
+      "es2021",
+      "esnext.asynciterable",
+      "dom"
+    ],
+    "types": ["node", "jest", "webpack-env"],
     "baseUrl": ".",
     "paths": {
       "*": ["types/*"]
     },
-    "outDir": "dist"
+    "outDir": "dist",
+    "jsx": "react"
   }
 }
