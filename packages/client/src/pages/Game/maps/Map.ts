@@ -17,11 +17,11 @@ export interface IMap {
     tileCenter: number;
     closestTile: ITwoDCoordinates;
   };
-  renderParams: {
-    mapRoadSpriteSource: HTMLImageElement | null;
-    isMapSpritesLoaded: boolean;
-  };
   stageArr: IStage[];
+  mapRoadSpritePath: string;
+  mapRoadSprite: HTMLImageElement | null;
+  mapRoadDirections: Record<string, ITwoDCoordinates>;
+  turnOffset: number;
 }
 
 class Map {
@@ -38,11 +38,11 @@ class Map {
       tileCenter: 0,
       closestTile: { x: 0, y: 0 },
     },
-    public renderParams: IMap["renderParams"] = {
-      mapRoadSpriteSource: null,
-      isMapSpritesLoaded: false,
-    },
     public stageArr: IMap["stageArr"] = [],
+    public mapRoadSpritePath: IMap["mapRoadSpritePath"] = "/sprites/map/mapRoadSprite.png",
+    public mapRoadSprite: IMap["mapRoadSprite"] = null,
+    public mapRoadDirections: IMap["mapRoadDirections"] = {},
+    public turnOffset: IMap["turnOffset"] = 24,
   ) {
     // set tile center
     this.mapParams.tileCenter = this.mapParams.gridStep / 2;
@@ -139,15 +139,48 @@ class Map {
     // pop tiles which is occupied by map path
     this.popMapPathTiles();
 
-    this.renderParams.mapRoadSpriteSource = new Image(256, 448);
-    this.renderParams.mapRoadSpriteSource.src =
-      "/sprites/map/mapRoadSprite.png";
-    this.renderParams.mapRoadSpriteSource.onload = () =>
-      (this.renderParams.isMapSpritesLoaded = true);
+    // load map sprite
+    this.mapRoadSprite = new Image();
+    this.mapRoadSprite.src = this.mapRoadSpritePath;
+    this.mapRoadSprite.onload = () => {
+      this.engine.isMapSpritesLoaded = true;
+      this.mapRoadDirections = {
+        right: { x: 0, y: 0 },
+        rightStart: { x: 0, y: this.tileToNumber(1) },
+        rightEnd: { x: this.tileToNumber(2), y: this.tileToNumber(1) },
+        rightTurnDown: {
+          x: this.tileToNumber(3) - this.turnOffset,
+          y: this.tileToNumber(3),
+        },
+        rightTurnUp: { x: this.tileToNumber(3), y: this.tileToNumber(6) },
+        left: { x: 0, y: 0 },
+        leftStart: { x: this.tileToNumber(2), y: this.tileToNumber(1) },
+        leftTurnUp: { x: this.tileToNumber(2), y: this.tileToNumber(6) },
+        leftTurnDown: { x: 0, y: this.tileToNumber(3) },
+        up: { x: this.tileToNumber(2), y: 0 },
+        upStart: { x: this.tileToNumber(1), y: 0 },
+        down: { x: this.tileToNumber(2), y: 0 },
+        downStart: { x: this.tileToNumber(1), y: this.tileToNumber(2) },
+        downTurnLeft: {
+          x: this.tileToNumber(3),
+          y: this.tileToNumber(6) - this.turnOffset,
+        },
+        downTurnRight: {
+          x: this.tileToNumber(0),
+          y: this.tileToNumber(6) - this.turnOffset,
+        },
+      };
+      // draw map
+      this.drawMap();
+    };
   }
 
   public tileToNumber(tilesCount: number) {
     return tilesCount * this.mapParams.gridStep;
+  }
+
+  public numberToTile(length: number) {
+    return length / this.mapParams.gridStep;
   }
 
   public popMapPathTiles() {
@@ -228,6 +261,29 @@ class Map {
     });
   }
 
+  public drawRoad(
+    coords: ITwoDCoordinates = { x: 0, y: 0 },
+    roadDirection: ITwoDCoordinates = { x: 0, y: 0 },
+    offset: ITwoDCoordinates = { x: 0, y: 0 },
+    width: number = this.mapParams.gridStep,
+    height: number = this.mapParams.gridStep,
+    context: CanvasRenderingContext2D = this.engine.context?.map!,
+  ) {
+    context.beginPath();
+    context.drawImage(
+      this.mapRoadSprite!,
+      roadDirection.x,
+      roadDirection.y,
+      width,
+      height,
+      coords.x - offset.x,
+      coords.y - offset.y,
+      width,
+      height,
+    );
+    context.closePath();
+  }
+
   public debugHighlightMapTiles() {
     this.mapParams.mapTilesArr.forEach((tile) => {
       this.engine.context!.map!.beginPath();
@@ -258,75 +314,264 @@ class Map {
     // draw map 2d representation due to map stages
     this.stageArr.forEach((stage, index) => {
       if (stage.direction !== "start" && stage.direction !== "end") {
-        this.engine.context!.map!.beginPath();
-        this.engine.context!.map!.fillStyle = this.mapParams.backgroundColor;
+        const prevStage = this.stageArr[index - 1];
+        const nextStage = this.stageArr[index + 1];
         // draw map path according to stage array
         switch (stage.direction) {
           // right
           case "right": {
-            this.engine.context!.map!.rect(
-              this.stageArr[index - 1].limit.x,
-              this.stageArr[index - 1].limit.y -
-                (this.stageArr[index - 1].direction === "start"
-                  ? 0
-                  : this.mapParams.gridStep),
-              stage.limit.x -
-                this.stageArr[index - 1].limit.x +
-                (this.stageArr[index - 1].direction === "start"
-                  ? 0
-                  : this.mapParams.gridStep) -
-                this.mapParams.gridStep,
-              this.mapParams.gridStep,
-            );
+            for (
+              let x = prevStage.limit.x;
+              x <= stage.limit.x;
+              x += this.mapParams.gridStep
+            ) {
+              // first tile
+              if (x === prevStage.limit.x) {
+                if (prevStage.direction === "start") {
+                  this.drawRoad(
+                    { x: x, y: stage.limit.y },
+                    this.mapRoadDirections.rightStart,
+                  );
+                } else if (nextStage.direction === "end") {
+                  this.drawRoad(
+                    {
+                      x: x,
+                      y: stage.limit.y - this.mapParams.gridStep,
+                    },
+                    {
+                      x: this.mapRoadDirections.rightEnd.x + this.turnOffset,
+                      y: this.mapRoadDirections.rightEnd.y,
+                    },
+                    { x: -this.turnOffset, y: 0 },
+                    this.mapParams.gridStep,
+                  );
+                } else if (prevStage.direction === "up") {
+                  this.drawRoad(
+                    { x: x, y: stage.limit.y - this.mapParams.gridStep },
+                    this.mapRoadDirections.right,
+                  );
+                } else if (prevStage.direction === "down") {
+                  if ((stage.limit.x - prevStage.limit.x) / 64 < 3) {
+                    this.drawRoad(
+                      { x: x, y: stage.limit.y - this.mapParams.gridStep },
+                      this.mapRoadDirections.right,
+                    );
+                  }
+                }
+                // last tile
+              } else if (x === stage.limit.x) {
+                if (nextStage.direction === "end") {
+                  this.drawRoad(
+                    { x: x, y: stage.limit.y },
+                    this.mapRoadDirections.rightEnd,
+                  );
+                } else if (nextStage.direction === "down") {
+                  this.drawRoad(
+                    {
+                      x: x - this.mapParams.gridStep,
+                      y:
+                        stage.limit.y === this.tileToNumber(1)
+                          ? stage.limit.y
+                          : stage.limit.y - this.mapParams.gridStep,
+                    },
+                    this.mapRoadDirections.rightTurnDown,
+                    { x: this.turnOffset, y: 0 },
+                    this.mapParams.gridStep + this.turnOffset,
+                    this.mapParams.gridStep + this.turnOffset,
+                  );
+                }
+                // regular tile
+              } else {
+                this.drawRoad(
+                  {
+                    x: x,
+                    y:
+                      prevStage.direction === "start"
+                        ? stage.limit.y
+                        : stage.limit.y - this.mapParams.gridStep,
+                  },
+                  this.mapRoadDirections.right,
+                );
+              }
+            }
             break;
           }
           // down
           case "down": {
-            this.engine.context!.map!.rect(
-              this.stageArr[index - 1].limit.x -
-                (this.stageArr[index - 1].direction === "right"
-                  ? this.mapParams.gridStep
-                  : 0),
-              this.stageArr[index - 1].limit.y,
-              this.mapParams.gridStep,
-              stage.limit.y -
-                this.stageArr[index - 1].limit.y -
-                this.mapParams.gridStep +
-                (this.stageArr[index - 1].direction === "right"
-                  ? this.mapParams.gridStep
-                  : 0) +
-                (this.stageArr[index - 1].direction === "left"
-                  ? this.mapParams.gridStep
-                  : 0),
-            );
+            const leftLimit =
+              prevStage.limit.y === this.tileToNumber(1)
+                ? prevStage.limit.y + this.mapParams.gridStep * 2
+                : prevStage.limit.y;
+            for (
+              let y = leftLimit;
+              y <= stage.limit.y;
+              y += this.mapParams.gridStep
+            ) {
+              // first tile
+              if (y === leftLimit) {
+                // last tile
+              } else if (y === stage.limit.y) {
+                if (nextStage.direction === "left") {
+                  this.drawRoad(
+                    {
+                      x: stage.limit.x - this.mapParams.gridStep,
+                      y: y - this.mapParams.gridStep + 12,
+                    },
+                    this.mapRoadDirections.downTurnLeft,
+                    { x: 0, y: this.turnOffset },
+                    this.mapParams.gridStep + this.turnOffset,
+                    this.mapParams.gridStep + this.turnOffset,
+                  );
+                  // regular tile
+                } else if (nextStage.direction === "right") {
+                  this.drawRoad(
+                    {
+                      x:
+                        prevStage.direction === "right"
+                          ? stage.limit.x - this.mapParams.gridStep * 2
+                          : stage.limit.x - this.mapParams.gridStep,
+                      y: y - this.mapParams.gridStep,
+                    },
+                    this.mapRoadDirections.downTurnRight,
+                    { x: -this.mapParams.gridStep, y: this.turnOffset },
+                    this.mapParams.gridStep + this.turnOffset,
+                    this.mapParams.gridStep + this.turnOffset,
+                  );
+                }
+              }
+              // regular tile
+              else {
+                const offset =
+                  prevStage.direction === "right" ? this.mapParams.gridStep : 0;
+                this.drawRoad(
+                  {
+                    x: stage.limit.x - offset,
+                    y: y - this.mapParams.gridStep,
+                  },
+                  this.mapRoadDirections.down,
+                );
+              }
+            }
             break;
           }
           // left
           case "left": {
-            this.engine.context!.map!.rect(
-              stage.limit.x,
-              this.stageArr[index - 1].limit.y - this.mapParams.gridStep,
-              Math.abs(this.stageArr[index - 1].limit.x - stage.limit.x),
-              this.mapParams.gridStep,
-            );
+            for (
+              let x = prevStage.limit.x - this.mapParams.gridStep;
+              x >= stage.limit.x;
+              x -= this.mapParams.gridStep
+            ) {
+              // first tile
+              if (x === prevStage.limit.x - this.mapParams.gridStep) {
+                if (prevStage.direction === "down") {
+                  this.drawRoad(
+                    {
+                      x: x - this.turnOffset,
+                      y:
+                        stage.limit.y -
+                        this.mapParams.gridStep +
+                        this.turnOffset,
+                    },
+                    this.mapRoadDirections.leftTurnUp,
+                    { x: this.turnOffset, y: this.turnOffset },
+                    this.mapParams.gridStep + this.turnOffset,
+                    this.mapParams.gridStep + this.turnOffset,
+                  );
+                }
+                // last tile
+              } else if (x === stage.limit.x) {
+                if (nextStage.direction === "down") {
+                  this.drawRoad(
+                    {
+                      x: x + this.turnOffset,
+                      y: stage.limit.y - this.mapParams.gridStep,
+                    },
+                    this.mapRoadDirections.leftTurnDown,
+                    { x: this.turnOffset, y: 0 },
+                    this.mapParams.gridStep + this.turnOffset,
+                    this.mapParams.gridStep + this.turnOffset,
+                  );
+                }
+                // just draw map path
+              } else if (x > stage.limit.x) {
+                this.drawRoad(
+                  { x: x, y: stage.limit.y - this.mapParams.gridStep },
+                  this.mapRoadDirections.left,
+                );
+              }
+            }
             break;
           }
           // up
           case "up": {
-            this.engine.context!.map!.rect(
-              stage.limit.x - this.mapParams.gridStep,
-              stage.limit.y - this.mapParams.gridStep,
-              this.mapParams.gridStep,
-              this.stageArr[index - 1].limit.y - stage.limit.y,
-            );
+            for (
+              let y = prevStage.limit.y;
+              y >= stage.limit.y;
+              y -= this.mapParams.gridStep
+            ) {
+              // first tile
+              if (y === prevStage.limit.y) {
+                if (prevStage.direction === "right") {
+                  this.drawRoad(
+                    {
+                      x: stage.limit.x - this.mapParams.gridStep,
+                      y: y - this.mapParams.gridStep + this.turnOffset,
+                    },
+                    this.mapRoadDirections.rightTurnUp,
+                    { x: 0, y: this.turnOffset },
+                    this.mapParams.gridStep + this.turnOffset,
+                    this.mapParams.gridStep + this.turnOffset,
+                  );
+                }
+                // last tile
+              } else if (y === stage.limit.y) {
+                if (nextStage.direction === "left") {
+                  this.drawRoad(
+                    {
+                      x: stage.limit.x - this.mapParams.gridStep,
+                      y: y - this.mapParams.gridStep + 12,
+                    },
+                    this.mapRoadDirections.leftTurnDown,
+                    { x: 0, y: this.turnOffset },
+                    this.mapParams.gridStep + this.turnOffset,
+                    this.mapParams.gridStep + this.turnOffset,
+                  );
+                  // regular tile
+                } else if (nextStage.direction === "right") {
+                  this.drawRoad(
+                    {
+                      x:
+                        prevStage.direction === "right"
+                          ? stage.limit.x - this.mapParams.gridStep * 2
+                          : stage.limit.x - this.mapParams.gridStep,
+                      y: y - this.mapParams.gridStep + this.turnOffset,
+                    },
+                    this.mapRoadDirections.leftTurnDown,
+                    { x: -this.mapParams.gridStep, y: this.turnOffset },
+                    this.mapParams.gridStep + this.turnOffset,
+                    this.mapParams.gridStep + this.turnOffset,
+                  );
+                }
+              }
+              // regular tile
+              else {
+                const offset =
+                  prevStage.direction === "right" ? this.mapParams.gridStep : 0;
+                this.drawRoad(
+                  {
+                    x: stage.limit.x - offset,
+                    y: y - this.mapParams.gridStep,
+                  },
+                  this.mapRoadDirections.down,
+                );
+              }
+            }
             break;
           }
           default: {
             throw new Error(`Unknown direction type: ${stage.direction}`);
           }
         }
-        this.engine.context!.map!.fill();
-        this.engine.context!.map!.closePath();
       }
     });
     // draw map tiles to debug

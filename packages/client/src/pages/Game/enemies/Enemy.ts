@@ -265,8 +265,7 @@ class Enemy {
           }
           case "right": {
             if (
-              this.currentPosition.x - this.enemyParams.width! * 2 >=
-              currentStage.limit.x // + this.randomOffset.x
+              this.currentPosition.x < currentStage.limit.x // + this.randomOffset.x
             ) {
               this.moveRight();
             } else {

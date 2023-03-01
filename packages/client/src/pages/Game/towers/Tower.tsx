@@ -360,7 +360,7 @@ class Tower {
         this.towerParams.baseWidth / 2 +
         this.towerParams.dimensions[this.upgradeLevel].cannonOffsetY,
     );
-    context.rotate(this.towerParams.firingAngle! - 1.2);
+    context.rotate(this.towerParams.firingAngle! - 1.25);
     context.translate(
       -(this.towerParams.dimensions[this.upgradeLevel].cannonWidth / 2),
       -(this.towerParams.dimensions[this.upgradeLevel].cannonHeight / 2),

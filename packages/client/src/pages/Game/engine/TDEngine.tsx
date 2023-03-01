@@ -413,21 +413,22 @@ class TDEngine {
     public animationFrameId: ITDEngine["animationFrameId"] = 0,
     public requestIdleCallback: ITDEngine["requestIdleCallback"] = 0,
     public UICallback: () => void = () => {},
+    public UIGameIsOver: () => void = () => {},
     public lives: ITDEngine["lives"] = 0,
     public score: ITDEngine["score"] = 0,
     public money: ITDEngine["money"] = 0,
     public canvasZIndex: Record<TEngineCanvas, number> = {
-      build: 99999999,
-      projectile: 9999994,
-      constructing: 99999993,
-      selection: 99999992,
-      hpBar: 9999991,
-      game: 999999,
-      cannon: 99999,
-      tower: 9999,
-      enemy: 999,
-      deadEnemy: 99,
-      map: 9,
+      build: 80,
+      projectile: 73,
+      hpBar: 72,
+      constructing: 71,
+      selection: 70,
+      game: 60,
+      cannon: 50,
+      tower: 40,
+      enemy: 30,
+      deadEnemy: 20,
+      map: 10,
     } as const,
     public isInitialized: ITDEngine["isInitialized"] = false,
     public isCanBuild: ITDEngine["isCanBuild"] = false,
@@ -575,6 +576,7 @@ class TDEngine {
     },
     public isTowerSpritesLoaded = false,
     public isEnemySpritesLoaded = false,
+    public isMapSpritesLoaded = false,
     public enemySprites: ITDEngine["enemySprites"] = {
       firebug: {
         spriteSourcePath: "firebugSprite.png",
@@ -683,7 +685,7 @@ class TDEngine {
           ],
           cannonFrameLimit: 6,
           isSelected: false,
-          firingAngle: 0,
+          firingAngle: 1.25,
           fireFromCoords: { x: 0, y: 0 },
           strokeStyle: "green",
           maxUpgradeLevel: 3,
@@ -750,7 +752,7 @@ class TDEngine {
           ],
           cannonFrameLimit: 16,
           strokeStyle: "green",
-          firingAngle: 0,
+          firingAngle: 1.25,
           fireFromCoords: { x: 0, y: 0 },
           maxUpgradeLevel: 3,
           price: 45,
@@ -816,7 +818,7 @@ class TDEngine {
           ],
           cannonFrameLimit: 8,
           strokeStyle: "green",
-          firingAngle: 0,
+          firingAngle: 1.25,
           fireFromCoords: { x: 0, y: 0 },
           maxUpgradeLevel: 3,
           price: 45,
@@ -880,7 +882,7 @@ class TDEngine {
           ],
           cannonFrameLimit: 16,
           strokeStyle: "green",
-          firingAngle: 0,
+          firingAngle: 1.25,
           fireFromCoords: { x: 0, y: 0 },
           maxUpgradeLevel: 3,
           price: 45,
@@ -1938,7 +1940,7 @@ class TDEngine {
     );
     this.towers.forEach((tower) => {
       // can't select towers while constructing
-      if (tower.renderParams.isConstructing) return;
+      // if (tower.renderParams.isConstructing) return;
       // remove previous selection
       if (this.selectedTower === tower) {
         this.clearTowerSelection();

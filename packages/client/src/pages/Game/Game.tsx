@@ -15,7 +15,7 @@ export const Game: FC<IGameProps> = ({ engine = new TDEngine() }) => {
     // engine init
     if (!engine.isInitialized) {
       engine.init(gameWindow.current!);
-      engine.map?.drawMap();
+      // engine.map?.drawMap();
     }
 
     /* /DRAW BETWEEN ROUTES */
