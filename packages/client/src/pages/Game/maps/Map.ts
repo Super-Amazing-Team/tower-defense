@@ -18,9 +18,18 @@ export interface IMap {
     closestTile: ITwoDCoordinates;
   };
   stageArr: IStage[];
-  mapRoadSpritePath: string;
-  mapRoadSprite: HTMLImageElement | null;
+  mapSpritePath: string;
+  mapSprite: HTMLImageElement | null;
   mapRoadDirections: Record<string, ITwoDCoordinates>;
+  grassBackrgroundCanvas: HTMLCanvasElement;
+  grassBackrgroundCanvasContext: CanvasRenderingContext2D | null;
+  grassTileCanvas: Record<string, HTMLCanvasElement | null>;
+  grassTileCanvasContext: Record<string, CanvasRenderingContext2D | null>;
+  stoneTileCanvas: Record<string, HTMLCanvasElement | null>;
+  stoneTileCanvasContext: Record<string, CanvasRenderingContext2D | null>;
+  treeTileCanvas: Record<string, HTMLCanvasElement | null>;
+  treeTileCanvasContext: Record<string, CanvasRenderingContext2D | null>;
+  randomTileSpriteFrequency: number;
   turnOffset: number;
 }
 
@@ -39,11 +48,72 @@ class Map {
       closestTile: { x: 0, y: 0 },
     },
     public stageArr: IMap["stageArr"] = [],
-    public mapRoadSpritePath: IMap["mapRoadSpritePath"] = "/sprites/map/mapRoadSprite.png",
-    public mapRoadSprite: IMap["mapRoadSprite"] = null,
+    public mapSpritePath: IMap["mapSpritePath"] = "/sprites/map/mapSprite.png",
+    public mapSprite: IMap["mapSprite"] = null,
     public mapRoadDirections: IMap["mapRoadDirections"] = {},
+    public grassBackrgroundCanvas: IMap["grassBackrgroundCanvas"] = document.createElement(
+      "canvas",
+    ),
+    public grassBackrgroundCanvasContext: IMap["grassBackrgroundCanvasContext"] = null,
+    public grassTileCanvas: IMap["grassTileCanvas"] = {
+      one: document.createElement("canvas"),
+      two: document.createElement("canvas"),
+    },
+    public grassTileCanvasContext: IMap["grassTileCanvasContext"] = {},
+    public stoneTileCanvas: IMap["stoneTileCanvas"] = {
+      one: document.createElement("canvas"),
+      two: document.createElement("canvas"),
+      three: document.createElement("canvas"),
+      four: document.createElement("canvas"),
+    },
+    public stoneTileCanvasContext: IMap["stoneTileCanvasContext"] = {},
+    public greenTreeTileCanvas: IMap["treeTileCanvas"] = {
+      one: document.createElement("canvas"),
+      two: document.createElement("canvas"),
+      three: document.createElement("canvas"),
+      four: document.createElement("canvas"),
+    },
+    public greenTreeTileCanvasContext: IMap["treeTileCanvasContext"] = {},
+    public dryTreeTileCanvas: IMap["treeTileCanvas"] = {
+      one: document.createElement("canvas"),
+      two: document.createElement("canvas"),
+      three: document.createElement("canvas"),
+      four: document.createElement("canvas"),
+    },
+    public dryTreeTileCanvasContext: IMap["treeTileCanvasContext"] = {},
+    public randomTileSpriteFrequency: IMap["randomTileSpriteFrequency"] = 4,
     public turnOffset: IMap["turnOffset"] = 24,
   ) {
+    // sprite shortcuts
+    this.mapRoadDirections = {
+      right: { x: 0, y: 0 },
+      rightStart: { x: 0, y: this.tileToNumber(1) },
+      rightEnd: { x: this.tileToNumber(2), y: this.tileToNumber(1) },
+      rightTurnDown: {
+        x: this.tileToNumber(3) - this.turnOffset,
+        y: this.tileToNumber(3),
+      },
+      rightTurnUp: {
+        x: this.tileToNumber(3) - this.turnOffset,
+        y: this.tileToNumber(6) - this.turnOffset,
+      },
+      left: { x: 0, y: 0 },
+      leftStart: { x: this.tileToNumber(2), y: this.tileToNumber(1) },
+      leftTurnUp: { x: this.tileToNumber(2), y: this.tileToNumber(6) },
+      leftTurnDown: { x: 0, y: this.tileToNumber(3) },
+      up: { x: this.tileToNumber(2), y: 0 },
+      upStart: { x: this.tileToNumber(1), y: 0 },
+      down: { x: this.tileToNumber(2), y: 0 },
+      downStart: { x: this.tileToNumber(1), y: this.tileToNumber(2) },
+      downTurnLeft: {
+        x: this.tileToNumber(3) - this.turnOffset,
+        y: this.tileToNumber(6) - this.turnOffset,
+      },
+      downTurnRight: {
+        x: this.tileToNumber(0),
+        y: this.tileToNumber(6) - this.turnOffset,
+      },
+    };
     // set tile center
     this.mapParams.tileCenter = this.mapParams.gridStep / 2;
 
@@ -139,43 +209,277 @@ class Map {
     // pop tiles which is occupied by map path
     this.popMapPathTiles();
 
-    // load map sprite
-    this.mapRoadSprite = new Image();
-    this.mapRoadSprite.src = this.mapRoadSpritePath;
-    this.mapRoadSprite.onload = () => {
-      this.engine.isMapSpritesLoaded = true;
-      this.mapRoadDirections = {
-        right: { x: 0, y: 0 },
-        rightStart: { x: 0, y: this.tileToNumber(1) },
-        rightEnd: { x: this.tileToNumber(2), y: this.tileToNumber(1) },
-        rightTurnDown: {
-          x: this.tileToNumber(3) - this.turnOffset,
-          y: this.tileToNumber(3),
-        },
-        rightTurnUp: {
-          x: this.tileToNumber(3) - this.turnOffset,
-          y: this.tileToNumber(6) - this.turnOffset,
-        },
-        left: { x: 0, y: 0 },
-        leftStart: { x: this.tileToNumber(2), y: this.tileToNumber(1) },
-        leftTurnUp: { x: this.tileToNumber(2), y: this.tileToNumber(6) },
-        leftTurnDown: { x: 0, y: this.tileToNumber(3) },
-        up: { x: this.tileToNumber(2), y: 0 },
-        upStart: { x: this.tileToNumber(1), y: 0 },
-        down: { x: this.tileToNumber(2), y: 0 },
-        downStart: { x: this.tileToNumber(1), y: this.tileToNumber(2) },
-        downTurnLeft: {
-          x: this.tileToNumber(3) - this.turnOffset,
-          y: this.tileToNumber(6) - this.turnOffset,
-        },
-        downTurnRight: {
-          x: this.tileToNumber(0),
-          y: this.tileToNumber(6) - this.turnOffset,
-        },
+    // map canvas tiles create
+    // grass
+    this.grassBackrgroundCanvas!.width = this.mapParams.gridStep;
+    this.grassBackrgroundCanvas!.height = this.mapParams.gridStep;
+    this.grassBackrgroundCanvasContext =
+      this.grassBackrgroundCanvas?.getContext("2d")!;
+    // grass
+    for (const [key, canvas] of Object.entries(this.grassTileCanvas)) {
+      canvas!.width = this.mapParams.gridStep;
+      canvas!.height = this.mapParams.gridStep;
+      this.grassTileCanvasContext[key] = canvas?.getContext("2d")!;
+    }
+    // stone
+    for (const [key, canvas] of Object.entries(this.stoneTileCanvas)) {
+      canvas!.width = this.mapParams.gridStep;
+      canvas!.height = this.mapParams.gridStep;
+      this.stoneTileCanvasContext[key] = canvas?.getContext("2d")!;
+    }
+    // green tree
+    for (const [key, canvas] of Object.entries(this.greenTreeTileCanvas)) {
+      canvas!.width = this.mapParams.gridStep;
+      canvas!.height = this.mapParams.gridStep;
+      this.greenTreeTileCanvasContext[key] = canvas?.getContext("2d")!;
+    }
+    // dry tree
+    for (const [key, canvas] of Object.entries(this.dryTreeTileCanvas)) {
+      canvas!.width = this.mapParams.gridStep;
+      canvas!.height = this.mapParams.gridStep;
+      this.dryTreeTileCanvasContext[key] = canvas?.getContext("2d")!;
+    }
+  }
+
+  public init() {
+    return new Promise((resolve, reject) => {
+      // road sprite
+      this.mapSprite = new Image();
+      this.mapSprite!.src = this.mapSpritePath;
+      this.mapSprite.onload = () => {
+        // map canvas background
+        this.grassBackrgroundCanvasContext?.drawImage(
+          this.mapSprite!,
+          this.tileToNumber(0),
+          this.tileToNumber(2),
+          this.mapParams.gridStep,
+          this.mapParams.gridStep,
+          0,
+          0,
+          this.mapParams.gridStep,
+          this.mapParams.gridStep,
+        );
+        // grass tile
+        Object.entries(this.grassTileCanvasContext).forEach(
+          ([, context], index) => {
+            context?.drawImage(
+              this.mapSprite!,
+              this.tileToNumber(10),
+              index * this.mapParams.gridStep,
+              this.mapParams.gridStep,
+              this.mapParams.gridStep,
+              0,
+              0,
+              this.mapParams.gridStep,
+              this.mapParams.gridStep,
+            );
+          },
+        );
+        // stone tile
+        Object.entries(this.stoneTileCanvasContext).forEach(
+          ([, context], index) => {
+            context?.drawImage(
+              this.mapSprite!,
+              this.tileToNumber(index <= 2 ? 8 : 9),
+              this.tileToNumber(index <= 2 ? 0 : 1),
+              this.mapParams.gridStep,
+              this.mapParams.gridStep,
+              0,
+              0,
+              this.mapParams.gridStep,
+              this.mapParams.gridStep,
+            );
+          },
+        );
+        // green tree tile
+        Object.entries(this.greenTreeTileCanvasContext).forEach(
+          ([, context], index) => {
+            context?.drawImage(
+              this.mapSprite!,
+              this.tileToNumber(index <= 2 ? 4 : 5),
+              this.tileToNumber(index <= 2 ? 0 : 1),
+              this.mapParams.gridStep,
+              this.mapParams.gridStep,
+              0,
+              0,
+              this.mapParams.gridStep,
+              this.mapParams.gridStep,
+            );
+          },
+        );
+        // dry tree tile
+        Object.entries(this.dryTreeTileCanvasContext).forEach(
+          ([, context], index) => {
+            context?.drawImage(
+              this.mapSprite!,
+              this.tileToNumber(index <= 2 ? 6 : 7),
+              this.tileToNumber(index <= 2 ? 0 : 1),
+              this.mapParams.gridStep,
+              this.mapParams.gridStep,
+              0,
+              0,
+              this.mapParams.gridStep,
+              this.mapParams.gridStep,
+            );
+          },
+        );
+        this.engine.isMapSpritesLoaded = true;
+        resolve(true);
       };
-      // draw map
-      this.drawMap();
+      this.mapSprite.onerror = reject;
+    });
+  }
+
+  public randomizeBackgroundTiles() {
+    const getRandomInt = (min: number = 0, max: number = 10) => {
+      return Math.random() * (max - min) + min;
     };
+    const shuffleArr = (array: ITwoDCoordinates[]): ITwoDCoordinates[] => {
+      for (let i = array.length - 1; i > 0; i--) {
+        let j = Math.floor(Math.random() * (i + 1));
+        let temp = array[i];
+        array[i] = array[j];
+        array[j] = temp;
+      }
+      return array;
+    };
+    const randomMax =
+      Object.keys(this.grassTileCanvasContext!).length +
+      Object.keys(this.stoneTileCanvasContext!).length +
+      Object.keys(this.greenTreeTileCanvasContext!).length +
+      Object.keys(this.dryTreeTileCanvasContext!).length +
+      1;
+    const shuffledArray = shuffleArr(this.mapParams.mapTilesArr);
+    shuffledArray
+      .slice(
+        0,
+        Math.ceil(shuffledArray.length / this.randomTileSpriteFrequency),
+      )
+      .forEach((tile, index) => {
+        const randomTile = Math.floor(getRandomInt(1, randomMax));
+        try {
+          switch (randomTile) {
+            case 1: {
+              this.engine.context?.mapBackground?.drawImage(
+                this.grassTileCanvas.one!,
+                tile.x,
+                tile.y,
+              );
+              break;
+            }
+            case 2: {
+              this.engine.context?.mapBackground?.drawImage(
+                this.grassTileCanvas.two!,
+                tile.x,
+                tile.y,
+              );
+              break;
+            }
+            case 3: {
+              this.engine.context?.mapBackground?.drawImage(
+                this.stoneTileCanvas.one!,
+                tile.x,
+                tile.y,
+              );
+              break;
+            }
+            case 4: {
+              this.engine.context?.mapBackground?.drawImage(
+                this.stoneTileCanvas.two!,
+                tile.x,
+                tile.y,
+              );
+              break;
+            }
+            case 5: {
+              this.engine.context?.mapBackground?.drawImage(
+                this.stoneTileCanvas.three!,
+                tile.x,
+                tile.y,
+              );
+              break;
+            }
+            case 6: {
+              this.engine.context?.mapBackground?.drawImage(
+                this.stoneTileCanvas.four!,
+                tile.x,
+                tile.y,
+              );
+              break;
+            }
+            case 7: {
+              this.engine.context?.mapBackground?.drawImage(
+                this.greenTreeTileCanvas.one!,
+                tile.x,
+                tile.y,
+              );
+              break;
+            }
+            case 8: {
+              this.engine.context?.mapBackground?.drawImage(
+                this.greenTreeTileCanvas.two!,
+                tile.x,
+                tile.y,
+              );
+              break;
+            }
+            case 9: {
+              this.engine.context?.mapBackground?.drawImage(
+                this.greenTreeTileCanvas.three!,
+                tile.x,
+                tile.y,
+              );
+              break;
+            }
+            case 10: {
+              this.engine.context?.mapBackground?.drawImage(
+                this.greenTreeTileCanvas.four!,
+                tile.x,
+                tile.y,
+              );
+              break;
+            }
+            case 11: {
+              this.engine.context?.mapBackground?.drawImage(
+                this.dryTreeTileCanvas.one!,
+                tile.x,
+                tile.y,
+              );
+              break;
+            }
+            case 12: {
+              this.engine.context?.mapBackground?.drawImage(
+                this.dryTreeTileCanvas.two!,
+                tile.x,
+                tile.y,
+              );
+              break;
+            }
+            case 13: {
+              this.engine.context?.mapBackground?.drawImage(
+                this.dryTreeTileCanvas.three!,
+                tile.x,
+                tile.y,
+              );
+              break;
+            }
+            case 14: {
+              this.engine.context?.mapBackground?.drawImage(
+                this.dryTreeTileCanvas.four!,
+                tile.x,
+                tile.y,
+              );
+              break;
+            }
+            default:
+              break;
+          }
+        } catch (e) {
+          throw new Error(
+            `Can't draw a background tile sprite, something is broken!`,
+          );
+        }
+      });
   }
 
   public tileToNumber(tilesCount: number) {
@@ -274,7 +578,7 @@ class Map {
   ) {
     context.beginPath();
     context.drawImage(
-      this.mapRoadSprite!,
+      this.mapSprite!,
       roadDirection.x,
       roadDirection.y,
       width,

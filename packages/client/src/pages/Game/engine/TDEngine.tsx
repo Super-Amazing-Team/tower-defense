@@ -21,7 +21,8 @@ export type TEngineCanvas =
   | "tower"
   | "enemy"
   | "deadEnemy"
-  | "map";
+  | "map"
+  | "mapBackground";
 export type TTowerSpriteTypes =
   | "one"
   | "two"
@@ -366,6 +367,7 @@ export interface ITDEngine {
   money: number;
   idleTimeout: number;
   isInitialized: boolean;
+  isCanvasCreated: boolean;
   isCanBuild: boolean;
   isGameStarted: boolean;
   isGameOver: boolean;
@@ -428,9 +430,11 @@ class TDEngine {
       tower: 40,
       enemy: 30,
       deadEnemy: 20,
-      map: 10,
+      mapBackground: 12,
+      map: 11,
     } as const,
     public isInitialized: ITDEngine["isInitialized"] = false,
+    public isCanvasCreated: ITDEngine["isCanvasCreated"] = false,
     public isCanBuild: ITDEngine["isCanBuild"] = false,
     public isGameStarted: ITDEngine["isGameStarted"] = false,
     public isGameOver: ITDEngine["isGameOver"] = false,
@@ -966,30 +970,64 @@ class TDEngine {
   }
 
   // create game canvas stack and append it to the game container
-  public init(gameContainer: HTMLDivElement) {
-    this.gameWindow = gameContainer;
-    // set map
-    this.setMap(new Map(this));
-    // create game canvas stack container
-    const canvasContainer = document.createElement("div");
-    canvasContainer.className = "b-canvas-wrapper";
-    canvasContainer.style.width = `${this.map?.mapParams.width!}px`;
-    canvasContainer.style.height = `${this.map?.mapParams.height!}px`;
-    canvasContainer.style.position = "relative";
-    canvasContainer.style.background = "";
-    const createCanvas = (
-      width: number = this.map?.mapParams.width!,
-      height: number = this.map?.mapParams.height!,
-    ) => {
+  public async init(gameContainer: HTMLDivElement) {
+    return new Promise((resolve, reject) => {
+      if (this.isInitialized) reject();
+      this.gameWindow = gameContainer;
+      // set map
+      this.map = new Map(this);
+      /* LOAD SPRITES */
+      // map sprites
+      this.map
+        .init()
+        .then(() => {
+          this.createCanvas(gameContainer)
+            .then(() => {
+              resolve(`Canvas stack has been created!`);
+            })
+            .catch((e) => {
+              reject(`Can't create canvas stack! Reason: ${e.reason ?? e}`);
+            });
+        })
+        .catch(reject);
+      // we need just map sprites, all other can be loaded in the future
+      // enemy sprites
+      if (!this.isEnemySpritesLoaded!) {
+        for (const [enemyType] of Object.entries(this.enemySprites)) {
+          this.splitEnemySprite(enemyType as TEnemyType);
+        }
+        this.isEnemySpritesLoaded = true;
+      }
+      // tower sprites
+      if (!this.isTowerSpritesLoaded) {
+        for (const [towerType, index] of Object.entries(this.towerSprites)) {
+          this.splitTowerSprite(towerType as TTowerSpriteTypes);
+        }
+        this.isTowerSpritesLoaded = true;
+      }
+      /* /LOAD SPRITES */
+    });
+  }
+
+  public createCanvas(gameContainer: HTMLDivElement) {
+    return new Promise((resolve, reject) => {
+      if (this.isCanvasCreated) reject(`Canvas is already created`);
+      // create game canvas stack container
+      const canvasContainer = document.createElement("div");
+      canvasContainer.className = "b-canvas-wrapper";
+      canvasContainer.style.width = `${this.map?.mapParams.width!}px`;
+      canvasContainer.style.height = `${this.map?.mapParams.height!}px`;
+      canvasContainer.style.position = "relative";
+      canvasContainer.style.background = "";
       for (const [canvasId, zIndex] of Object.entries(this.canvasZIndex)) {
         const newCanvas = document.createElement("canvas");
-        newCanvas.width = width;
-        newCanvas.height = height;
+        newCanvas.width = this.map?.mapParams?.width!;
+        newCanvas.height = this.map?.mapParams?.height!;
         if (canvasId === "build") {
           newCanvas.style.opacity = "0.4";
           newCanvas.tabIndex = 1;
         } else if (canvasId === "map") {
-          newCanvas.style.background = "url('/sprites/map/grass.png') repeat";
+          newCanvas.style.background = `url("${this.map?.grassBackrgroundCanvas?.toDataURL()}") repeat`;
         }
         newCanvas.style.zIndex = `${zIndex}`;
         newCanvas.id = `${canvasId}Canvas`;
@@ -999,12 +1037,15 @@ class TDEngine {
         // set rendering context
         this.context![canvasId as TEngineCanvas] = newCanvas.getContext("2d")!;
       }
-    };
-    createCanvas();
-    // inject created nodes into the page
-    gameContainer.appendChild(canvasContainer);
-    // set init flag to true
-    this.isInitialized = true;
+      // inject created nodes into the page
+      gameContainer.appendChild(canvasContainer);
+
+      // set canvas created flag to true
+      this.isCanvasCreated = true;
+
+      // return sucess
+      resolve(`Success`);
+    });
   }
 
   public addEventListeners() {
