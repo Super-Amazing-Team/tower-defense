@@ -3,11 +3,12 @@
     "composite": true,
     "target": "es2021",
     "module": "esnext",
-    "moduleResolution": "nodenext",
-    "esModuleInterop": true,
+    "moduleResolution": "node",
+    "esModuleInterop": false,
+    "skipLibCheck": true,
     "sourceMap": true,
     "declaration": true,
-    "declarationMap": true,
+
     "removeComments": true,
     "allowSyntheticDefaultImports": true,
     "strict": true,
@@ -18,7 +19,15 @@
     "noUnusedParameters": true,
     "noUnusedLocals": true,
     "forceConsistentCasingInFileNames": true,
-    "importsNotUsedAsValues": "error",
+
+    "importHelpers": true,
+    "jsx": "react-jsx",
+
+
+    "experimentalDecorators": true,
+    "strictPropertyInitialization": false,
+    "emitDecoratorMetadata": true,
+
     "lib": [
       "es2021",
       "esnext.asynciterable",
@@ -29,8 +38,7 @@
     "paths": {
       "*": ["types/*"]
     },
-    "outDir": "dist",
-    "jsx": "react"
+    "outDir": "dist"
   },
   "ts-node": {
     "compilerOptions": {
@@ -38,7 +46,11 @@
     }
   },
   "include": [
-    "webpack",
+    "index.ts",
+    "src/**/*",
+    "webpack/**/*",
+    "constants/**/*",
     "webpack.config.ts",
-  ]
+  ],
+  "exclude": ["node_modules", "dist"]
 }

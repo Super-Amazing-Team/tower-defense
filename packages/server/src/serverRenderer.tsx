@@ -1,12 +1,7 @@
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
-import React from "react";
 import { HelmetProvider, FilledContext } from "react-helmet-async";
 import { renderToPipeableStream } from "react-dom/server";
 import type { Request, Response, RequestHandler } from "express";
 import { StaticRouter } from "react-router-dom/server";
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
 import type { ChunkExtractor } from "@loadable/server";
 import { getDataFromTree } from "@apollo/react-ssr";
 import { getHtmlTemplate } from "./template";

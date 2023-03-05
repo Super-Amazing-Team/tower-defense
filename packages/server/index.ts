@@ -1,26 +1,13 @@
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
 import path from "path";
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
 import webpack from "webpack";
 import "cross-fetch/polyfill";
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
 import express, { RequestHandler } from "express";
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
 import devMiddleware from "webpack-dev-middleware";
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
 import hotMiddleware from "webpack-hot-middleware";
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
 import { ChunkExtractor } from "@loadable/server";
 
 import { serverRenderer } from "./src/serverRenderer";
 import { DIST_DIR, IS_DEV, SRC_DIR } from "./webpack/constants";
-
 import { clientConfig as config } from "./webpack/client.config";
 
 const compiler = webpack({ ...config, mode: "development" });

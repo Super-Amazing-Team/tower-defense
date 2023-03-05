@@ -1,18 +1,9 @@
 import path from "path";
-
-// eslint-disable-next-line import/no-extraneous-dependencies,node/no-unpublished-import
 import { Configuration, HotModuleReplacementPlugin, WebpackPluginInstance, DefinePlugin } from "webpack";
-// eslint-disable-next-line node/no-unpublished-import,import/no-extraneous-dependencies
 import ReactRefreshWebpackPlugin from "@pmmmwh/react-refresh-webpack-plugin";
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
 import LoadablePlugin from "@loadable/webpack-plugin";
-// eslint-disable-next-line node/no-unpublished-import,import/no-extraneous-dependencies
 import ForkTsCheckerWebpackPlugin from "fork-ts-checker-webpack-plugin";
-// eslint-disable-next-line node/no-unpublished-import,import/no-extraneous-dependencies,@typescript-eslint/ban-ts-comment
-// @ts-ignore
 import { BundleAnalyzerPlugin } from "webpack-bundle-analyzer";
-// eslint-disable-next-line node/no-unpublished-import,import/no-extraneous-dependencies
 import HtmlWebpackPlugin from "html-webpack-plugin";
 
 import { ALIAS, DEV_SERVER_PORT, DIST_DIR, IS_DEV, SRC_DIR } from "./constants";

@@ -1,8 +1,6 @@
 import path from "path";
 
 import type { Configuration } from "webpack";
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
 import nodeExternals from "webpack-node-externals";
 import ForkTsCheckerWebpackPlugin from "fork-ts-checker-webpack-plugin";
 
