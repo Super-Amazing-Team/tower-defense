@@ -30,6 +30,8 @@
     "no-nested-ternary": "off",
     "no-empty": "off",
     "consistent-return": ["error", { "treatUndefinedAsUnspecified": true }],
+    "node/no-unpublished-import": "off",
+    "import/no-extraneous-dependencies": "off",
     "no-debugger": "warn",
     "spaced-comment": "off",
     "camelcase": "off",
@@ -39,6 +41,7 @@
     "node/exports-style": "error",
     "node/no-unsupported-features/es-syntax": "off",
     "node/no-missing-import": "off",
+    "import/no-import-module-exports": "off",
     // "no-console": "off",
     "no-console": ["warn", { "allow": ["warn", "error"] }],
     "no-warning-comments": [

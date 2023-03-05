@@ -1,15 +1,15 @@
 {
-  "ts-node": { "esm": true },
   "compilerOptions": {
     "composite": true,
     "target": "es2021",
-    "module": "NodeNext",
+    "module": "esnext",
     "moduleResolution": "nodenext",
     "esModuleInterop": true,
     "sourceMap": true,
     "declaration": true,
     "declarationMap": true,
     "removeComments": true,
+    "allowSyntheticDefaultImports": true,
     "strict": true,
     "noImplicitAny": true,
     "noImplicitReturns": true,
@@ -31,5 +31,14 @@
     },
     "outDir": "dist",
     "jsx": "react"
-  }
+  },
+  "ts-node": {
+    "compilerOptions": {
+      "module": "commonjs"
+    }
+  },
+  "include": [
+    "webpack",
+    "webpack.config.ts",
+  ]
 }
