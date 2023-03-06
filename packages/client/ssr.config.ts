@@ -1,18 +1,23 @@
 /* eslint-disable */
+import * as path from "path";
 import { defineConfig } from "vite";
 import react from "@vitejs/plugin-react";
 import tsconfigPaths from "vite-tsconfig-paths";
 import eslintPlugin from "vite-plugin-eslint";
-import dotenv from "dotenv";
-dotenv.config();
 
 // https://vitejs.dev/config/
 export default defineConfig({
-  server: {
-    port: Number(process.env.CLIENT_PORT) || 3000,
-  },
-  define: {
-    __SERVER_PORT__: process.env.SERVER_PORT || 3001,
-  },
   plugins: [react(), eslintPlugin(), tsconfigPaths()],
+  build: {
+    lib: {
+      entry: path.resolve(__dirname, "ssr.tsx"),
+      name: "Client",
+      formats: ["cjs"],
+    },
+    rollupOptions: {
+      output: {
+        dir: "ssr-dist",
+      },
+    },
+  },
 });
