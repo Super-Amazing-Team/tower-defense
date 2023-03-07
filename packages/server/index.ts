@@ -6,8 +6,13 @@ import type { ViteDevServer } from "vite";
 import express from "express";
 import * as path from "path"
 import * as fs from "fs"
+import type { StoreApi } from "zustand"
 //import { createClientAndConnect } from "./db";
 const isDev = () => process.env.NODE_ENV === "development";
+
+export interface IStore {
+  store: () => StoreApi<unknown>
+}
 
 async function startServer() {
   dotenv.config();
@@ -20,6 +25,13 @@ async function startServer() {
   const srcPath = path.dirname(require.resolve("client"))
   const ssrClientPath = require.resolve("client/ssr-dist/client.cjs");
   const distPath = path.dirname(require.resolve("client/dist/index.html"));
+  const store2 = path.dirname(require.resolve("client/src/store/ssr-store.ts"));
+  //const store3 = require.resolve("client/src/store/ssr-store.ts");
+  //const aaa = (await import(require.resolve("client/src/store/ssr-store.ts")));
+
+  console.log(store2);
+  //console.log(store3);
+  //console.log(aaa);
 
 //createClientAndConnect();
 
@@ -62,7 +74,8 @@ async function startServer() {
 
       }
 
-      let render: () => Promise<string>;
+      let render: (store: any) => Promise<string>;
+      const storeRender = (await vite!.ssrLoadModule(path.resolve(store2, "ssr-store.ts"))).getStateForServer;
 
       if (!isDev()) {
         render = (await import(ssrClientPath)).render;
@@ -70,9 +83,16 @@ async function startServer() {
         render = (await vite!.ssrLoadModule(path.resolve(srcPath, "ssr.tsx"))).render;
       }
 
-      const appHtml = await render()
+      console.log(storeRender)
+      const store: IStore = storeRender;
 
-      const html = template.replace("<!--ssr-outlet-->", appHtml)
+      const appHtml = await render(store);
+
+      //const state = store;
+
+      const stateMarkup = `<script>window.__ZUSTAND_STATE__ = ${JSON.stringify(store)}</script>`;
+
+      const html = template.replace("<!--ssr-outlet-->", stateMarkup + appHtml)
 
       res.status(200).set({ "Content-Type": "text/html" }).end(html)
     } catch (e) {
