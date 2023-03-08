@@ -7,17 +7,8 @@ import {
   useSnackbarStore,
   useUserStore,
 } from "./index";
-import { ILayoutStore, useLayoutStore } from "@/store/layoutStore";
+import { useLayoutStore } from "@/store/layoutStore";
 
-export interface IStateForServer {
-  useUserStore: any;
-  useSnackbarStore: any;
-  useForumStore: any;
-  addToast: any;
-  useLayoutStore: StoreApi<ILayoutStore>;
-  useProfileStore: any;
-  closeToast: any;
-}
 export const getStore = () =>
   create(() => ({
     useLayoutStore: useLayoutStore,

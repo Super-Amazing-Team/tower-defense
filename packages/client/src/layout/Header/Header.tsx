@@ -39,7 +39,7 @@ export function Header() {
           <IconButton
             sx={{ mx: 1 }}
             onClick={() => {
-              setColorMode(colorMode === "light" ? "dark" : "light");
+              setColorMode(colorMode() === "light" ? "dark" : "light");
             }}
             color="inherit"
           >

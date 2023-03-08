@@ -20,43 +20,57 @@ import {
   Register,
   Forum,
   Topic,
-  Game,
   Leaderboard,
   Profile,
   Page404,
   Page500,
 } from "@/pages";
-import TDEngine from "@/pages/Game/engine/TDEngine";
+// import TDEngine from "@/pages/Game/engine/TDEngine";
 import { Layout } from "@/layout";
 // import { useLayoutStore, useUserStore } from "@/store";
 import { getStateForServer } from "@/store/ssr-store";
 
 // create engine instance
-const engine = new TDEngine();
+// const engine = new TDEngine();
 
-const store = getStateForServer();
-export const MyContext = createContext(store);
+const storen = getStateForServer();
+export const MyContext = createContext(storen);
+export const appContext = createContext({});
 
-console.log(store);
+let store: { setState: (arg0: any) => void; getState: () => any };
+
+const useCreateStore = () => {
+  if (typeof window === "undefined") {
+    return () => getStateForServer();
+  }
+  store = store ?? getStateForServer();
+  return () => store;
+};
 
 function withServerSideStore(Component: ComponentType) {
-  debugger;
-  return () => {
+  // @ts-ignore
+  return (props) => {
+    // @ts-ignore
+    const createStore = useCreateStore({ ...props });
     return (
-      <MyContext.Provider value={store}>
-        <Component />
-      </MyContext.Provider>
+      // @ts-ignore
+      <appContext.Provider value={createStore}>
+        <Component {...props} />
+      </appContext.Provider>
     );
   };
 }
 export default withServerSideStore(function Home() {
-  debugger;
+  // @ts-ignore
   const useUserStore = useContext(MyContext).useUserStore;
+  // @ts-ignore
   const useLayoutStore = useContext(MyContext).useLayoutStore;
   // eslint-disable-next-line @typescript-eslint/no-shadow
-  const mode = useLayoutStore((store) => store.colorMode);
+  // @ts-ignore
+  // const mode = useLayoutStore((stores) => stores.colorMode());
   // eslint-disable-next-line @typescript-eslint/no-shadow
-  const fetchUser = useUserStore((store) => store.fetchUser);
+  // @ts-ignore
+  const fetchUser = useUserStore((stores) => stores.fetchUser);
 
   useEffect(() => {
     fetchUser();
@@ -66,10 +80,10 @@ export default withServerSideStore(function Home() {
     () =>
       createTheme({
         palette: {
-          mode,
+          mode: "dark",
         },
       }),
-    [mode],
+    [],
   );
   return (
     <div className="App">
@@ -92,7 +106,6 @@ export default withServerSideStore(function Home() {
                     </Route>
                     <Route path={R.leaderboard} element={<Leaderboard />} />
                     <Route element={<ProtectedRoutes />}>
-                      <Route path={R.game} element={<Game engine={engine} />} />
                       <Route path={R.profile} element={<Profile />} />
                       <Route path={R.forum} element={<Forum />} />
                       <Route path={R.topic} element={<Topic />} />

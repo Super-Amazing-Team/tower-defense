@@ -1,19 +1,18 @@
 import { create } from "zustand";
 
-export interface ILayoutStore {
+interface IBearsStore {
   openSidebar: boolean;
-  colorMode: "dark" | "light";
+  colorMode: () => "dark" | "light";
   setCloseSidebar(): void;
   setColorMode(newColorMode: "dark" | "light"): void;
   toggleSidebar(): void;
 }
 
 const getColorMode = () => {
-  debugger;
-  return (localStorage.getItem("mode") as "dark" | "light") || "light";
+  return () => (localStorage.getItem("mode") as "dark" | "light") || "light";
 };
 
-export const useLayoutStore = create<ILayoutStore>()((set) => ({
+export const useLayoutStore = create<IBearsStore>()((set) => ({
   openSidebar: false,
   colorMode: getColorMode(),
   setCloseSidebar() {
@@ -23,11 +22,6 @@ export const useLayoutStore = create<ILayoutStore>()((set) => ({
     set(({ openSidebar }) => ({ openSidebar: !openSidebar }));
   },
   setColorMode(newColorMode: "dark" | "light") {
-    set(() => {
-      localStorage.setItem("mode", newColorMode);
-      return {
-        colorMode: newColorMode,
-      };
-    });
+    localStorage.setItem("mode", newColorMode);
   },
 }));
