@@ -30,6 +30,7 @@
     "serviceWorker.ts",
     "ssr.config.ts",
     "ssr.tsx",
+    "index.js"
   ],
   "references": [{ "path": "./tsconfig.node.json" }]
 }

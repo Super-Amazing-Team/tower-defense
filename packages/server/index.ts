@@ -23,7 +23,9 @@ async function startServer() {
 
   let vite: ViteDevServer | undefined;
   const srcPath = path.dirname(require.resolve("client"))
+  // eslint-disable-next-line node/no-missing-require
   const ssrClientPath = require.resolve("client/ssr-dist/client.cjs");
+  // eslint-disable-next-line node/no-missing-require
   const distPath = path.dirname(require.resolve("client/dist/index.html"));
 
   //const store3 = require.resolve("client/src/store/ssr-store.ts");
