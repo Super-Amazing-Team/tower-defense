@@ -25,11 +25,10 @@ async function startServer() {
   const srcPath = path.dirname(require.resolve("client"))
   const ssrClientPath = require.resolve("client/ssr-dist/client.cjs");
   const distPath = path.dirname(require.resolve("client/dist/index.html"));
-  const store2 = path.dirname(require.resolve("client/src/store/ssr-store.ts"));
+
   //const store3 = require.resolve("client/src/store/ssr-store.ts");
   //const aaa = (await import(require.resolve("client/src/store/ssr-store.ts")));
 
-  console.log(store2);
   //console.log(store3);
   //console.log(aaa);
 
@@ -75,7 +74,7 @@ async function startServer() {
       }
 
       let render: (store: any) => Promise<string>;
-      const storeRender = (await vite!.ssrLoadModule(path.resolve(store2, "ssr-store.ts"))).getStateForServer;
+      //const storeRender = (await vite!.ssrLoadModule(path.resolve(store2, "ssr-store.ts"))).getStateForServer;
 
       if (!isDev()) {
         render = (await import(ssrClientPath)).render;
@@ -83,8 +82,9 @@ async function startServer() {
         render = (await vite!.ssrLoadModule(path.resolve(srcPath, "ssr.tsx"))).render;
       }
 
-      console.log(storeRender)
-      const store: IStore = storeRender;
+      const store = path.dirname(require.resolve("client/src/store/ssr-store.ts"));
+      console.log(store)
+      //const store: IStore = storeRender;
 
       const appHtml = await render(store);
 

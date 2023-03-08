@@ -1,16 +1,16 @@
 import { renderToString } from "react-dom/server";
-import { createStore, useStore } from "zustand";
-import React, { createContext, useContext, useRef } from "react";
+import React, { createContext } from "react";
 import App from "./src/App";
-import { getStore } from "@/store/ssr-store";
+import { getStateForServer } from "@/store/ssr-store";
 
-const MyContext = createContext({});
-// const createMyStore = () => createStore(getStore);
-// const store = createMyStore().getState().getState().store;
+const store = getStateForServer();
+export const MyContext = createContext(store);
 
-export function render(store: any) {
+console.log(store);
+
+export function render(props: any) {
   return renderToString(
-    <MyContext.Provider value={store}>
+    <MyContext.Provider value={props}>
       <App />
     </MyContext.Provider>,
   );

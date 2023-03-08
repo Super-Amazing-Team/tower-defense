@@ -16,8 +16,9 @@ import SportsEsportsIcon from "@mui/icons-material/SportsEsports";
 import ForumIcon from "@mui/icons-material/Forum";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import LogoutIcon from "@mui/icons-material/Logout";
-import { useLayoutStore, useUserStore } from "@/store";
+import { useContext } from "react";
 import { TRoutes as R } from "@/types";
+import { MyContext } from "@/App";
 
 const authMenu = [
   { text: "game", icon: <SportsEsportsIcon />, path: R.game },
@@ -33,6 +34,8 @@ const notAuthMenu = [
 ];
 
 export function Sidebar() {
+  const useLayoutStore = useContext(MyContext).useLayoutStore;
+  const useUserStore = useContext(MyContext).useUserStore;
   const isOpenSidebar = useLayoutStore((store) => store.openSidebar);
   const setCloseSidebar = useLayoutStore((store) => store.setCloseSidebar);
   const logout = useUserStore((store) => store.logout);

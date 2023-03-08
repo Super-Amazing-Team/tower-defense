@@ -1,6 +1,6 @@
 import { create } from "zustand";
 
-interface IBearsStore {
+export interface ILayoutStore {
   openSidebar: boolean;
   colorMode: "dark" | "light";
   setCloseSidebar(): void;
@@ -9,10 +9,11 @@ interface IBearsStore {
 }
 
 const getColorMode = () => {
+  debugger;
   return (localStorage.getItem("mode") as "dark" | "light") || "light";
 };
 
-export const useLayoutStore = create<IBearsStore>()((set) => ({
+export const useLayoutStore = create<ILayoutStore>()((set) => ({
   openSidebar: false,
   colorMode: getColorMode(),
   setCloseSidebar() {

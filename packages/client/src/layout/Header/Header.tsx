@@ -8,9 +8,12 @@ import Box from "@mui/material/Box";
 import Brightness7Icon from "@mui/icons-material/Brightness7";
 import Brightness4Icon from "@mui/icons-material/Brightness4";
 import { useTheme } from "@mui/material";
-import { useLayoutStore } from "@/store";
+import { useContext } from "react";
+// import { useLayoutStore } from "@/store";
+import { MyContext } from "@/App";
 
 export function Header() {
+  const useLayoutStore = useContext(MyContext).useLayoutStore;
   const colorMode = useLayoutStore((store) => store.colorMode);
   const setColorMode = useLayoutStore((store) => store.setColorMode);
   const isOpenSidebar = useLayoutStore((store) => store.openSidebar);
