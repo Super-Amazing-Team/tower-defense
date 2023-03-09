@@ -101,15 +101,17 @@ importers:
 
   packages/server:
     specifiers:
-      '@babel/core': 7.21.0
-      '@types/cors': 2.8.13
-      '@types/express': 4.17.17
+      '@babel/core': '>=7.8.0 <8.0.0'
+      '@types/cors': 2.8.12
+      '@types/express': 4.17.13
       '@types/jest': 29.4.0
       '@types/node': 18.14.6
       '@types/pg': 8.6.6
       '@typescript-eslint/eslint-plugin': 5.54.0
       '@typescript-eslint/parser': 5.54.0
+      '@vitejs/plugin-react': 3.1.0
       babel-jest: 29.4.3
+      client: ^0.0.0
       cors: 2.8.5
       cross-env: 7.0.3
       dotenv: 16.0.3
@@ -126,21 +128,26 @@ importers:
       ts-jest: 29.0.5
       ts-node: 10.9.1
       typescript: 4.9.5
+      vite: 4.1.1
+      zustand: 4.3.2
     dependencies:
+      client: link:../client
       cors: 2.8.5
       cross-env: 7.0.3
       dotenv: 16.0.3
       express: 4.18.2
       pg: 8.9.0
+      zustand: 4.3.2
     devDependencies:
       '@babel/core': 7.21.0
-      '@types/cors': 2.8.13
-      '@types/express': 4.17.17
+      '@types/cors': 2.8.12
+      '@types/express': 4.17.13
       '@types/jest': 29.4.0
       '@types/node': 18.14.6
       '@types/pg': 8.6.6
       '@typescript-eslint/eslint-plugin': 5.54.0_6mj2wypvdnknez7kws2nfdgupi
       '@typescript-eslint/parser': 5.54.0_ycpbpc6yetojsgtrx3mwntkhsu
+      '@vitejs/plugin-react': 3.1.0_vite@4.1.1
       babel-jest: 29.4.3_@babel+core@7.21.0
       eslint: 8.35.0
       eslint-config-airbnb-base: 15.0.0_yckic57kx266ph64dhq6ozvb54
@@ -153,6 +160,7 @@ importers:
       ts-jest: 29.0.5_uvh2lfmfmkxl7pemqrjflcid5y
       ts-node: 10.9.1_alpjt73dvgv6kni625hu7f2l4m
       typescript: 4.9.5
+      vite: 4.1.1_@types+node@18.14.6
 
 packages:
 
@@ -2243,7 +2251,7 @@ packages:
     resolution: {integrity: sha512-QfyleXSD9slh4qM54wDaqKVPvtUH1NJMgsFc9BabqSHO1Ttpandv1EAvTCN9Lu73RbCX3LJpn+BfJmnjHbjCyw==}
     engines: {node: ^14.15.0 || >=16.0.0}
     dependencies:
-      chalk: 4.1.0
+      chalk: 4.1.2
       execa: 5.0.0
       strong-log-transformer: 2.1.0
     dev: true
@@ -2260,7 +2268,7 @@ packages:
       p-reduce: 2.1.0
       pacote: 13.6.1
       pify: 5.0.0
-      semver: 7.3.4
+      semver: 7.3.8
       slash: 3.0.0
       validate-npm-package-license: 3.0.4
       validate-npm-package-name: 4.0.0
@@ -3027,10 +3035,8 @@ packages:
       '@types/node': 18.14.6
     dev: true
 
-  /@types/cors/2.8.13:
-    resolution: {integrity: sha512-RG8AStHlUiV5ysZQKq97copd2UmVYw3/pRMLefISZ3S1hK104Cwm7iLQ3fTKx+lsUH2CE8FlLaYeEA2LSeqYUA==}
-    dependencies:
-      '@types/node': 18.14.6
+  /@types/cors/2.8.12:
+    resolution: {integrity: sha512-vt+kDhq/M2ayberEtJcIN/hxXy1Pk+59g2FV/ZQceeaTyCtCucjL2Q7FXlFjtWn4n15KCr1NE2lNNFhp0lEThw==}
     dev: true
 
   /@types/eslint/8.21.1:
@@ -3052,8 +3058,8 @@ packages:
       '@types/range-parser': 1.2.4
     dev: true
 
-  /@types/express/4.17.17:
-    resolution: {integrity: sha512-Q4FmmuLGBG58btUnfS1c1r/NQdlp3DMfGDGig8WhfpA2YRUtEkxAjkZb0yvplJGYdF1fsQ81iMDcH24sSCNC/Q==}
+  /@types/express/4.17.13:
+    resolution: {integrity: sha512-6bSZTPaTIACxn48l50SR+axgrqm6qXFIxrdAKaG6PaJk3+zuUr35hBlgT7vOmJcum+OEaIBLtHV/qloEAFITeA==}
     dependencies:
       '@types/body-parser': 1.19.2
       '@types/express-serve-static-core': 4.17.33
@@ -3350,6 +3356,22 @@ packages:
     dependencies:
       '@typescript-eslint/types': 5.54.0
       eslint-visitor-keys: 3.3.0
+    dev: true
+
+  /@vitejs/plugin-react/3.1.0_vite@4.1.1:
+    resolution: {integrity: sha512-AfgcRL8ZBhAlc3BFdigClmTUMISmmzHn7sB2h9U1odvc5U/MjWXsAaz18b/WoppUTDBzxOJwo2VdClfUcItu9g==}
+    engines: {node: ^14.18.0 || >=16.0.0}
+    peerDependencies:
+      vite: ^4.1.0-beta.0
+    dependencies:
+      '@babel/core': 7.21.0
+      '@babel/plugin-transform-react-jsx-self': 7.21.0_@babel+core@7.21.0
+      '@babel/plugin-transform-react-jsx-source': 7.19.6_@babel+core@7.21.0
+      magic-string: 0.27.0
+      react-refresh: 0.14.0
+      vite: 4.1.1_@types+node@18.14.6
+    transitivePeerDependencies:
+      - supports-color
     dev: true
 
   /@vitejs/plugin-react/3.1.0_vite@4.1.4:
@@ -10016,6 +10038,12 @@ packages:
       requires-port: 1.0.0
     dev: true
 
+  /use-sync-external-store/1.2.0:
+    resolution: {integrity: sha512-eEgnFxGQ1Ife9bzYs6VLi8/4X6CObHMw9Qr9tPY43iKwsPw8xE8+EFsf/2cFZ5S3esXgpWgtSCtLNS41F+sKPA==}
+    peerDependencies:
+      react: ^16.8.0 || ^17.0.0 || ^18.0.0
+    dev: false
+
   /use-sync-external-store/1.2.0_react@18.2.0:
     resolution: {integrity: sha512-eEgnFxGQ1Ife9bzYs6VLi8/4X6CObHMw9Qr9tPY43iKwsPw8xE8+EFsf/2cFZ5S3esXgpWgtSCtLNS41F+sKPA==}
     peerDependencies:
@@ -10102,6 +10130,40 @@ packages:
     transitivePeerDependencies:
       - supports-color
       - typescript
+    dev: true
+
+  /vite/4.1.1_@types+node@18.14.6:
+    resolution: {integrity: sha512-LM9WWea8vsxhr782r9ntg+bhSFS06FJgCvvB0+8hf8UWtvaiDagKYWXndjfX6kGl74keHJUcpzrQliDXZlF5yg==}
+    engines: {node: ^14.18.0 || >=16.0.0}
+    hasBin: true
+    peerDependencies:
+      '@types/node': '>= 14'
+      less: '*'
+      sass: '*'
+      stylus: '*'
+      sugarss: '*'
+      terser: ^5.4.0
+    peerDependenciesMeta:
+      '@types/node':
+        optional: true
+      less:
+        optional: true
+      sass:
+        optional: true
+      stylus:
+        optional: true
+      sugarss:
+        optional: true
+      terser:
+        optional: true
+    dependencies:
+      '@types/node': 18.14.6
+      esbuild: 0.16.17
+      postcss: 8.4.21
+      resolve: 1.22.1
+      rollup: 3.18.0
+    optionalDependencies:
+      fsevents: 2.3.2
     dev: true
 
   /vite/4.1.4:
@@ -10398,6 +10460,21 @@ packages:
 
   /zod/3.21.0:
     resolution: {integrity: sha512-UYdykTcVxB6lfdyLzAqLyyYAlOcpoluECvjsdoaqfQmz9p+3LRaIqYcNiL/J2kFYp66fBM8wwBvIGVEjq7KtZw==}
+    dev: false
+
+  /zustand/4.3.2:
+    resolution: {integrity: sha512-rd4haDmlwMTVWVqwvgy00ny8rtti/klRoZjFbL/MAcDnmD5qSw/RZc+Vddstdv90M5Lv6RPgWvm1Hivyn0QgJw==}
+    engines: {node: '>=12.7.0'}
+    peerDependencies:
+      immer: '>=9.0'
+      react: '>=16.8'
+    peerDependenciesMeta:
+      immer:
+        optional: true
+      react:
+        optional: true
+    dependencies:
+      use-sync-external-store: 1.2.0
     dev: false
 
   /zustand/4.3.5_react@18.2.0:
