@@ -7,7 +7,7 @@ import React, {
 } from "react";
 import { Box, createTheme, ThemeProvider } from "@mui/material";
 import CSSBaseLine from "@mui/material/CssBaseline";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 import { TRoutes as R } from "./types";
 import {
   Snackbar,
@@ -61,13 +61,15 @@ function withServerSideStore(Component: ComponentType) {
   };
 }
 export default withServerSideStore(function Home() {
+  const [mode, setMode] = React.useState<"dark" | "light">("light");
   // @ts-ignore
   const useUserStore = useContext(MyContext).useUserStore;
   // @ts-ignore
   const useLayoutStore = useContext(MyContext).useLayoutStore;
   // eslint-disable-next-line @typescript-eslint/no-shadow
   // @ts-ignore
-  // const mode = useLayoutStore((stores) => stores.colorMode());
+  const colorModeFunc = useLayoutStore((stores) => stores.colorModeFunc);
+  const colorMode = useLayoutStore((stores) => stores.colorMode);
   // eslint-disable-next-line @typescript-eslint/no-shadow
   // @ts-ignore
   const fetchUser = useUserStore((stores) => stores.fetchUser);
@@ -76,48 +78,53 @@ export default withServerSideStore(function Home() {
     fetchUser();
   }, [fetchUser]);
 
+  useEffect(() => {
+    setMode(colorModeFunc());
+  }, [colorModeFunc, colorMode]);
+
   const theme = useMemo(
     () =>
       createTheme({
         palette: {
-          mode: "dark",
+          mode,
         },
       }),
-    [],
+    [mode],
   );
   return (
     <div className="App">
       <ThemeProvider theme={theme}>
         <CSSBaseLine>
           <ErrorBoundary>
-            <Router>
-              <Box
-                sx={{
-                  display: "flex",
-                  flexDirection: "column",
-                  minHeight: "100vh",
-                }}
-              >
-                <Routes>
-                  <Route element={<Layout />}>
-                    <Route element={<ProtectedToAuth />}>
-                      <Route path={R.login} element={<Login />} />
-                      <Route path={R.register} element={<Register />} />
-                    </Route>
-                    <Route path={R.leaderboard} element={<Leaderboard />} />
-                    <Route element={<ProtectedRoutes />}>
-                      <Route path={R.profile} element={<Profile />} />
-                      <Route path={R.forum} element={<Forum />} />
-                      <Route path={R.topic} element={<Topic />} />
-                    </Route>
+            {/* <Router> */}
+            <Box
+              sx={{
+                display: "flex",
+                flexDirection: "column",
+                minHeight: "100vh",
+              }}
+            >
+              <Routes>
+                <Route element={<Layout />}>
+                  <Route element={<ProtectedToAuth />}>
+                    <Route path={R.login} element={<Login />} />
+                    <Route path={R.register} element={<Register />} />
                   </Route>
+                  <Route path={R.leaderboard} element={<Leaderboard />} />
+                  <Route element={<ProtectedRoutes />}>
+                    <Route path={R.profile} element={<Profile />} />
+                    <Route path={R.forum} element={<Forum />} />
+                    <Route path={R.topic} element={<Topic />} />
+                  </Route>
+                </Route>
 
-                  <Route path={R.page500} element={<Page500 />} />
-                  <Route path="*" element={<Page404 />} />
-                </Routes>
-              </Box>
-              <Snackbar />
-            </Router>
+                <Route path={R.page500} element={<Page500 />} />
+                <Route path="*" element={<Page404 />} />
+              </Routes>
+            </Box>
+            <Snackbar />
+            {/* </Router> */}
+            {/* <Header /> */}
           </ErrorBoundary>
         </CSSBaseLine>
       </ThemeProvider>

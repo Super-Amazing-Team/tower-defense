@@ -14,7 +14,7 @@ import { MyContext } from "@/App";
 
 export function Header() {
   const useLayoutStore = useContext(MyContext).useLayoutStore;
-  const colorMode = useLayoutStore((store) => store.colorMode);
+  const colorModeFunc = useLayoutStore((store) => store.colorModeFunc);
   const setColorMode = useLayoutStore((store) => store.setColorMode);
   const isOpenSidebar = useLayoutStore((store) => store.openSidebar);
   const toggleSidebar = useLayoutStore((store) => store.toggleSidebar);
@@ -39,7 +39,7 @@ export function Header() {
           <IconButton
             sx={{ mx: 1 }}
             onClick={() => {
-              setColorMode(colorMode() === "light" ? "dark" : "light");
+              setColorMode(colorModeFunc() === "light" ? "dark" : "light");
             }}
             color="inherit"
           >
