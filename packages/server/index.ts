@@ -6,13 +6,9 @@ import type { ViteDevServer } from "vite";
 import express from "express";
 import * as path from "path"
 import * as fs from "fs"
-import type { StoreApi } from "zustand"
 //import { createClientAndConnect } from "./db";
-const isDev = () => process.env.NODE_ENV === "development";
 
-export interface IStore {
-  store: () => StoreApi<unknown>
-}
+const isDev = () => process.env.NODE_ENV === "development";
 
 async function startServer() {
   dotenv.config();
@@ -20,6 +16,7 @@ async function startServer() {
   const app = express();
   app.use(cors());
   const port = Number(process.env.SERVER_PORT) || 3001;
+  //createClientAndConnect();
 
   let vite: ViteDevServer | undefined;
   const srcPath = path.dirname(require.resolve("client"))
@@ -27,14 +24,6 @@ async function startServer() {
   const ssrClientPath = require.resolve("client/ssr-dist/client.cjs");
   // eslint-disable-next-line node/no-missing-require
   const distPath = path.dirname(require.resolve("client/dist/index.html"));
-
-  //const store3 = require.resolve("client/src/store/ssr-store.ts");
-  //const aaa = (await import(require.resolve("client/src/store/ssr-store.ts")));
-
-  //console.log(store3);
-  //console.log(aaa);
-
-//createClientAndConnect();
 
   if (isDev()) {
     vite = await createViteServer({
@@ -75,8 +64,7 @@ async function startServer() {
 
       }
 
-      let render: (store: any) => Promise<string>;
-      //const storeRender = (await vite!.ssrLoadModule(path.resolve(store2, "ssr-store.ts"))).getStateForServer;
+      let render: () => Promise<string>;
 
       if (!isDev()) {
         render = (await import(ssrClientPath)).render;
@@ -84,15 +72,7 @@ async function startServer() {
         render = (await vite!.ssrLoadModule(path.resolve(srcPath, "ssr.tsx"))).render;
       }
 
-      const store = path.dirname(require.resolve("client/src/store/ssr-store.ts"));
-      console.log(store)
-      //const store: IStore = storeRender;
-
-      const appHtml = await render(store);
-
-      //const state = store;
-
-      //const stateMarkup = `<script>window.__ZUSTAND_STATE__ = ${JSON.stringify(store)}</script>`;
+      const appHtml = await render();
 
       const html = template.replace("<!--ssr-outlet-->",  appHtml)
 
