@@ -417,16 +417,16 @@ class TDEngine {
     public score: ITDEngine["score"] = 0,
     public money: ITDEngine["money"] = 0,
     public canvasZIndex: Record<TEngineCanvas, number> = {
-      build: 99999999,
-      projectile: 9999994,
-      constructing: 99999993,
-      selection: 99999992,
-      hpBar: 9999991,
-      game: 999999,
-      cannon: 99999,
-      tower: 9999,
-      enemy: 999,
-      deadEnemy: 99,
+      build: 99,
+      projectile: 94,
+      constructing: 83,
+      selection: 79,
+      hpBar: 69,
+      game: 59,
+      cannon: 49,
+      tower: 39,
+      enemy: 29,
+      deadEnemy: 19,
       map: 9,
     } as const,
     public isInitialized: ITDEngine["isInitialized"] = false,
@@ -930,6 +930,7 @@ class TDEngine {
   ) {
     // safari polyfill
     if (typeof window !== "undefined" && !window.requestIdleCallback) {
+      console.log("requestIdleCallback polyfill");
       // @ts-ignore
       window.requestIdleCallback = function (
         callback: IdleRequestCallback,
@@ -965,11 +966,18 @@ class TDEngine {
 
   // create game canvas stack and append it to the game container
   public init(gameContainer: HTMLDivElement) {
+    console.log("init");
     this.gameWindow = gameContainer;
     // set map
     this.setMap(new Map(this));
     // create game canvas stack container
+    try {
+      const canvasContainer = document.createElement("div");
+    } catch (error) {
+      console.log("error", error);
+    }
     const canvasContainer = document.createElement("div");
+    console.log("init 2", canvasContainer);
     canvasContainer.className = "b-canvas-wrapper";
     canvasContainer.style.width = `${this.map?.mapParams.width!}px`;
     canvasContainer.style.height = `${this.map?.mapParams.height!}px`;
