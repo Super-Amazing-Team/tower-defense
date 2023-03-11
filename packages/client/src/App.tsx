@@ -26,13 +26,10 @@ import {
   Page404,
   Page500,
 } from "@/pages";
-// import TDEngine from "@/pages/Game/engine/TDEngine";
+import TDEngine from "@/pages/Game/engine/TDEngine";
 import { Layout } from "@/layout";
 // import { useLayoutStore, useUserStore } from "@/store";
 import { getStateForServer } from "@/store/ssr-store";
-
-// create engine instance
-// const engine = new TDEngine();
 
 const storen = getStateForServer();
 export const MyContext = createContext(storen);
@@ -62,6 +59,7 @@ function withServerSideStore(Component: ComponentType) {
   };
 }
 export default withServerSideStore(function App() {
+  const [engine, setEngine] = React.useState<TDEngine>();
   const [mode, setMode] = React.useState<"dark" | "light">("light");
   // @ts-ignore
   const useUserStore = useContext(MyContext).useUserStore;
@@ -82,6 +80,10 @@ export default withServerSideStore(function App() {
   useEffect(() => {
     setMode(colorModeFunc());
   }, [colorModeFunc, colorMode]);
+
+  useEffect(() => {
+    setEngine(new TDEngine());
+  }, []);
 
   const theme = useMemo(
     () =>
@@ -111,7 +113,7 @@ export default withServerSideStore(function App() {
                 </Route>
                 <Route path={R.leaderboard} element={<Leaderboard />} />
                 <Route element={<ProtectedRoutes />}>
-                  <Route path={R.game} element={<Game />} />
+                  <Route path={R.game} element={<Game engine={engine} />} />
                   <Route path={R.profile} element={<Profile />} />
                   <Route path={R.forum} element={<Forum />} />
                   <Route path={R.topic} element={<Topic />} />

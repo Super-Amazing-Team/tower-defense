@@ -971,11 +971,6 @@ class TDEngine {
     // set map
     this.setMap(new Map(this));
     // create game canvas stack container
-    try {
-      const canvasContainer = document.createElement("div");
-    } catch (error) {
-      console.log("error", error);
-    }
     const canvasContainer = document.createElement("div");
     console.log("init 2", canvasContainer);
     canvasContainer.className = "b-canvas-wrapper";
@@ -1008,6 +1003,7 @@ class TDEngine {
     };
     createCanvas();
     // inject created nodes into the page
+    gameContainer.textContent = "";
     gameContainer.appendChild(canvasContainer);
     // set init flag to true
     this.isInitialized = true;
