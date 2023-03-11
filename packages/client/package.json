@@ -8,7 +8,7 @@
     "preview": "vite preview",
     "lint": "eslint .",
     "format": "prettier --write .",
-    "test": "jest ./"
+    "test": "node ./jestScript.js"
   },
   "dependencies": {
     "@emotion/react": "11.10.6",
