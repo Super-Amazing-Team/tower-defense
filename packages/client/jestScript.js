@@ -28,11 +28,13 @@ async function detectChangedFiles() {
 }
 
 async function findRelatedTests() {
+  const changedFiles = await detectChangedFiles();
+  if (changedFiles === null) return null;
+
   const projectDir = process.cwd().replace("packages/client", "");
   const jsFilesReg = /.(j|t|cj|mj)s$/g;
   const testCases = [".spec.ts", ".test.ts"];
 
-  const changedFiles = await detectChangedFiles();
   const changedFilesArr = changedFiles.trim().split(" ");
   const scriptFilesArr = changedFilesArr.filter((path) =>
     path.match(jsFilesReg),
