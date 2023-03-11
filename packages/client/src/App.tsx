@@ -19,6 +19,7 @@ import {
   Login,
   Register,
   Forum,
+  Game,
   Topic,
   Leaderboard,
   Profile,
@@ -112,6 +113,7 @@ export default withServerSideStore(function Home() {
                   </Route>
                   <Route path={R.leaderboard} element={<Leaderboard />} />
                   <Route element={<ProtectedRoutes />}>
+                    <Route path={R.game} element={<Game />} />
                     <Route path={R.profile} element={<Profile />} />
                     <Route path={R.forum} element={<Forum />} />
                     <Route path={R.topic} element={<Topic />} />

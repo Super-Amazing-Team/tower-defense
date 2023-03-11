@@ -929,7 +929,7 @@ class TDEngine {
     public sound: ITDEngine["sound"] = new Sound(),
   ) {
     // safari polyfill
-    if (!window.requestIdleCallback) {
+    if (typeof window !== "undefined" && !window.requestIdleCallback) {
       // @ts-ignore
       window.requestIdleCallback = function (
         callback: IdleRequestCallback,
@@ -952,7 +952,7 @@ class TDEngine {
         }, relaxation);
       };
     }
-    if (!window.cancelIdleCallback) {
+    if (typeof window !== "undefined" && !window.cancelIdleCallback) {
       window.cancelIdleCallback = function (id) {
         clearTimeout(id);
       };
