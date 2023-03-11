@@ -92,9 +92,9 @@ async function startServer() {
 
       //const state = store;
 
-      const stateMarkup = `<script>window.__ZUSTAND_STATE__ = ${JSON.stringify(store)}</script>`;
+      //const stateMarkup = `<script>window.__ZUSTAND_STATE__ = ${JSON.stringify(store)}</script>`;
 
-      const html = template.replace("<!--ssr-outlet-->", stateMarkup + appHtml)
+      const html = template.replace("<!--ssr-outlet-->",  appHtml)
 
       res.status(200).set({ "Content-Type": "text/html" }).end(html)
     } catch (e) {
