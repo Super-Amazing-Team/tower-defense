@@ -23,6 +23,7 @@ async function detectChangedFiles() {
     return stdout.replace(/\n/g, " ");
   } catch (error) {
     console.error("[ERR]: can't detect ChangedFiles\n", error);
+    return null;
   }
 }
 
