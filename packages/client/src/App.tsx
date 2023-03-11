@@ -92,43 +92,38 @@ export default withServerSideStore(function Home() {
     [mode],
   );
   return (
-    <div className="App">
-      <ThemeProvider theme={theme}>
-        <CSSBaseLine>
-          <ErrorBoundary>
-            {/* <Router> */}
-            <Box
-              sx={{
-                display: "flex",
-                flexDirection: "column",
-                minHeight: "100vh",
-              }}
-            >
-              <Routes>
-                <Route element={<Layout />}>
-                  <Route element={<ProtectedToAuth />}>
-                    <Route path={R.login} element={<Login />} />
-                    <Route path={R.register} element={<Register />} />
-                  </Route>
-                  <Route path={R.leaderboard} element={<Leaderboard />} />
-                  <Route element={<ProtectedRoutes />}>
-                    <Route path={R.profile} element={<Profile />} />
-                    <Route path={R.forum} element={<Forum />} />
-                    <Route path={R.topic} element={<Topic />} />
-                  </Route>
+    <ThemeProvider theme={theme}>
+      <CSSBaseLine>
+        <ErrorBoundary>
+          <Box
+            sx={{
+              display: "flex",
+              flexDirection: "column",
+              minHeight: "100vh",
+            }}
+          >
+            <Routes>
+              <Route element={<Layout />}>
+                <Route element={<ProtectedToAuth />}>
+                  <Route path={R.login} element={<Login />} />
+                  <Route path={R.register} element={<Register />} />
                 </Route>
+                <Route path={R.leaderboard} element={<Leaderboard />} />
+                <Route element={<ProtectedRoutes />}>
+                  <Route path={R.profile} element={<Profile />} />
+                  <Route path={R.forum} element={<Forum />} />
+                  <Route path={R.topic} element={<Topic />} />
+                </Route>
+              </Route>
 
-                <Route path={R.page500} element={<Page500 />} />
-                <Route path="*" element={<Page404 />} />
-              </Routes>
-            </Box>
-            <Snackbar />
-            {/* </Router> */}
-            {/* <Header /> */}
-          </ErrorBoundary>
-        </CSSBaseLine>
-      </ThemeProvider>
-    </div>
+              <Route path={R.page500} element={<Page500 />} />
+              <Route path="*" element={<Page404 />} />
+            </Routes>
+          </Box>
+          <Snackbar />
+        </ErrorBoundary>
+      </CSSBaseLine>
+    </ThemeProvider>
   );
 });
 
