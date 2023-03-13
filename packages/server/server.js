@@ -17,7 +17,7 @@ export async function createServer(
   const resolve = (p) => path.resolve(__dirname, p);
 
   const indexProd = isProd
-    ? fs.readFileSync(resolve("../client/dist/index.html"), "utf-8")
+    ? fs.readFileSync(resolve("../client/dist/client/index.html"), "utf-8")
     : "";
 
   const app = express();
@@ -51,7 +51,7 @@ export async function createServer(
   } else {
     app.use((await import("compression")).default());
     app.use(
-      (await import("serve-static")).default(resolve("../client/dist"), {
+      (await import("serve-static")).default(resolve("../client/dist/client"), {
         index: false,
       }),
     );
@@ -65,7 +65,7 @@ export async function createServer(
       let template; let render;
       if (!isProd) {
         // always read fresh template in dev
-        template = fs.readFileSync(resolve("client/dist/index.html"), "utf-8");
+        template = fs.readFileSync(resolve("client/index.html"), "utf-8");
         template = await vite.transformIndexHtml(url, template);
         render = (await vite.ssrLoadModule("../client/ssr.jsx")).render;
       } else {
@@ -82,7 +82,7 @@ export async function createServer(
         return res.redirect(301, context.url);
       }
 
-      const html = template.replace("<!--app-html-->", appHtml);
+      const html = template.replace("<!--ssr-outlet-->", appHtml);
 
       res.status(200).set({ "Content-Type": "text/html" }).end(html);
     } catch (e) {

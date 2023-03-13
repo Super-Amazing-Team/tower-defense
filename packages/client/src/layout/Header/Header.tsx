@@ -7,10 +7,12 @@ import {
   Box,
   useTheme,
 } from "@mui/material";
-import MenuIcon from "@mui/icons-material/Menu";
-import Close from "@mui/icons-material/Close";
-import Brightness7Icon from "@mui/icons-material/Brightness7";
-import Brightness4Icon from "@mui/icons-material/Brightness4";
+import {
+  Brightness7,
+  Brightness4,
+  Menu as MenuIcon,
+  Close,
+} from "@mui/icons-material";
 // import { useLayoutStore } from "@/store";
 import { MyContext } from "@/App";
 
@@ -45,11 +47,7 @@ export function Header() {
             }}
             color="inherit"
           >
-            {theme.palette.mode === "dark" ? (
-              <Brightness7Icon />
-            ) : (
-              <Brightness4Icon />
-            )}
+            {theme.palette.mode === "dark" ? <Brightness7 /> : <Brightness4 />}
           </IconButton>
           {theme.palette.mode} mode
         </Box>

@@ -11,13 +11,15 @@ import {
   Toolbar,
   Drawer,
 } from "@mui/material";
-import LoginIcon from "@mui/icons-material/Login";
-import HowToRegIcon from "@mui/icons-material/HowToReg";
-import LeaderboardIcon from "@mui/icons-material/Leaderboard";
-import SportsEsportsIcon from "@mui/icons-material/SportsEsports";
-import ForumIcon from "@mui/icons-material/Forum";
-import AccountCircleIcon from "@mui/icons-material/AccountCircle";
-import LogoutIcon from "@mui/icons-material/Logout";
+import {
+  Login as LoginIcon,
+  HowToReg as HowToRegIcon,
+  Leaderboard as LeaderboardIcon,
+  SportsEsports as SportsEsportsIcon,
+  Forum as ForumIcon,
+  AccountCircle as AccountCircleIcon,
+  Logout as LogoutIcon,
+} from "@mui/icons-material";
 import { useContext } from "react";
 import { TRoutes as R } from "@/types";
 import { MyContext } from "@/App";
