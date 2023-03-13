@@ -108,8 +108,8 @@ export default withServerSideStore(function App() {
           <Routes>
             <Route element={<Layout />}>
               <Route element={<ProtectedToAuth />}>
-                {/* <Route path={R.login} element={<Login />} /> */}
-                {/* <Route path={R.register} element={<Register />} /> */}
+                <Route path={R.login} element={<Login />} />
+                <Route path={R.register} element={<Register />} />
               </Route>
               <Route path={R.leaderboard} element={<Leaderboard />} />
               <Route element={<ProtectedRoutes />}>
