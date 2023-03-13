@@ -27,7 +27,8 @@
     "vite.config.ts",
     "jest.config.js",
     ".eslintrc.cjs",
-    "serviceWorker.ts"
+    "serviceWorker.ts",
+    "jestScript.js"
   ],
   "references": [{ "path": "./tsconfig.node.json" }]
 }

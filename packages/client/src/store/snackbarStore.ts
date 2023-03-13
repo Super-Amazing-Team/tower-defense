@@ -50,6 +50,11 @@ export const useSnackbarStore = create<IStore>()(() => ({
  *
  * addToast(options);
  */
+export function addToast(rawToast: string): void;
+export function addToast(
+  rawToast: IToastProps,
+  severity: IToastProps["severity"],
+): void;
 export function addToast(
   rawToast: IToastProps | string,
   severity: IToastProps["severity"] = "error",

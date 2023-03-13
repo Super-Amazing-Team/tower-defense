@@ -2,13 +2,16 @@
   "name": "server",
   "version": "1.0.0",
   "description": "",
+  "engines": {
+    "node": ">=16.0.0"
+  },
   "scripts": {
     "build": "tsc --p ./tsconfig.prod.json",
     "preview": "node ./dist/index.js",
     "dev": "cross-env NODE_ENV=development nodemon index.ts",
     "lint": "eslint .",
     "format": "prettier --write .",
-    "test": "jest ."
+    "test": "node ./jestScript.mjs"
   },
   "dependencies": {
     "cors": "2.8.5",
