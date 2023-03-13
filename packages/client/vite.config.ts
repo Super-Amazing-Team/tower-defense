@@ -1,18 +1,31 @@
 /* eslint-disable */
-import { defineConfig } from "vite";
-import react from "@vitejs/plugin-react";
+// import { defineConfig } from "vite";
+// import react from "@vitejs/plugin-react";
 import tsconfigPaths from "vite-tsconfig-paths";
-import eslintPlugin from "vite-plugin-eslint";
-import dotenv from "dotenv";
-dotenv.config();
+// import eslintPlugin from "vite-plugin-eslint";
+// import dotenv from "dotenv";
+// dotenv.config();
+//
+// // https://vitejs.dev/config/
+// export default defineConfig({
+//   server: {
+//     port: Number(process.env.CLIENT_PORT) || 3000,
+//   },
+//   define: {
+//     __SERVER_PORT__: process.env.SERVER_PORT || 3001,
+//   },
+//   plugins: [react(), eslintPlugin(), tsconfigPaths()],
+// });
 
-// https://vitejs.dev/config/
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+
 export default defineConfig({
-  server: {
-    port: Number(process.env.CLIENT_PORT) || 3000,
+  plugins: [react(), tsconfigPaths()],
+  build: {
+    minify: false,
+    rollupOptions: {
+
+    }
   },
-  define: {
-    __SERVER_PORT__: process.env.SERVER_PORT || 3001,
-  },
-  plugins: [react(), eslintPlugin(), tsconfigPaths()],
-});
+})

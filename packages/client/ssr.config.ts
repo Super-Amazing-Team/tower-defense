@@ -18,6 +18,7 @@ export default defineConfig({
       output: {
         dir: "ssr-dist",
       },
+      external: ["react", "react-dom"],
     },
   },
 });

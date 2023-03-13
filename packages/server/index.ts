@@ -23,7 +23,7 @@ async function startServer() {
   // eslint-disable-next-line node/no-missing-require
   const ssrClientPath = require.resolve("client/ssr-dist/client.cjs");
   // eslint-disable-next-line node/no-missing-require
-  const distPath = path.dirname(require.resolve("client/dist/index.html"));
+  const distPath = path.dirname(require.resolve("client/index.html"));
 
   if (isDev()) {
     vite = await createViteServer({

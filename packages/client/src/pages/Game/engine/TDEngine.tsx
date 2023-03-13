@@ -401,7 +401,7 @@ export interface ITDEngine {
   sound: Sound | null;
 }
 
-class TDEngine {
+export class TDEngine {
   constructor(
     public map?: ITDEngine["map"],
     public enemies: ITDEngine["enemies"] = [],
@@ -2247,5 +2247,3 @@ class TDEngine {
     }
   };
 }
-
-export default TDEngine;
