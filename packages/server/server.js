@@ -3,24 +3,22 @@ import path from "node:path";
 import { fileURLToPath } from "node:url";
 import express from "express";
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const __dirname = path.dirname(fileURLToPath(import.meta.url))
 
-const isTest = process.env.VITEST;
-
-process.env.MY_CUSTOM_SECRET = "API_KEY_qwertyuiop";
+const isTest = process.env.VITEST
 
 export async function createServer(
   root = process.cwd(),
   isProd = process.env.NODE_ENV === "production",
   hmrPort = undefined
 ) {
-  const resolve = (p) => path.resolve(__dirname, p);
+  const resolve = (p) => path.resolve(__dirname, p)
 
   const indexProd = isProd
     ? fs.readFileSync(resolve("../client/dist/client/index.html"), "utf-8")
-    : "";
+    : ""
 
-  const app = express();
+  const app = express()
 
   /**
    * @type {import('vite').ViteDevServer}
@@ -51,6 +49,7 @@ export async function createServer(
   } else {
     app.use((await import("compression")).default());
     app.use(
+      // @ts-ignore
       (await import("serve-static")).default(resolve("../client/dist/client"), {
         index: false,
       }),
@@ -74,25 +73,23 @@ export async function createServer(
         render = (await import("client/dist/server/ssr.js")).render;
       }
 
-      const context = {};
-      const appHtml = render(url, context);
-
-      if (context.url) {
-        // Somewhere a `<Redirect>` was rendered
-        return res.redirect(301, context.url);
-      }
-
+      const appHtml = render(url);
       const html = template.replace("<!--ssr-outlet-->", appHtml);
 
       res.status(200).set({ "Content-Type": "text/html" }).end(html);
     } catch (e) {
       // eslint-disable-next-line no-unused-expressions
+      // @ts-ignore
+      // eslint-disable-next-line no-unused-expressions
       !isProd && vite.ssrFixStacktrace(e);
+      // @ts-ignore
       console.log(e.stack);
+      // @ts-ignore
       res.status(500).end(e.stack);
     }
   });
 
+  // @ts-ignore
   return { app, vite };
 }
 

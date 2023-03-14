@@ -2,9 +2,8 @@
   "ts-node": { "esm": true },
   "compilerOptions": {
     "composite": true,
-    "target": "es2021",
-    "module": "commonjs",
-    "moduleResolution": "node",
+    "module": "NodeNext",
+    "moduleResolution": "nodenext",
     "esModuleInterop": true,
     "sourceMap": true,
     "declaration": true,

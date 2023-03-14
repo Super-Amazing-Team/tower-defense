@@ -3,11 +3,9 @@ import { StaticRouter } from "react-router-dom/server";
 import { Location } from "react-router-dom";
 import App from "./src/App";
 
-export function render(url: string | Partial<Location>, context: any) {
+export function render(url: string | Partial<Location>) {
   return renderToString(
-    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-    // @ts-ignore
-    <StaticRouter location={url} context={context}>
+    <StaticRouter location={url}>
       <App />
     </StaticRouter>,
   );
