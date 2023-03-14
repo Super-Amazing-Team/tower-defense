@@ -1,4 +1,3 @@
-import { useContext } from "react";
 import {
   AppBar,
   Toolbar,
@@ -13,12 +12,10 @@ import {
   Menu as MenuIcon,
   Close,
 } from "@mui/icons-material";
-// import { useLayoutStore } from "@/store";
-import { MyContext } from "@/App";
+import { useLayoutStore } from "@/store";
 
 export function Header() {
-  const useLayoutStore = useContext(MyContext).useLayoutStore;
-  const colorModeFunc = useLayoutStore((store) => store.colorModeFunc);
+  const colorMode = useLayoutStore((store) => store.colorMode);
   const setColorMode = useLayoutStore((store) => store.setColorMode);
   const isOpenSidebar = useLayoutStore((store) => store.openSidebar);
   const toggleSidebar = useLayoutStore((store) => store.toggleSidebar);
@@ -43,7 +40,7 @@ export function Header() {
           <IconButton
             sx={{ mx: 1 }}
             onClick={() => {
-              setColorMode(colorModeFunc() === "light" ? "dark" : "light");
+              setColorMode(colorMode === "light" ? "dark" : "light");
             }}
             color="inherit"
           >

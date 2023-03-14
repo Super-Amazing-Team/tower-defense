@@ -2,7 +2,6 @@ import { create } from "zustand";
 
 interface IBearsStore {
   openSidebar: boolean;
-  colorModeFunc: () => "dark" | "light";
   colorMode: "dark" | "light";
   setCloseSidebar(): void;
   setColorMode(newColorMode: "dark" | "light"): void;
