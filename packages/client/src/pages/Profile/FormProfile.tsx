@@ -1,4 +1,3 @@
-import React from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
@@ -15,7 +14,7 @@ export interface IFormProfileProps {
 
 type TSchema = z.infer<typeof schema>;
 
-const FormProfile = (props: IFormProfileProps) => {
+export function FormProfile(props: IFormProfileProps) {
   const setIsEditMode = useProfileStore((store) => store.updateEditMode);
   const updateUser = useUserStore((store) => store.updateUser);
   const user = useUserStore((store) => store.user);
@@ -142,6 +141,4 @@ const FormProfile = (props: IFormProfileProps) => {
       </Grid>
     </form>
   );
-};
-
-export default FormProfile;
+}

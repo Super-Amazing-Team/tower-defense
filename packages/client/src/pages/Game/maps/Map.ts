@@ -1,4 +1,4 @@
-import TDEngine, { ITwoDCoordinates } from "../engine/TDEngine";
+import { TDEngine, ITwoDCoordinates } from "../engine/TDEngine";
 
 export interface IStage {
   direction: "left" | "right" | "up" | "down" | "start" | "end";

@@ -1,12 +1,12 @@
-import { FC, PropsWithChildren, useEffect, useRef, useState } from "react";
-import TDEngine, { TEnemyType, TTowerSpriteTypes } from "./engine/TDEngine";
-import GameUi from "@/pages/Game/components/GameUI/GameUI";
+import { PropsWithChildren, useEffect, useRef, useState } from "react";
+import { TDEngine, TEnemyType, TTowerSpriteTypes } from "./engine/TDEngine";
+import { GameUi } from "@/pages/Game/components/GameUI/GameUI";
 
 export interface IGameProps extends PropsWithChildren {
   engine?: TDEngine;
 }
 
-export const Game: FC<IGameProps> = ({ engine = new TDEngine() }) => {
+export function Game({ engine = new TDEngine() }: IGameProps) {
   // game window ref
   const gameWindow = useRef<HTMLDivElement>(null);
   const [isGameStarted, setIsGameStarted] = useState<boolean>(false);
@@ -111,4 +111,4 @@ export const Game: FC<IGameProps> = ({ engine = new TDEngine() }) => {
       />
     </>
   );
-};
+}

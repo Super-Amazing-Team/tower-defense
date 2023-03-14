@@ -1,6 +1,6 @@
 import { Container, Typography, Link } from "@mui/material";
 import { Link as RouterLink } from "react-router-dom";
-import AuthLogin from "./AuthLogin";
+import { AuthLogin } from "./AuthLogin";
 
 export function Login() {
   return (

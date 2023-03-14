@@ -3,8 +3,8 @@ import type { ChangeEvent } from "react";
 import { Avatar, Button, ButtonGroup, Container, Dialog } from "@mui/material";
 import { useProfileStore, useUserStore } from "@/store";
 import { joinUrl } from "@/utils";
-import FormProfile from "@/pages/Profile/FormProfile";
-import EditPasswordForm from "@/pages/Profile/EditPasswordForm";
+import { FormProfile } from "@/pages/Profile/FormProfile";
+import { EditPasswordForm } from "@/pages/Profile/EditPasswordForm";
 import { baseUrl } from "@/constants";
 
 export function Profile() {

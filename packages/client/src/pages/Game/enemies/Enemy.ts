@@ -1,4 +1,4 @@
-import TDEngine, { ITwoDCoordinates, TEnemyType } from "../engine/TDEngine";
+import { TDEngine, ITwoDCoordinates, TEnemyType } from "../engine/TDEngine";
 export interface IEnemy {
   engine: TDEngine;
   sprite?: Record<string, CanvasImageSource[]>[];

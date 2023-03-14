@@ -1,6 +1,6 @@
 import { useNavigate, Link as RouterLink } from "react-router-dom";
 import { Container, Link, Typography } from "@mui/material";
-import AuthRegister from "./AuthRegister";
+import { AuthRegister } from "./AuthRegister";
 import { useUserStore } from "@/store/userStore";
 
 export function Register() {

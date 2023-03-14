@@ -25,7 +25,7 @@ interface IEditPasswordFormProps {
   onCloseModalEditPassword: () => void;
 }
 
-const EditPasswordForm = (props: IEditPasswordFormProps) => {
+export function EditPasswordForm(props: IEditPasswordFormProps) {
   const [isShowOldPassword, setIsShowOldPassword] = useState(false);
   const [isShowNewPassword, setIsShowNewPassword] = useState(false);
   const [isShowConfirmPassword, setIsShowConfirmPassword] = useState(false);
@@ -167,6 +167,4 @@ const EditPasswordForm = (props: IEditPasswordFormProps) => {
       </DialogActions>
     </form>
   );
-};
-
-export default EditPasswordForm;
+}

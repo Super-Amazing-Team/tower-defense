@@ -14,14 +14,13 @@ import {
   OutlinedInput,
   TextField,
 } from "@mui/material";
-import Visibility from "@mui/icons-material/Visibility";
-import VisibilityOff from "@mui/icons-material/VisibilityOff";
+import { Visibility, VisibilityOff } from "@mui/icons-material";
 import { useUserStore } from "@/store";
 import { registerSchema as schema } from "@/types";
 
 type TSchema = z.infer<typeof schema>;
 
-const AuthRegister = () => {
+export function AuthRegister() {
   const [isShowPassword, setIsShowPassword] = useState(false);
   const signUp = useUserStore((store) => store.signUp);
   const handleClickShowPassword = () => {
@@ -146,6 +145,4 @@ const AuthRegister = () => {
       </Grid>
     </form>
   );
-};
-
-export default AuthRegister;
+}
