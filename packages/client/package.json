@@ -4,8 +4,7 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
-    "build": "tsc && vite build --config vite.config.ts",
-    "build:ssr": "tsc && vite build --config ssr.config.ts",
+    "build": "npm run build:client && npm run build:server",
     "build:client": "vite build --outDir dist/client",
     "build:server": "vite build --ssr ssr.tsx --outDir dist/server",
     "preview": "vite preview",
