@@ -11,7 +11,7 @@
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",
     "format": "prettier --write .",
-    "test": "jest ./"
+    "test": "node ./jestScript.js"
   },
   "dependencies": {
     "@emotion/cache": "^11.10.5",

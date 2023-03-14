@@ -42,7 +42,7 @@
     "node/no-missing-import": "off",
     "node/no-unpublished-import": "off",
     // "no-console": "off",
-    "no-console": ["warn", { "allow": ["warn", "error"] }],
+    "no-console": ["warn", { "allow": ["warn", "error", "info"] }],
     "no-warning-comments": [
       "off",
       // "warn",
