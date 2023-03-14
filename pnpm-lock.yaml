@@ -106,13 +106,14 @@ importers:
   packages/server:
     specifiers:
       '@babel/core': '>=7.8.0 <8.0.0'
-      '@types/compression': ^1.7.2
+      '@types/compression': 1.7.2
       '@types/cors': 2.8.12
       '@types/express': 4.17.13
-      '@types/express-serve-static-core': ^4.17.33
+      '@types/express-serve-static-core': 4.17.33
       '@types/jest': 29.4.0
       '@types/node': 18.14.6
       '@types/pg': 8.6.6
+      '@types/serve-static': ^1.15.1
       '@typescript-eslint/eslint-plugin': 5.54.0
       '@typescript-eslint/parser': 5.54.0
       '@vitejs/plugin-react': 3.1.0
@@ -132,6 +133,7 @@ importers:
       nodemon: 2.0.21
       pg: 8.9.0
       prettier: 2.8.4
+      rimraf: ^4.4.0
       serve-static: ^1.15.0
       ts-jest: 29.0.5
       ts-node: 10.9.1
@@ -155,6 +157,7 @@ importers:
       '@types/jest': 29.4.0
       '@types/node': 18.14.6
       '@types/pg': 8.6.6
+      '@types/serve-static': 1.15.1
       '@typescript-eslint/eslint-plugin': 5.54.0_6mj2wypvdnknez7kws2nfdgupi
       '@typescript-eslint/parser': 5.54.0_ycpbpc6yetojsgtrx3mwntkhsu
       '@vitejs/plugin-react': 3.1.0_vite@4.1.1
@@ -168,6 +171,7 @@ importers:
       jest: 29.4.3_nvadb4ngcuh2lyv22apfdo6nc4
       nodemon: 2.0.21
       prettier: 2.8.4
+      rimraf: 4.4.0
       serve-static: 1.15.0
       ts-jest: 29.0.5_uvh2lfmfmkxl7pemqrjflcid5y
       ts-node: 10.9.1_alpjt73dvgv6kni625hu7f2l4m
@@ -5907,6 +5911,16 @@ packages:
       once: 1.4.0
     dev: true
 
+  /glob/9.3.0:
+    resolution: {integrity: sha512-EAZejC7JvnQINayvB/7BJbpZpNOJ8Lrw2OZNEvQxe0vaLn1SuwMcfV7/MNaX8L/T0wmptBFI4YMtDvSBxYDc7w==}
+    engines: {node: '>=16 || 14 >=14.17'}
+    dependencies:
+      fs.realpath: 1.0.0
+      minimatch: 7.4.2
+      minipass: 4.2.5
+      path-scurry: 1.6.1
+    dev: true
+
   /globals/11.12.0:
     resolution: {integrity: sha512-WOBp/EEGUiIsJSp7wcv/y6MO+lV9UoncWqxuFfm8eBwzWNgyfBd6Gz+IeKQ9jCmyhoH99g15M3T+QaVHFjizVA==}
     engines: {node: '>=4'}
@@ -7769,6 +7783,13 @@ packages:
       brace-expansion: 2.0.1
     dev: true
 
+  /minimatch/7.4.2:
+    resolution: {integrity: sha512-xy4q7wou3vUoC9k1xGTXc+awNdGaGVHtFUaey8tiX4H1QRc04DZ/rmDFwNm2EBsuYEhAZ6SgMmYf3InGY6OauA==}
+    engines: {node: '>=10'}
+    dependencies:
+      brace-expansion: 2.0.1
+    dev: true
+
   /minimist-options/4.1.0:
     resolution: {integrity: sha512-Q4r8ghd80yhO/0j1O3B2BjweX3fiHg9cdOwjJd2J76Q135c+NDxGCqdYKQ1SKBuFfgWbAUzBfvYjPUEeNgqN1A==}
     engines: {node: '>= 6'}
@@ -7835,6 +7856,11 @@ packages:
       yallist: 4.0.0
     dev: true
 
+  /minipass/4.2.5:
+    resolution: {integrity: sha512-+yQl7SX3bIT83Lhb4BVorMAHVuqsskxRdlmO9kTpyukp8vsm2Sn/fUOV9xlnG8/a5JsypJzap21lz/y3FBMJ8Q==}
+    engines: {node: '>=8'}
+    dev: true
+
   /minizlib/2.1.2:
     resolution: {integrity: sha512-bAxsR8BVfj60DWXHE3u30oHzfl4G7khkSuPW+qvpd7jFRHm7dLxOjUk1EHACJ/hxLY8phGJ0YhYHZo7jil7Qdg==}
     engines: {node: '>= 8'}
@@ -7881,7 +7907,7 @@ packages:
       array-differ: 3.0.0
       array-union: 2.1.0
       arrify: 2.0.1
-      minimatch: 3.0.5
+      minimatch: 3.1.2
     dev: true
 
   /mute-stream/0.0.8:
@@ -8547,6 +8573,14 @@ packages:
   /path-parse/1.0.7:
     resolution: {integrity: sha512-LDJzPVEEEPR+y48z93A0Ed0yXb8pAByGWo/k5YYdYgpY2/2EsOsksJrq7lOHxryrVOn1ejG6oAp8ahvOIQD8sw==}
 
+  /path-scurry/1.6.1:
+    resolution: {integrity: sha512-OW+5s+7cw6253Q4E+8qQ/u1fVvcJQCJo/VFD8pje+dbJCF1n5ZRMV2AEHbGp+5Q7jxQIYJxkHopnj6nzdGeZLA==}
+    engines: {node: '>=14'}
+    dependencies:
+      lru-cache: 7.18.2
+      minipass: 4.2.5
+    dev: true
+
   /path-to-regexp/0.1.7:
     resolution: {integrity: sha512-5DFkuoqlv1uYQKxy8omFBeJPQcdoE07Kv2sferDCrAq1ohOU+MSDswDIbnx3YAM60qIOnYa53wBhXW0EbMonrQ==}
     dev: false
@@ -9171,6 +9205,14 @@ packages:
     hasBin: true
     dependencies:
       glob: 7.2.3
+    dev: true
+
+  /rimraf/4.4.0:
+    resolution: {integrity: sha512-X36S+qpCUR0HjXlkDe4NAOhS//aHH0Z+h8Ckf2auGJk3PTnx5rLmrHkwNdbVQuCSUhOyFrlRvFEllZOYE+yZGQ==}
+    engines: {node: '>=14'}
+    hasBin: true
+    dependencies:
+      glob: 9.3.0
     dev: true
 
   /rollup/2.79.1:

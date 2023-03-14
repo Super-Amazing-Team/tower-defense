@@ -1,94 +1,106 @@
-import dotenv from "dotenv";
-import cors from "cors";
-import { createServer as createViteServer } from "vite";
+import express from "express";
+import type { Request, Response, Express } from "express";
+import fs from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import type { ViteDevServer } from "vite";
 
-import express from "express";
-import * as path from "path"
-import * as fs from "fs"
-//import { createClientAndConnect } from "./db";
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-const isDev = () => process.env.NODE_ENV === "development";
+const isTest = process.env.VITEST;
 
-async function startServer() {
-  dotenv.config();
+export async function createServer(
+  root = process.cwd(),
+  isProd = process.env.NODE_ENV === "production",
+  hmrPort = undefined
+): Promise<{app: Express, vite: ViteDevServer | undefined}> {
+  const resolve = (p: string) => path.resolve(__dirname, p);
+
+  const indexProd = isProd
+    ? fs.readFileSync(resolve("../../client/dist/client/index.html"), "utf-8")
+    : "";
 
   const app = express();
-  app.use(cors());
-  const port = Number(process.env.SERVER_PORT) || 3001;
-  //createClientAndConnect();
 
+  /**
+   * @type {import('vite').ViteDevServer}
+   */
   let vite: ViteDevServer | undefined;
-  const srcPath = path.dirname(require.resolve("client"))
-  // eslint-disable-next-line node/no-missing-require
-  const ssrClientPath = require.resolve("client/ssr-dist/client.cjs");
-  // eslint-disable-next-line node/no-missing-require
-  const distPath = path.dirname(require.resolve("client/index.html"));
-
-  if (isDev()) {
-    vite = await createViteServer({
-      server: { middlewareMode: true },
-      root: srcPath,
-      appType: "custom"
-    })
-
-    app.use(vite.middlewares)
+  if (!isProd) {
+    vite = await (
+      await import("vite")
+    ).createServer({
+      root,
+      logLevel: isTest ? "error" : "info",
+      server: {
+        middlewareMode: true,
+        watch: {
+          // During tests we edit the files too fast and sometimes chokidar
+          // misses change events, so enforce polling for consistency
+          usePolling: true,
+          interval: 100,
+        },
+        hmr: {
+          port: hmrPort,
+        },
+      },
+      appType: "custom",
+    });
+    // use vite's connect instance as middleware
+    app.use(vite.middlewares);
+  } else {
+    app.use((await import("compression")).default());
+    app.use(
+      (await import("serve-static")).default(resolve("../../client/dist/client"), {
+        index: false,
+      }),
+    );
   }
 
-  app.get("/api", (_, res) => {
-    res.json("👋 Howdy from the server :)");
-  });
-
-  if (!isDev()) {
-    app.use("/assets", express.static(path.resolve(distPath, "assets")))
-  }
-
-  app.use("*", async (req, res, next) => {
-    const url = req.originalUrl;
-
+  // eslint-disable-next-line consistent-return
+  app.use("*", async (req: Request, res: Response) => {
     try {
-      let template: string;
+      const url = req.originalUrl;
 
-      if (!isDev()) {
-        template = fs.readFileSync(
-          path.resolve(distPath, "index.html"),
-          "utf-8",
-        )
+      let template; let render;
+      if (!isProd) {
+        // always read fresh template in dev
+        template = fs.readFileSync(resolve("client/index.html"), "utf-8");
+        template = await vite!.transformIndexHtml(url, template);
+        render = (await vite!.ssrLoadModule("../../client/ssr.jsx")).render;
       } else {
-        template = fs.readFileSync(
-          path.resolve(srcPath, "index.html"),
-          "utf-8",
-        )
-
-        template = await vite!.transformIndexHtml(url, template)
-
+        template = indexProd;
+        render = (await import("client/dist/server/ssr.js")).render;
       }
 
-      let render: () => Promise<string>;
+      const context = {
+        url: ""
+      };
+      const appHtml = render(url, context);
 
-      if (!isDev()) {
-        render = (await import(ssrClientPath)).render;
-      } else {
-        render = (await vite!.ssrLoadModule(path.resolve(srcPath, "ssr.tsx"))).render;
+      if (context.url) {
+        // Somewhere a `<Redirect>` was rendered
+        return res.redirect(301, context.url);
       }
 
-      const appHtml = await render();
+      const html = template.replace("<!--ssr-outlet-->", appHtml);
 
-      const html = template.replace("<!--ssr-outlet-->",  appHtml)
-
-      res.status(200).set({ "Content-Type": "text/html" }).end(html)
-    } catch (e) {
-      if (isDev()) {
-        vite!.ssrFixStacktrace(e as Error)
-      }
-      next(e)
+      res.status(200).set({ "Content-Type": "text/html" }).end(html);
+    } catch (e: any) {
+      // eslint-disable-next-line no-unused-expressions
+      !isProd && vite!.ssrFixStacktrace(e);
+      console.log(e.stack);
+      res.status(500).end(e.stack);
     }
   });
 
-  app.listen(port, () => {
-    console.log(`  ➜ 🎸 Server is listening on port: ${port}`);
-  });
+  return { app, vite };
 }
 
-startServer();
-
+if (!isTest) {
+  createServer().then(({ app }) =>
+    app.listen(5173, () => {
+      console.log("http://localhost:5173");
+    }),
+  );
+}
