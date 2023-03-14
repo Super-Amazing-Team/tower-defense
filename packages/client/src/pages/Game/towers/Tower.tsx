@@ -62,6 +62,7 @@ export interface ITower {
     isConstructonEnd: boolean;
     constructingCurrentFrame: number;
     constructionProgressTime: number;
+    constructionProgressPercent: number;
     constructionProgressTimer: NodeJS.Timer | null;
     constructionTimeout: number;
     constructionTimer: NodeJS.Timer | null;
@@ -117,7 +118,7 @@ class Tower {
       strokeStyle: "green",
       prevFiringAngle: 0,
       fireFromCoords: { x: 0, y: 0 },
-      maxUpgradeLevel: 3,
+      maxUpgradeLevel: 2,
       price: 15,
     },
     public projectileParams: ITower["projectileParams"] = {
@@ -157,6 +158,7 @@ class Tower {
       isConstructonEnd: false,
       constructingCurrentFrame: 0,
       constructionProgressTime: 0,
+      constructionProgressPercent: 0,
       constructionProgressTimer: null,
       constructionTimeout: 5000,
       constructionTimer: null,
@@ -198,6 +200,9 @@ class Tower {
           this.engine.clearContext(this.engine.context?.tower!);
           this.engine.towers?.forEach((tower) => {
             tower.draw();
+            if (tower.towerParams.isSelected) {
+              tower.towerParams.isSelected = false;
+            }
           });
         }
       } else {
@@ -235,11 +240,7 @@ class Tower {
     context.font = "14px sans-serif";
     context.textAlign = "center";
     context.fillText(
-      `${Math.floor(
-        (this.renderParams.constructionProgressTime /
-          this.renderParams?.constructionTimeout) *
-          100,
-      )}%`,
+      `${this.renderParams.constructionProgressPercent}%`,
       this.currentPosition.x - this.towerParams.baseWidth / 2,
       this.currentPosition.y - 10,
       this.towerParams.baseWidth,
@@ -258,6 +259,17 @@ class Tower {
         if (!this.renderParams.constructionProgressTimer) {
           this.renderParams!.constructionProgressTimer = setInterval(() => {
             this.renderParams.constructionProgressTime += 250;
+            this.renderParams.constructionProgressPercent = Math.floor(
+              (this.renderParams.constructionProgressTime /
+                this.renderParams?.constructionTimeout) *
+                100,
+            );
+            // UI construction time update
+            if (this.engine.selectedTower === this) {
+              this.engine.UISetConstructionProgress!(
+                this.renderParams.constructionProgressPercent,
+              );
+            }
           }, 250);
         }
         this.renderParams!.constructionTimer = setTimeout(() => {
@@ -268,9 +280,14 @@ class Tower {
           clearInterval(this.renderParams.constructionProgressTimer!);
           this.renderParams.constructionProgressTimer = null;
           this.renderParams.constructionProgressTime = 0;
+          this.renderParams.constructionProgressPercent = 0;
           // set construction animation to beginning
           this.renderParams.constructingCurrentFrame = 0;
           this.renderParams.isConstructonEnd = true;
+          // UI construction time update
+          this.engine.UISetConstructionProgress!(
+            this.renderParams.constructionProgressPercent,
+          );
         }, this.renderParams?.constructionTimeout);
       }
       // tower base
@@ -360,7 +377,9 @@ class Tower {
         this.towerParams.baseWidth / 2 +
         this.towerParams.dimensions[this.upgradeLevel].cannonOffsetY,
     );
-    context.rotate(this.towerParams.firingAngle! - 1.25);
+    context.rotate(
+      this.towerParams.firingAngle! - this.engine.towerAngleOffset,
+    );
     context.translate(
       -(this.towerParams.dimensions[this.upgradeLevel].cannonWidth / 2),
       -(this.towerParams.dimensions[this.upgradeLevel].cannonHeight / 2),

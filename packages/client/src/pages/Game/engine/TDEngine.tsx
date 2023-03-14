@@ -401,6 +401,8 @@ export interface ITDEngine {
   };
   waveGenerator: WaveGenerator | null;
   sound: Sound | null;
+  UIDispatchBoolean: (value: boolean | ((prevVar: boolean) => boolean)) => void;
+  UIDispatchNumber: (value: number | ((prevVar: number) => number)) => void;
 }
 
 class TDEngine {
@@ -415,7 +417,10 @@ class TDEngine {
     public animationFrameId: ITDEngine["animationFrameId"] = 0,
     public requestIdleCallback: ITDEngine["requestIdleCallback"] = 0,
     public UICallback: () => void = () => {},
-    public UIGameIsOver: () => void = () => {},
+    public UIGameIsOver?: ITDEngine["UIDispatchBoolean"],
+    public UISetIsSideMenuOpen?: ITDEngine["UIDispatchBoolean"],
+    public UISetIsBottomMenuOpen?: ITDEngine["UIDispatchBoolean"],
+    public UISetConstructionProgress?: ITDEngine["UIDispatchNumber"],
     public lives: ITDEngine["lives"] = 0,
     public score: ITDEngine["score"] = 0,
     public money: ITDEngine["money"] = 0,
@@ -444,6 +449,7 @@ class TDEngine {
     public selectedTower: ITDEngine["selectedTower"] = null,
     public cursorPosition: ITDEngine["cursorPosition"] = { x: 0, y: 0 },
     public draftBuildCoordinates: ITwoDCoordinates = { x: 0, y: 0 },
+    public towerAngleOffset: number = Math.PI / 2.5,
     public towerSprites: ITDEngine["towerSprites"] = {
       one: {
         spriteSourcePath: {
@@ -689,10 +695,10 @@ class TDEngine {
           ],
           cannonFrameLimit: 6,
           isSelected: false,
-          firingAngle: 1.25,
+          firingAngle: towerAngleOffset,
           fireFromCoords: { x: 0, y: 0 },
           strokeStyle: "green",
-          maxUpgradeLevel: 3,
+          maxUpgradeLevel: 2,
           price: 25,
         },
         projectileParams: {
@@ -756,9 +762,9 @@ class TDEngine {
           ],
           cannonFrameLimit: 16,
           strokeStyle: "green",
-          firingAngle: 1.25,
+          firingAngle: towerAngleOffset,
           fireFromCoords: { x: 0, y: 0 },
-          maxUpgradeLevel: 3,
+          maxUpgradeLevel: 2,
           price: 45,
         },
         projectileParams: {
@@ -822,9 +828,9 @@ class TDEngine {
           ],
           cannonFrameLimit: 8,
           strokeStyle: "green",
-          firingAngle: 1.25,
+          firingAngle: towerAngleOffset,
           fireFromCoords: { x: 0, y: 0 },
-          maxUpgradeLevel: 3,
+          maxUpgradeLevel: 2,
           price: 45,
         },
         projectileParams: {
@@ -886,9 +892,9 @@ class TDEngine {
           ],
           cannonFrameLimit: 16,
           strokeStyle: "green",
-          firingAngle: 1.25,
+          firingAngle: towerAngleOffset,
           fireFromCoords: { x: 0, y: 0 },
-          maxUpgradeLevel: 3,
+          maxUpgradeLevel: 2,
           price: 45,
         },
         projectileParams: {
@@ -1945,7 +1951,7 @@ class TDEngine {
 
   public upgradeTower(tower: Tower) {
     // max upgrade level check
-    if (tower.upgradeLevel === tower.towerParams.maxUpgradeLevel! - 1) return;
+    if (tower.upgradeLevel === tower.towerParams.maxUpgradeLevel!) return;
     // remove selection
     tower.towerParams.isSelected = false;
     // disable attack interval
@@ -1961,10 +1967,19 @@ class TDEngine {
     tower.renderParams.isConstructing = true;
   }
 
+  public sellTower(tower: Tower) {
+    // remove selection
+    tower.towerParams.isSelected = false;
+  }
+
   public clearTowerSelection(
     tower: Tower = this.selectedTower!,
     context: CanvasRenderingContext2D = this.context?.selection!,
   ) {
+    // UI
+    // close right menu
+    this.UISetIsSideMenuOpen!(false);
+    //
     tower.towerParams.isSelected = false;
     this.clearContext(context);
     this.selectedTower = null;
@@ -1995,6 +2010,8 @@ class TDEngine {
         this.selectedTower.towerParams.isSelected = true;
         this.clearContext(this.context?.selection!);
         this.selectedTower.drawSelection();
+        // UI
+        this.UISetIsSideMenuOpen!(true);
         return;
       }
     });
@@ -2042,6 +2059,9 @@ class TDEngine {
           // this.isShowGrid = true
 
           this.draftTower!.currentPosition = this.draftBuildCoordinates;
+
+          // clear the map behind the tower to clear stones trees etc
+          this.map?.drawEmptyBackgroundTile(this.draftBuildCoordinates);
 
           // set strokeStyle to default
           this.draftTower!.towerParams.strokeStyle =
@@ -2283,6 +2303,7 @@ class TDEngine {
       // game is over!
       this.isGameStarted = false;
       this.isGameOver = true;
+      this.UIGameIsOver!(true);
     }
   };
 }

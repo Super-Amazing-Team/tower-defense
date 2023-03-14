@@ -1,5 +1,5 @@
 import { FC, PropsWithChildren, useEffect, useRef, useState } from "react";
-import { CircularProgress } from "@mui/material";
+import { CircularProgress, Box } from "@mui/material";
 import TDEngine from "./engine/TDEngine";
 import GameUi from "@/pages/Game/components/GameUI/GameUI";
 
@@ -67,8 +67,19 @@ export const Game: FC<IGameProps> = ({ engine = new TDEngine() }) => {
   }, [isGameStarted]);
 
   return (
-    <>
-      <section className="b-game-window" id="gameWindow" ref={gameWindow} />
+    <Box
+      sx={{
+        position: "relative",
+        width: `${engine.map?.mapParams?.width}px`,
+        height: `${engine.map?.mapParams?.height}px`,
+      }}
+    >
+      <Box
+        sx={{ position: "absolute" }}
+        className="b-game-window"
+        id="gameWindow"
+        ref={gameWindow}
+      />
       {isLoading ? (
         <CircularProgress />
       ) : (
@@ -78,6 +89,6 @@ export const Game: FC<IGameProps> = ({ engine = new TDEngine() }) => {
           setIsGameStarted={setIsGameStarted}
         />
       )}
-    </>
+    </Box>
   );
 };
