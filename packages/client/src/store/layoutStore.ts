@@ -8,14 +8,12 @@ interface IBearsStore {
   toggleSidebar(): void;
 }
 
-const getColorMode = () => {
-  return () => (localStorage.getItem("mode") as "dark" | "light") || "light";
-};
-
 export const useLayoutStore = create<IBearsStore>()((set) => ({
   openSidebar: false,
-  colorModeFunc: getColorMode(),
-  colorMode: "light",
+  colorMode:
+    typeof window !== "undefined"
+      ? (localStorage.getItem("mode") as "dark" | "light")
+      : "light",
   setCloseSidebar() {
     set(() => ({ openSidebar: false }));
   },
