@@ -184,6 +184,29 @@ class Projectile {
     ) {
       this.target!.enemyParams.hp -= this.damage;
       this.damage = 0;
+      // apply attack modifier
+      if (this.tower.projectileParams.attackModifier) {
+        if (this.tower.projectileParams.attackModifier === "slow") {
+          if (!this.target!.enemyParams.isModified) {
+            this.target!.enemyParams!.speed! -=
+              this.target!.enemyParams!.speed! *
+              0.2 *
+              (this.tower.upgradeLevel + 1);
+            this.target!.enemyParams.isModified = true;
+            this.target!.enemyParams!.modifiedTimer = setTimeout(() => {
+              // clear timer
+              this.target!.enemyParams!.modifiedTimer = null;
+              clearTimeout(this.target?.enemyParams?.modifiedTimer!);
+              // restore enemy movement speed
+              this.target!.enemyParams!.speed =
+                this.target?.enemyParams?.initialSpeed;
+              // restore enemy isModified state to false
+              this.target!.enemyParams.isModified = false;
+            }, this.tower.projectileParams.attackModifierTimeout);
+          }
+        } else if (this.tower.projectileParams.attackModifier === "splash") {
+        }
+      }
     } else if (
       this.target!.enemyParams.hp <= 0 &&
       this.tower.engine.enemies!.indexOf(this.target!) > -1

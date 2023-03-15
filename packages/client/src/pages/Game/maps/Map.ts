@@ -639,7 +639,7 @@ class Map {
     offset: ITwoDCoordinates = { x: 0, y: 0 },
     width: number = this.mapParams.gridStep,
     height: number = this.mapParams.gridStep,
-    context: CanvasRenderingContext2D = this.engine.context?.map!,
+    context: CanvasRenderingContext2D = this.engine.context?.mapBackground!,
   ) {
     context.beginPath();
     context.drawImage(

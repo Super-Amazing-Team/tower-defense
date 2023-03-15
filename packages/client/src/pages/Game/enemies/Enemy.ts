@@ -9,11 +9,14 @@ export interface IEnemy {
     height?: number;
     spaceBetweenEnemies?: number;
     speed?: number;
+    initialSpeed?: number;
     bounty?: number;
     rectCenterX?: number;
     rectCenterY?: number;
     strokeStyle?: string;
     hp: number;
+    isModified?: boolean;
+    modifiedTimer?: NodeJS.Timer | null;
     maxHp?: number;
   };
   renderParams: {
@@ -33,12 +36,14 @@ class Enemy {
       height: 64,
       spaceBetweenEnemies: 35,
       speed: 0.65,
+      initialSpeed: 0.65,
       bounty: 5,
       strokeStyle: "red",
       rectCenterX: 0,
       rectCenterY: 0,
       hp: 100,
       maxHp: 0,
+      isModified: false,
     },
     public renderParams: IEnemy["renderParams"] = {
       currentFrame: 0,
@@ -55,6 +60,8 @@ class Enemy {
       y: Math.floor(Math.random() * 15) + 1,
     },
   ) {
+    // save initial speed
+    this.enemyParams.initialSpeed = this.enemyParams.speed;
     this.enemyParams.rectCenterX = this.enemyParams?.width! / 2;
     this.enemyParams.rectCenterY = this.enemyParams?.height! / 2;
     this.enemyParams.maxHp = this.enemyParams.hp;

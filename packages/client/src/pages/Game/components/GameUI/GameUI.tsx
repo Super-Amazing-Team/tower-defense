@@ -43,6 +43,7 @@ const GameUi: React.FC<IGameUI> = ({
   const [isGameOver, setIsGameOver] = useState<boolean>(false);
   const [isSideMenuOpen, setIsSideMenuOpen] = useState<boolean>(false);
   const [isBottomMenuOpen, setIsBottomMenuOpen] = useState<boolean>(false);
+  const [isGameMenuOpen, setIsGameMenuOpen] = useState<boolean>(true);
   const [constructionProgress, setConstructionProgress] = useState<number>(0);
   const [isTowerCanBeUpgraded, setIsTowerCanBeUpgraded] =
     useState<boolean>(true);
@@ -73,6 +74,7 @@ const GameUi: React.FC<IGameUI> = ({
     };
     engine.UIGameIsOver = setIsGameOver;
     engine.UISetIsSideMenuOpen = setIsSideMenuOpen;
+    engine.UISetIsGameMenuOpen = setIsGameMenuOpen;
     engine.UISetIsBottomMenuOpen = setIsBottomMenuOpen;
     engine.UISetConstructionProgress = setConstructionProgress;
   }, []);
@@ -83,8 +85,8 @@ const GameUi: React.FC<IGameUI> = ({
         sx={{
           position: "absolute",
           right: 0,
-          zIndex: 100,
-          width: `${Math.floor(engine.map?.mapParams?.width! / 5)}px`,
+          zIndex: isSideMenuOpen ? 100 : 50,
+          width: `${Math.floor(engine.map?.mapParams?.width! / 4)}px`,
           height: "100%",
         }}
       >
@@ -101,6 +103,23 @@ const GameUi: React.FC<IGameUI> = ({
               <Box>IS CONSTRUCTING {`${constructionProgress}`}%</Box>
             ) : (
               <>
+                <Box>
+                  <p>
+                    Tower Level: {`${engine.selectedTower?.upgradeLevel! + 1}`}
+                  </p>
+                  <p>
+                    Damage:{" "}
+                    {`${engine.selectedTower?.towerParams?.attackDamage}`}
+                  </p>
+                  <p>
+                    Attack speed:{" "}
+                    {`${engine.selectedTower?.towerParams?.attackRate}`}
+                  </p>
+                  <p>
+                    Attack range:{" "}
+                    {`${engine.selectedTower?.towerParams?.attackRange}`}
+                  </p>
+                </Box>
                 {isTowerCanBeUpgraded && (
                   <button
                     disabled={
@@ -130,7 +149,7 @@ const GameUi: React.FC<IGameUI> = ({
                     (engine.selectedTower?.towerParams?.price! *
                       (engine.selectedTower?.upgradeLevel! + 1)) /
                       2,
-                  )}`}
+                  )}$`}
                   )
                 </button>
               </>
@@ -311,7 +330,7 @@ const GameUi: React.FC<IGameUI> = ({
         className="b-game-status"
         sx={{
           position: "absolute",
-          zIndex: 100,
+          zIndex: engine.canvasZIndex.projectile + 1,
           bottom: 0,
         }}
       >
@@ -331,37 +350,47 @@ const GameUi: React.FC<IGameUI> = ({
             )}
           </p>
         </div>
-        <div className="b-game-menu">
-          <button
-            onClick={() => {
-              engine.isGameStarted = true;
-              setIsGameStarted(true);
-              // game start play sound
-              // engine.sound?.soundArr?.gameStart?.play();
-            }}
-          >
-            Start
-          </button>
-          <button
-            onClick={() => {
-              engine.isGameStarted = false;
-              setIsGameStarted(false);
-              // game start pause sound
-              // engine.sound?.soundArr?.gameStart?.pause();
-            }}
-          >
-            Pause
-          </button>
-          <button
-            onClick={() => {
-              engine.gameRestart();
-              setIsGameStarted(!isGameStarted);
-            }}
-          >
-            Restart
-          </button>
-        </div>
       </Box>
+      {isGameMenuOpen && (
+        <Box
+          sx={{
+            position: "absolute",
+            zIndex: 100,
+            bottom: 0,
+          }}
+        >
+          <div className="b-game-menu">
+            <button
+              onClick={() => {
+                engine.isGameStarted = true;
+                setIsGameStarted(true);
+                // game start play sound
+                // engine.sound?.soundArr?.gameStart?.play();
+              }}
+            >
+              Start
+            </button>
+            <button
+              onClick={() => {
+                engine.isGameStarted = false;
+                setIsGameStarted(false);
+                // game start pause sound
+                // engine.sound?.soundArr?.gameStart?.pause();
+              }}
+            >
+              Pause
+            </button>
+            <button
+              onClick={() => {
+                engine.gameRestart();
+                setIsGameStarted(!isGameStarted);
+              }}
+            >
+              Restart
+            </button>
+          </div>
+        </Box>
+      )}
     </>
   );
 };

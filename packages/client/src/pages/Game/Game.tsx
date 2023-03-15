@@ -29,6 +29,9 @@ export const Game: FC<IGameProps> = ({ engine = new TDEngine() }) => {
           console.log(`engine`);
           console.log(engine);
           //
+
+          // add event listeners
+          engine.addEventListeners();
         })
         .catch((error) => {
           throw new Error(
@@ -40,16 +43,17 @@ export const Game: FC<IGameProps> = ({ engine = new TDEngine() }) => {
 
   useEffect(() => {
     if (engine.isInitialized) {
+      // add event listeners
+      engine.addEventListeners();
+
       // game start
       if (engine.isGameStarted) {
         engine.gameLoop();
         engine.gameLoopLogic();
-        // add event listeners
-        engine.addEventListeners();
       } else {
         engine.stopGame();
         // remove event listeners
-        engine.removeEventListeners();
+        // engine.removeEventListeners();
       }
     }
 

@@ -30,6 +30,7 @@ export interface ITower {
     constructionWidth: number;
     constructionHeight: number;
     constructionFrameLimit: number;
+    constructionSellFrameLimit: number;
     dimensions: Record<TTowerParamsDimensions, number>[];
     cannonFrameLimit: number;
     isSelected?: boolean;
@@ -50,6 +51,8 @@ export interface ITower {
     dimensions: Record<TProjectileParamsDimensions, number>[];
     projectileFrameLimit: number;
     impactFrameLimit: number;
+    attackModifier?: "slow" | "freeze" | "splash";
+    attackModifierTimeout?: number;
   };
   image: CanvasImageSource;
   attackIntervalTimer: NodeJS.Timer | null;
@@ -60,6 +63,7 @@ export interface ITower {
     isCannonAnimate: boolean;
     isConstructing: boolean;
     isConstructonEnd: boolean;
+    isSelling: boolean;
     constructingCurrentFrame: number;
     constructionProgressTime: number;
     constructionProgressPercent: number;
@@ -91,6 +95,7 @@ class Tower {
       constructionWidth: 192,
       constructionHeight: 256,
       constructionFrameLimit: 6,
+      constructionSellFrameLimit: 13,
       dimensions: [
         {
           cannonWidth: 64,
@@ -148,6 +153,8 @@ class Tower {
       ],
       projectileFrameLimit: 3,
       impactFrameLimit: 6,
+      attackModifier: undefined,
+      attackModifierTimeout: 3000,
     },
     public renderParams: ITower["renderParams"] = {
       cannonOffset: { x: 0, y: 0 },
@@ -156,6 +163,7 @@ class Tower {
       isCannonAnimate: false,
       isConstructing: false,
       isConstructonEnd: false,
+      isSelling: false,
       constructingCurrentFrame: 0,
       constructionProgressTime: 0,
       constructionProgressPercent: 0,
@@ -195,6 +203,7 @@ class Tower {
         if (this.renderParams.constructingCurrentFrame < limit) {
           this.renderParams.constructingCurrentFrame += 1;
         } else {
+          this.renderParams.constructingCurrentFrame = 0;
           this.renderParams.isConstructing = false;
           this.renderParams.isConstructonEnd = false;
           this.engine.clearContext(this.engine.context?.tower!);
@@ -211,6 +220,24 @@ class Tower {
         } else {
           this.renderParams.constructingCurrentFrame = 0;
         }
+      }
+    } else if (this.renderParams.isSelling) {
+      if (this.renderParams.constructingCurrentFrame < limit) {
+        this.renderParams.constructingCurrentFrame += 1;
+      } else {
+        this.destroy();
+        // clear tower canvas
+        this.engine.clearContext(this.engine.context?.tower!);
+        // and redraw only existing towers
+        this.engine.towers?.forEach((tower) => {
+          tower.draw();
+          // inselect tower
+          if (tower.towerParams.isSelected) {
+            tower.towerParams.isSelected = false;
+          }
+        });
+        // pop tile from towerTilesArr
+        this.renderParams.isSelling = false;
       }
     }
     return this.renderParams.constructingCurrentFrame;
@@ -245,6 +272,44 @@ class Tower {
       this.currentPosition.y - 10,
       this.towerParams.baseWidth,
     );
+  }
+
+  public drawSelling(
+    context: CanvasRenderingContext2D = this.engine.context!.constructing!,
+  ) {
+    if (this.renderParams.isSelling) {
+      if (this.renderParams.constructingCurrentFrame === 0) {
+        // redraw map road
+        this.engine.map?.drawMap();
+        // clear tower canvas and redraw only towers dat is not selling
+        this.engine.clearContext(this.engine.context?.tower!);
+        this.engine.towers?.forEach((tower) => {
+          if (tower !== this) {
+            tower.draw();
+          }
+        });
+      }
+      context.beginPath();
+      context.drawImage(
+        (
+          this.engine.towerSprites[this.type]!.canvasArr
+            ?.constructionSell as HTMLCanvasElement[]
+        )[
+          this.getNextConstructionFrame(
+            this.towerParams.constructionSellFrameLimit - 1,
+          )
+        ],
+        this.currentPosition.x -
+          (this.towerParams.constructionHeight - this.towerParams.baseWidth) +
+          this.engine.map?.mapParams?.gridStep! / 2,
+        this.currentPosition.y -
+          (this.towerParams.constructionWidth - this.towerParams.baseHeight) -
+          this.engine.map?.mapParams?.gridStep!,
+        this.towerParams.constructionHeight,
+        this.towerParams.constructionWidth,
+      );
+      context.closePath();
+    }
   }
 
   public drawConstructing(
@@ -461,8 +526,9 @@ class Tower {
   // tower 2d representation
   public draw() {
     if (this.renderParams.isConstructing) {
-      // tower base
       this.drawConstructing(this.engine.context!.build!);
+    } else if (this.renderParams.isSelling) {
+      this.drawSelling(this.engine.context!.build!);
     } else {
       // tower base
       this.drawBase(this.engine.context!.tower!);
@@ -590,6 +656,12 @@ class Tower {
   }
 
   public destroy() {
+    this.engine.map!.mapParams!.towerTilesArr =
+      this.engine.map?.mapParams?.towerTilesArr!.filter(
+        (tile) =>
+          tile.x !== this.currentPosition.x ||
+          tile.y !== this.currentPosition.y,
+      )!;
     this.engine.towers = this.engine.towers!.filter((tower) => this !== tower);
   }
 }

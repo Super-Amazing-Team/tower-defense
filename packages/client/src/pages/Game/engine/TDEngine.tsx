@@ -42,6 +42,7 @@ export type TTowerSpriteElements =
   | "base"
   | "construction"
   | "constructionEnd"
+  | "constructionSell"
   | "impact"
   | "weapon"
   | "projectile";
@@ -373,6 +374,7 @@ export interface ITDEngine {
   isGameOver: boolean;
   isShowGrid: boolean;
   isNotEnoughMoney: boolean;
+  isGameMenuOpen: boolean;
   canvasMouseMoveEvent: EventListener | null;
   draftTower: Tower | null;
   selectedTower: Tower | null;
@@ -419,6 +421,7 @@ class TDEngine {
     public UICallback: () => void = () => {},
     public UIGameIsOver?: ITDEngine["UIDispatchBoolean"],
     public UISetIsSideMenuOpen?: ITDEngine["UIDispatchBoolean"],
+    public UISetIsGameMenuOpen?: ITDEngine["UIDispatchBoolean"],
     public UISetIsBottomMenuOpen?: ITDEngine["UIDispatchBoolean"],
     public UISetConstructionProgress?: ITDEngine["UIDispatchNumber"],
     public lives: ITDEngine["lives"] = 0,
@@ -445,6 +448,7 @@ class TDEngine {
     public isGameOver: ITDEngine["isGameOver"] = false,
     public isShowGrid: ITDEngine["isShowGrid"] = false,
     public isNotEnoughMoney: ITDEngine["isNotEnoughMoney"] = false,
+    public isGameMenuOpen: ITDEngine["isGameMenuOpen"] = false,
     public draftTower: ITDEngine["draftTower"] = null,
     public selectedTower: ITDEngine["selectedTower"] = null,
     public cursorPosition: ITDEngine["cursorPosition"] = { x: 0, y: 0 },
@@ -464,6 +468,7 @@ class TDEngine {
             "constructionEndLevelTwo.png",
             "constructionEndLevelThree.png",
           ],
+          constructionSell: "constructionSell.png",
           impact: [
             "towerOneLevelOneImpact.png",
             "towerOneLevelTwoImpact.png",
@@ -497,6 +502,7 @@ class TDEngine {
             "constructionEndLevelTwo.png",
             "constructionEndLevelThree.png",
           ],
+          constructionSell: "constructionSell.png",
           impact: [
             "towerTwoLevelOneImpact.png",
             "towerTwoLevelTwoImpact.png",
@@ -530,6 +536,7 @@ class TDEngine {
             "constructionEndLevelTwo.png",
             "constructionEndLevelThree.png",
           ],
+          constructionSell: "constructionSell.png",
           impact: [
             "towerThreeLevelOneImpact.png",
             "towerThreeLevelTwoImpact.png",
@@ -563,6 +570,7 @@ class TDEngine {
             "constructionEndLevelTwo.png",
             "constructionEndLevelThree.png",
           ],
+          constructionSell: "constructionSell.png",
           impact: [
             "towerFourLevelOneImpact.png",
             "towerFourLevelTwoImpact.png",
@@ -673,6 +681,7 @@ class TDEngine {
           constructionWidth: 192,
           constructionHeight: 256,
           constructionFrameLimit: 6,
+          constructionSellFrameLimit: 13,
           dimensions: [
             {
               cannonWidth: 96,
@@ -740,6 +749,7 @@ class TDEngine {
           constructionWidth: 192,
           constructionHeight: 256,
           constructionFrameLimit: 6,
+          constructionSellFrameLimit: 13,
           dimensions: [
             {
               cannonWidth: 48,
@@ -799,13 +809,14 @@ class TDEngine {
       three: {
         towerParams: {
           attackRate: 3000,
-          attackDamage: 20,
-          attackRange: 300,
+          attackDamage: 8,
+          attackRange: 250,
           baseWidth: 64,
           baseHeight: 128,
           constructionWidth: 192,
           constructionHeight: 256,
           constructionFrameLimit: 6,
+          constructionSellFrameLimit: 13,
           dimensions: [
             {
               cannonWidth: 96,
@@ -858,6 +869,8 @@ class TDEngine {
           ],
           projectileFrameLimit: 6,
           impactFrameLimit: 5,
+          attackModifier: "slow",
+          attackModifierTimeout: 3000,
         },
       },
       four: {
@@ -870,6 +883,7 @@ class TDEngine {
           constructionWidth: 192,
           constructionHeight: 256,
           constructionFrameLimit: 6,
+          constructionSellFrameLimit: 13,
           dimensions: [
             {
               cannonWidth: 128,
@@ -922,6 +936,7 @@ class TDEngine {
           ],
           projectileFrameLimit: 6,
           impactFrameLimit: 8,
+          attackModifier: "splash",
         },
       },
     },
@@ -1056,30 +1071,24 @@ class TDEngine {
 
   public addEventListeners() {
     // add canvas mousemove event listener
-    this.context?.build!.canvas.addEventListener(
+    this.gameWindow?.addEventListener(
       "mousemove",
       this.canvasMouseMoveCallback,
     );
     // add canvas mouse click event listener
-    this.context?.build!.canvas.addEventListener(
-      "click",
-      this.canvasClickCallback,
-    );
+    this.gameWindow?.addEventListener("click", this.canvasClickCallback);
     // add escape hotkey to cancel building mode
     this.gameWindow?.addEventListener("keydown", this.gameWindowKeydown);
   }
 
   public removeEventListeners = () => {
     // remove canvas mousemove event listener
-    this.context?.build!.canvas.removeEventListener(
+    this.gameWindow?.removeEventListener(
       "mousemove",
       this.canvasMouseMoveCallback,
     );
     // remove canvas mouse click event listener
-    this.context?.build!.canvas.removeEventListener(
-      "click",
-      this.canvasClickCallback,
-    );
+    this.gameWindow?.removeEventListener("click", this.canvasClickCallback);
     // remove escape hotkey to cancel building mode
     this.gameWindow?.removeEventListener("keydown", this.gameWindowKeydown);
   };
@@ -1260,6 +1269,11 @@ class TDEngine {
             pathPrefix,
             elementArr,
           );
+        } else if (element === "constructionSell") {
+          spriteSource[element as TTowerSpriteElements] = this.createImageBySrc(
+            `sprites/tower/construction/`,
+            elementArr,
+          );
         }
       }
     }
@@ -1297,6 +1311,10 @@ class TDEngine {
             ?.constructionFrameLimit!,
         ),
       ],
+      constructionSell: this.createCanvasArr(
+        this.predefinedTowerParams[towerType]?.towerParams
+          ?.constructionSellFrameLimit!,
+      ),
       impact: [
         this.createCanvasArr(
           this.predefinedTowerParams[towerType]?.projectileParams
@@ -1347,6 +1365,7 @@ class TDEngine {
       base: [],
       construction: [[], [], []],
       constructionEnd: [[], [], []],
+      constructionSell: [],
       impact: [[], [], []],
       weapon: [[], [], []],
       projectile: [[], [], []],
@@ -1406,6 +1425,24 @@ class TDEngine {
                 ]! as CanvasRenderingContext2D[]
               ).push(canvas.getContext("2d")!);
             });
+          });
+          break;
+        }
+        case "constructionSell": {
+          upgradeArr.forEach((canvas, upgradeLevel) => {
+            if (!Array.isArray(canvas)) {
+              canvas.width =
+                this.predefinedTowerParams[
+                  towerType as TTowerSpriteTypes
+                ]!.towerParams?.constructionHeight!;
+              canvas.height =
+                this.predefinedTowerParams[
+                  towerType as TTowerSpriteTypes
+                ]!.towerParams?.constructionWidth!;
+              (contextArr?.constructionSell as CanvasRenderingContext2D[]).push(
+                canvas.getContext("2d")!,
+              );
+            }
           });
           break;
         }
@@ -1696,6 +1733,27 @@ class TDEngine {
           );
           break;
         }
+        // constructionSell
+        case "constructionSell": {
+          this.drawFrame(
+            context,
+            spriteSource,
+            this.predefinedTowerParams[towerType]?.towerParams
+              ?.constructionHeight! * index,
+            0,
+            this.predefinedTowerParams[towerType]?.towerParams
+              ?.constructionHeight,
+            this.predefinedTowerParams[towerType]?.towerParams
+              ?.constructionWidth,
+            0,
+            0,
+            this.predefinedTowerParams[towerType]?.towerParams
+              ?.constructionHeight,
+            this.predefinedTowerParams[towerType]?.towerParams
+              ?.constructionWidth,
+          );
+          break;
+        }
         // weapons
         case "weapon": {
           this.drawFrame(
@@ -1805,6 +1863,14 @@ class TDEngine {
       // clear selected tower
       if (this.selectedTower) {
         this.clearTowerSelection(this.selectedTower);
+      }
+      // open game menu
+      if (!this.isGameMenuOpen) {
+        this.isGameMenuOpen = true;
+        this.UISetIsGameMenuOpen!(true);
+      } else {
+        this.isGameMenuOpen = false;
+        this.UISetIsGameMenuOpen!(false);
       }
     }
 
@@ -1954,8 +2020,6 @@ class TDEngine {
     if (tower.upgradeLevel === tower.towerParams.maxUpgradeLevel!) return;
     // remove selection
     tower.towerParams.isSelected = false;
-    // disable attack interval
-    // tower.clearAttackInterval();
     tower.isCanFire = false;
     // release tower target
     tower.target = null;
@@ -1968,8 +2032,25 @@ class TDEngine {
   }
 
   public sellTower(tower: Tower) {
+    // disable tower attack
+    tower.isCanFire = false;
     // remove selection
     tower.towerParams.isSelected = false;
+    this.clearTowerSelection(tower);
+    // release tower target
+    tower.target = null;
+    // set render params
+    tower.renderParams.constructingCurrentFrame = 0;
+    tower.renderParams.isSelling = true;
+    // return money to the player
+    this.money += Math.floor(
+      (tower.towerParams?.price! * (tower.upgradeLevel! + 1)) / 2,
+    );
+    // allow player to build towers on this tile again
+    this.map!.mapParams.mapTilesArr!.push({
+      x: tower.currentPosition.x - this.map?.mapParams?.gridStep!,
+      y: tower.currentPosition.y - this.map?.mapParams?.gridStep!,
+    });
   }
 
   public clearTowerSelection(
@@ -2073,6 +2154,11 @@ class TDEngine {
           // add new tower
           this.towers = [...this.towers!, this.draftTower!];
 
+          // sort towers by y coordinate to proper drawing
+          this.towers = this.towers.sort(
+            (a, b) => a.currentPosition.y - b.currentPosition.y,
+          );
+
           // push tile to towerTilesArr
           this.map!.mapParams.towerTilesArr.push(this.draftBuildCoordinates);
 
@@ -2088,7 +2174,6 @@ class TDEngine {
           this.isCanBuild = false;
           this.money -= this.draftTower?.towerParams.price!;
           this.draftTower = null;
-          // this.map.mapParams.closestTile = this.findClosestTile(this.cursorPosition)
         }
       } else {
         this.isNotEnoughMoney = true;
@@ -2196,6 +2281,8 @@ class TDEngine {
             this.towers?.forEach((tower: Tower) => {
               if (tower.renderParams.isConstructing) {
                 tower.drawConstructing();
+              } else if (tower.renderParams.isSelling) {
+                tower.drawSelling();
               } else {
                 tower.drawCannon(this.context!.cannon!);
               }
@@ -2263,7 +2350,11 @@ class TDEngine {
         // search n destroy
         if (this.enemies?.length) {
           this.towers?.forEach((tower: Tower) => {
-            if (tower.renderParams.isConstructing) return;
+            if (
+              tower.renderParams.isConstructing ||
+              tower.renderParams.isSelling
+            )
+              return;
             if (tower.target) {
               if (tower.isEnemyInRange(tower.target)) {
                 tower.findTargetAngle();
