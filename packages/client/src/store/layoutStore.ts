@@ -9,12 +9,13 @@ interface IBearsStore {
 }
 
 const getColorMode = () => {
-  return (localStorage.getItem("mode") as "dark" | "light") || "light";
+  return () => (localStorage.getItem("mode") as "dark" | "light") || "light";
 };
 
 export const useLayoutStore = create<IBearsStore>()((set) => ({
   openSidebar: false,
-  colorMode: getColorMode(),
+  colorModeFunc: getColorMode(),
+  colorMode: "light",
   setCloseSidebar() {
     set(() => ({ openSidebar: false }));
   },
@@ -22,11 +23,7 @@ export const useLayoutStore = create<IBearsStore>()((set) => ({
     set(({ openSidebar }) => ({ openSidebar: !openSidebar }));
   },
   setColorMode(newColorMode: "dark" | "light") {
-    set(() => {
-      localStorage.setItem("mode", newColorMode);
-      return {
-        colorMode: newColorMode,
-      };
-    });
+    localStorage.setItem("mode", newColorMode);
+    set(() => ({ colorMode: newColorMode }));
   },
 }));

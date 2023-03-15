@@ -1,5 +1,6 @@
-import React, { useEffect, useState } from "react";
-import TDEngine, {
+import { useEffect, useState } from "react";
+import {
+  TDEngine,
   ITDEngine,
   IWaveGenerator,
 } from "@/pages/Game/engine/TDEngine";
@@ -14,11 +15,7 @@ interface IGameUI {
   waveCountdown?: IWaveGenerator["waveCountdown"];
   isEnoughMoney?: boolean;
 }
-const GameUi: React.FC<IGameUI> = ({
-  engine,
-  isGameStarted,
-  setIsGameStarted,
-}) => {
+export function GameUi({ engine, isGameStarted, setIsGameStarted }: IGameUI) {
   // game status params
   const [lives, setLives] = useState<IGameUI["lives"]>(
     engine.initialGameParams.lives,
@@ -291,6 +288,4 @@ const GameUi: React.FC<IGameUI> = ({
       )}
     </div>
   );
-};
-
-export default GameUi;
+}

@@ -1,4 +1,5 @@
-import TDEngine, {
+import {
+  TDEngine,
   ITwoDCoordinates,
   TTowerSpriteTypes,
 } from "../engine/TDEngine";

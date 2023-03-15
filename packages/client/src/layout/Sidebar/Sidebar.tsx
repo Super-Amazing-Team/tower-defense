@@ -1,23 +1,27 @@
 import type { MouseEvent, KeyboardEvent } from "react";
 import { Link as RouterLink } from "react-router-dom";
-import Drawer from "@mui/material/Drawer";
-import Box from "@mui/material/Box";
-import List from "@mui/material/List";
-import Divider from "@mui/material/Divider";
-import ListItem from "@mui/material/ListItem";
-import ListItemButton from "@mui/material/ListItemButton";
-import ListItemIcon from "@mui/material/ListItemIcon";
-import ListItemText from "@mui/material/ListItemText";
-import Toolbar from "@mui/material/Toolbar";
-import LoginIcon from "@mui/icons-material/Login";
-import HowToRegIcon from "@mui/icons-material/HowToReg";
-import LeaderboardIcon from "@mui/icons-material/Leaderboard";
-import SportsEsportsIcon from "@mui/icons-material/SportsEsports";
-import ForumIcon from "@mui/icons-material/Forum";
-import AccountCircleIcon from "@mui/icons-material/AccountCircle";
-import LogoutIcon from "@mui/icons-material/Logout";
-import { useLayoutStore, useUserStore } from "@/store";
+import {
+  Box,
+  List,
+  Divider,
+  ListItem,
+  ListItemButton,
+  ListItemIcon,
+  ListItemText,
+  Toolbar,
+  Drawer,
+} from "@mui/material";
+import {
+  Login as LoginIcon,
+  HowToReg as HowToRegIcon,
+  Leaderboard as LeaderboardIcon,
+  SportsEsports as SportsEsportsIcon,
+  Forum as ForumIcon,
+  AccountCircle as AccountCircleIcon,
+  Logout as LogoutIcon,
+} from "@mui/icons-material";
 import { TRoutes as R } from "@/types";
+import { useLayoutStore, useUserStore } from "@/store";
 
 const authMenu = [
   { text: "game", icon: <SportsEsportsIcon />, path: R.game },

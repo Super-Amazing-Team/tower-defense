@@ -2,9 +2,9 @@
   "ts-node": { "esm": true },
   "compilerOptions": {
     "composite": true,
-    "target": "es2021",
-    "module": "NodeNext",
-    "moduleResolution": "nodenext",
+    "target": "esnext",
+    "module": "esnext",
+    "moduleResolution": "Node",
     "esModuleInterop": true,
     "sourceMap": true,
     "declaration": true,
@@ -19,12 +19,12 @@
     "noUnusedLocals": true,
     "forceConsistentCasingInFileNames": true,
     "importsNotUsedAsValues": "error",
-    "lib": ["es2021", "esnext.asynciterable"],
+    "lib": ["DOM","es2021", "esnext.asynciterable"],
     "types": ["node", "jest"],
     "baseUrl": ".",
     "paths": {
       "*": ["types/*"]
     },
-    "outDir": "dist"
+    "outDir": "dist",
   }
 }

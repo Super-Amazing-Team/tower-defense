@@ -1,13 +1,17 @@
-import AppBar from "@mui/material/AppBar";
-import Toolbar from "@mui/material/Toolbar";
-import IconButton from "@mui/material/IconButton";
-import Typography from "@mui/material/Typography";
-import MenuIcon from "@mui/icons-material/Menu";
-import Close from "@mui/icons-material/Close";
-import Box from "@mui/material/Box";
-import Brightness7Icon from "@mui/icons-material/Brightness7";
-import Brightness4Icon from "@mui/icons-material/Brightness4";
-import { useTheme } from "@mui/material";
+import {
+  AppBar,
+  Toolbar,
+  IconButton,
+  Typography,
+  Box,
+  useTheme,
+} from "@mui/material";
+import {
+  Brightness7,
+  Brightness4,
+  Menu as MenuIcon,
+  Close,
+} from "@mui/icons-material";
 import { useLayoutStore } from "@/store";
 
 export function Header() {
@@ -40,11 +44,7 @@ export function Header() {
             }}
             color="inherit"
           >
-            {theme.palette.mode === "dark" ? (
-              <Brightness7Icon />
-            ) : (
-              <Brightness4Icon />
-            )}
+            {theme.palette.mode === "dark" ? <Brightness7 /> : <Brightness4 />}
           </IconButton>
           {theme.palette.mode} mode
         </Box>
