@@ -52,4 +52,14 @@ export const ApiClient: IApiClient = {
     await userSchema.parseAsync(data);
     return data;
   },
+
+  // Oauth
+  async getYandexServiceId(redirect_uri) {
+    return APIService.get("/oauth/yandex/service-id", {
+      params: { redirect_uri },
+    });
+  },
+  async signInWithYandex(body) {
+    return APIService.post("/oauth/yandex", body);
+  },
 };
