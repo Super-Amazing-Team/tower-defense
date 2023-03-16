@@ -8,12 +8,18 @@ interface IBearsStore {
   toggleSidebar(): void;
 }
 
+function getLocalStorageMode() {
+  const allowedModes: IBearsStore["colorMode"][] = ["light", "dark"];
+  const savedMode = localStorage.getItem("mode") as IBearsStore["colorMode"];
+  if (savedMode && allowedModes.includes(savedMode)) {
+    return savedMode;
+  }
+  return "light";
+}
+
 export const useLayoutStore = create<IBearsStore>()((set) => ({
   openSidebar: false,
-  colorMode:
-    typeof window !== "undefined"
-      ? (localStorage.getItem("mode") as IBearsStore["colorMode"]) || "light"
-      : "light",
+  colorMode: typeof window !== "undefined" ? getLocalStorageMode() : "light",
   setCloseSidebar() {
     set(() => ({ openSidebar: false }));
   },
