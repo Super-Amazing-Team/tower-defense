@@ -1,4 +1,5 @@
 import TDEngine, { ITwoDCoordinates, TEnemyType } from "../engine/TDEngine";
+import { TProjectileAttackModifiers } from "@/pages/Game/towers/Tower";
 export interface IEnemy {
   engine: TDEngine;
   sprite?: Record<string, CanvasImageSource[]>[];
@@ -16,6 +17,7 @@ export interface IEnemy {
     strokeStyle?: string;
     hp: number;
     isModified?: boolean;
+    attackModifier?: TProjectileAttackModifiers;
     modifiedTimer?: NodeJS.Timer | null;
     maxHp?: number;
   };
@@ -73,12 +75,18 @@ class Enemy {
   ) {
     const hpLeft = this.enemyParams.hp / this.enemyParams.maxHp!;
     context.beginPath();
-    if (hpLeft > 0.65) {
-      context.fillStyle = "green";
-    } else if (hpLeft > 0.35) {
-      context.fillStyle = "orange";
+    if (!this.enemyParams.isModified) {
+      if (hpLeft > 0.65) {
+        context.fillStyle = "green";
+      } else if (hpLeft > 0.35) {
+        context.fillStyle = "orange";
+      } else {
+        context.fillStyle = "red";
+      }
     } else {
-      context.fillStyle = "red";
+      if (this.enemyParams.attackModifier === "slow") {
+        context.fillStyle = "#baffa0";
+      }
     }
     context.fillRect(
       this.currentPosition.x,

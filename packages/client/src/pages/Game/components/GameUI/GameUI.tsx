@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Box, Fade } from "@mui/material";
 import TDEngine, {
   ITDEngine,
@@ -43,12 +43,26 @@ const GameUi: React.FC<IGameUI> = ({
   const [isGameOver, setIsGameOver] = useState<boolean>(false);
   const [isSideMenuOpen, setIsSideMenuOpen] = useState<boolean>(false);
   const [isBottomMenuOpen, setIsBottomMenuOpen] = useState<boolean>(false);
-  const [isGameMenuOpen, setIsGameMenuOpen] = useState<boolean>(true);
+  const [isGameMenuOpen, setIsGameMenuOpen] = useState<boolean>(
+    engine.isGameMenuOpen,
+  );
+  const [isSoundEnabled, setIsSoundEnabled] = useState<boolean>(
+    engine.isSoundEnabled,
+  );
+  const [isForceRender, setIsForceRender] = useState<boolean>(
+    engine.isSoundEnabled,
+  );
   const [constructionProgress, setConstructionProgress] = useState<number>(0);
   const [isTowerCanBeUpgraded, setIsTowerCanBeUpgraded] =
     useState<boolean>(true);
 
   useEffect(() => {
+    engine.UISetIsForceRender = setIsForceRender;
+    engine.UIIsForceRender = isForceRender;
+  }, [isForceRender]);
+
+  useEffect(() => {
+    // set UI callback
     engine.UICallback = () => {
       // update game results
       setScore(engine.score);
@@ -351,46 +365,80 @@ const GameUi: React.FC<IGameUI> = ({
           </p>
         </div>
       </Box>
-      {isGameMenuOpen && (
+      <Box
+        className="b-game-menu-wrapper"
+        sx={{
+          display: isGameMenuOpen ? "flex" : "none",
+          position: "absolute",
+          zIndex: 100,
+          top: 0,
+          width: "100%",
+          height: "100%",
+          background: "#ccc",
+        }}
+      >
         <Box
+          className="b-game-menu"
           sx={{
-            position: "absolute",
-            zIndex: 100,
-            bottom: 0,
+            position: "relative",
+            display: "flex",
           }}
         >
-          <div className="b-game-menu">
+          <Box
+            className="b-game-menu-content"
+            sx={{
+              alignItems: "center",
+            }}
+          >
             <button
               onClick={() => {
-                engine.isGameStarted = true;
-                setIsGameStarted(true);
-                // game start play sound
-                // engine.sound?.soundArr?.gameStart?.play();
+                if (!isGameStarted) {
+                  engine.isGameStarted = true;
+                  setIsGameStarted(true);
+                }
+                setIsGameMenuOpen(false);
               }}
             >
-              Start
+              {engine.isGameStarted ? "Resume" : "Start"} game
             </button>
             <button
               onClick={() => {
-                engine.isGameStarted = false;
-                setIsGameStarted(false);
-                // game start pause sound
-                // engine.sound?.soundArr?.gameStart?.pause();
+                if (isGameStarted) {
+                  engine.isGameStarted = false;
+                  setIsGameStarted(false);
+                }
+                setIsGameMenuOpen(false);
               }}
+              disabled={!engine.isGameStarted}
             >
-              Pause
+              Pause game
             </button>
             <button
               onClick={() => {
                 engine.gameRestart();
                 setIsGameStarted(!isGameStarted);
+                setIsGameMenuOpen(false);
               }}
             >
-              Restart
+              Restart game
             </button>
-          </div>
+            <button
+              onClick={() => {
+                engine.isSoundEnabled = false;
+                if (isSoundEnabled) {
+                  setIsSoundEnabled(false);
+                  engine.sound?.soundArr?.gameStart?.pause();
+                } else {
+                  setIsSoundEnabled(true);
+                  engine.sound?.soundArr?.gameStart?.play();
+                }
+              }}
+            >
+              {isSoundEnabled ? "Disable" : "Enable"} music
+            </button>
+          </Box>
         </Box>
-      )}
+      </Box>
     </>
   );
 };

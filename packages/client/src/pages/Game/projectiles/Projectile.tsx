@@ -193,6 +193,7 @@ class Projectile {
               0.2 *
               (this.tower.upgradeLevel + 1);
             this.target!.enemyParams.isModified = true;
+            this.target!.enemyParams.attackModifier = "slow";
             this.target!.enemyParams!.modifiedTimer = setTimeout(() => {
               // clear timer
               this.target!.enemyParams!.modifiedTimer = null;

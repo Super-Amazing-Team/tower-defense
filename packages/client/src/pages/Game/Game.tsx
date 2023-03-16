@@ -25,13 +25,13 @@ export const Game: FC<IGameProps> = ({ engine = new TDEngine() }) => {
           engine.isInitialized = true;
           setIsLoading(false);
 
+          // add hotkey listeners
+          engine.addDocumentEventListeners();
+
           // debug
           console.log(`engine`);
           console.log(engine);
           //
-
-          // add event listeners
-          engine.addEventListeners();
         })
         .catch((error) => {
           throw new Error(
@@ -43,29 +43,26 @@ export const Game: FC<IGameProps> = ({ engine = new TDEngine() }) => {
 
   useEffect(() => {
     if (engine.isInitialized) {
-      // add event listeners
-      engine.addEventListeners();
-
+      // debug
+      console.log(`gotcha!`);
+      console.log(engine.isGameStarted);
+      //
       // game start
-      if (engine.isGameStarted) {
-        engine.gameLoop();
-        engine.gameLoopLogic();
+      if (isGameStarted) {
+        engine.gameStart();
       } else {
-        engine.stopGame();
-        // remove event listeners
-        // engine.removeEventListeners();
+        engine.gameStop();
       }
     }
-
     // componentWillUnmount
     return () => {
       if (engine.isInitialized) {
         if (engine.isGameStarted) {
           // pause teh game
-          engine.stopGame();
+          engine.gameStop();
         }
         // remove event listeners
-        engine.removeEventListeners();
+        // engine.removeDocumentEventListeners();
       }
     };
   }, [isGameStarted]);
@@ -79,7 +76,7 @@ export const Game: FC<IGameProps> = ({ engine = new TDEngine() }) => {
       }}
     >
       <Box
-        sx={{ position: "absolute" }}
+        sx={{ display: isLoading ? "none" : "block", position: "absolute" }}
         className="b-game-window"
         id="gameWindow"
         ref={gameWindow}

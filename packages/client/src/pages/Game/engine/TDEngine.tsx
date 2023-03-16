@@ -375,6 +375,7 @@ export interface ITDEngine {
   isShowGrid: boolean;
   isNotEnoughMoney: boolean;
   isGameMenuOpen: boolean;
+  isSoundEnabled: boolean;
   canvasMouseMoveEvent: EventListener | null;
   draftTower: Tower | null;
   selectedTower: Tower | null;
@@ -405,6 +406,7 @@ export interface ITDEngine {
   sound: Sound | null;
   UIDispatchBoolean: (value: boolean | ((prevVar: boolean) => boolean)) => void;
   UIDispatchNumber: (value: number | ((prevVar: number) => number)) => void;
+  UIIsForceRender: boolean;
 }
 
 class TDEngine {
@@ -422,6 +424,8 @@ class TDEngine {
     public UIGameIsOver?: ITDEngine["UIDispatchBoolean"],
     public UISetIsSideMenuOpen?: ITDEngine["UIDispatchBoolean"],
     public UISetIsGameMenuOpen?: ITDEngine["UIDispatchBoolean"],
+    public UISetIsForceRender?: ITDEngine["UIDispatchBoolean"],
+    public UIIsForceRender?: ITDEngine["UIIsForceRender"],
     public UISetIsBottomMenuOpen?: ITDEngine["UIDispatchBoolean"],
     public UISetConstructionProgress?: ITDEngine["UIDispatchNumber"],
     public lives: ITDEngine["lives"] = 0,
@@ -448,7 +452,8 @@ class TDEngine {
     public isGameOver: ITDEngine["isGameOver"] = false,
     public isShowGrid: ITDEngine["isShowGrid"] = false,
     public isNotEnoughMoney: ITDEngine["isNotEnoughMoney"] = false,
-    public isGameMenuOpen: ITDEngine["isGameMenuOpen"] = false,
+    public isGameMenuOpen: ITDEngine["isGameMenuOpen"] = true,
+    public isSoundEnabled: ITDEngine["isSoundEnabled"] = true,
     public draftTower: ITDEngine["draftTower"] = null,
     public selectedTower: ITDEngine["selectedTower"] = null,
     public cursorPosition: ITDEngine["cursorPosition"] = { x: 0, y: 0 },
@@ -1046,7 +1051,7 @@ class TDEngine {
         newCanvas.height = this.map?.mapParams?.height!;
         if (canvasId === "build") {
           newCanvas.style.opacity = "0.4";
-          newCanvas.tabIndex = 1;
+          newCanvas.tabIndex = 2;
         } else if (canvasId === "map") {
           newCanvas.style.background = `url("${this.map?.grassBackrgroundCanvas?.toDataURL()}") repeat`;
         }
@@ -1069,6 +1074,14 @@ class TDEngine {
     });
   }
 
+  public addDocumentEventListeners(container: Document = document) {
+    window.addEventListener("keydown", this.gameWindowKeydown);
+  }
+
+  public removeDocumentEventListeners(container: Document = document) {
+    window.removeEventListener("keydown", this.gameWindowKeydown);
+  }
+
   public addEventListeners() {
     // add canvas mousemove event listener
     this.gameWindow?.addEventListener(
@@ -1077,8 +1090,6 @@ class TDEngine {
     );
     // add canvas mouse click event listener
     this.gameWindow?.addEventListener("click", this.canvasClickCallback);
-    // add escape hotkey to cancel building mode
-    this.gameWindow?.addEventListener("keydown", this.gameWindowKeydown);
   }
 
   public removeEventListeners = () => {
@@ -1089,8 +1100,6 @@ class TDEngine {
     );
     // remove canvas mouse click event listener
     this.gameWindow?.removeEventListener("click", this.canvasClickCallback);
-    // remove escape hotkey to cancel building mode
-    this.gameWindow?.removeEventListener("keydown", this.gameWindowKeydown);
   };
 
   public gameRestart() {
@@ -1101,6 +1110,7 @@ class TDEngine {
     this.projectiles = [];
     // reset sound
     // game start sound
+    this.isSoundEnabled = true;
     this.sound?.soundArr?.gameStart?.pause();
     this.sound!.soundArr!.gameStart!.currentTime = 0;
     // clear tower canvas
@@ -1135,10 +1145,42 @@ class TDEngine {
 
   public gamePause() {
     this.isGameStarted = false;
+    // game start pause sound
+    if (this.isSoundEnabled) {
+      this.sound?.soundArr?.gameStart?.pause();
+    }
   }
 
   public gameStart() {
+    // can't start the game twice
+    if (this.isGameStarted) return;
     this.isGameStarted = true;
+    this.gameLoop();
+    this.gameLoopLogic();
+    // add event listeners
+    this.addEventListeners();
+    // game start play sound
+    if (this.isSoundEnabled) {
+      this.sound?.soundArr?.gameStart?.play();
+    }
+    // close game menu if opened
+    if (this.isGameMenuOpen) {
+      this.isGameMenuOpen = false;
+      this.UISetIsGameMenuOpen!(false);
+    }
+  }
+
+  public gameStop() {
+    this.isGameStarted = false;
+    cancelAnimationFrame(this.animationFrameId);
+    cancelIdleCallback(this.requestIdleCallback);
+    // remove event listeners
+    this.removeEventListeners();
+
+    // game start pause sound
+    if (this.isSoundEnabled) {
+      this.sound?.soundArr?.gameStart?.pause();
+    }
   }
 
   public clearMemory() {
@@ -1852,80 +1894,6 @@ class TDEngine {
     });
   }
 
-  public manageHotkeys(e: KeyboardEvent) {
-    // cancel building mode
-    if (e.key === "Escape") {
-      // exit building mode
-      if (this.isCanBuild) {
-        this.isCanBuild = false;
-        this.isShowGrid = false;
-      }
-      // clear selected tower
-      if (this.selectedTower) {
-        this.clearTowerSelection(this.selectedTower);
-      }
-      // open game menu
-      if (!this.isGameMenuOpen) {
-        this.isGameMenuOpen = true;
-        this.UISetIsGameMenuOpen!(true);
-      } else {
-        this.isGameMenuOpen = false;
-        this.UISetIsGameMenuOpen!(false);
-      }
-    }
-
-    if (e.key === "1") {
-      this.draftTower = null;
-      this.isShowGrid = false;
-      this.buildTower("one", 0);
-    }
-    if (e.key === "2") {
-      this.draftTower = null;
-      this.buildTower("two", 0);
-    }
-    if (e.key === "3") {
-      this.draftTower = null;
-      this.buildTower("three", 0);
-    }
-    if (e.key === "4") {
-      this.draftTower = null;
-      this.buildTower("four", 0);
-    }
-    if (e.key === "s") {
-      this.gameStart();
-    }
-    if (e.key === "p") {
-      this.gamePause();
-    }
-    // log mode
-    if (e.key === "0") {
-      // debug
-      console.log("engine");
-      console.log(this);
-      console.log("this.enemies");
-      console.log(this.enemies);
-      console.log(this.enemies?.length);
-      console.log("----");
-      console.log(`this.towers`);
-      console.log(this.towers);
-      console.log(this.towers?.length);
-      console.log("----");
-      console.log(`this.projectiles`);
-      console.log(this.projectiles);
-      console.log(this.projectiles?.length);
-      console.log("---");
-      console.log(`this.lives`);
-      console.log(this.lives);
-      console.log(`this.money`);
-      console.log(this.money);
-      console.log("---");
-      console.log(`this.waveGenerator.waveParams`);
-      console.log(this.waveGenerator?.waveParams);
-      console.log("---");
-      //
-    }
-  }
-
   public buildTower = (
     type: TTowerSpriteTypes,
     upgradeLevel: Tower["upgradeLevel"],
@@ -2099,7 +2067,107 @@ class TDEngine {
   }
 
   public gameWindowKeydown = (e: KeyboardEvent) => {
-    this.manageHotkeys(e);
+    // debug
+    console.log(`e.key`);
+    console.log(e.key);
+    //
+    if (e.key === "Escape") {
+      if (this.isGameStarted) {
+        // exit building mode
+        if (this.isCanBuild) {
+          this.isCanBuild = false;
+          this.isShowGrid = false;
+        } else if (this.selectedTower) {
+          // clear selected tower
+          this.clearTowerSelection(this.selectedTower);
+        } else {
+          // open game menu
+          if (!this.isGameMenuOpen) {
+            this.isGameMenuOpen = true;
+            this.UISetIsGameMenuOpen!(true);
+          } else {
+            this.isGameMenuOpen = false;
+            this.UISetIsGameMenuOpen!(false);
+          }
+        }
+      } else {
+        // open game menu
+        if (!this.isGameMenuOpen) {
+          this.isGameMenuOpen = true;
+          this.UISetIsGameMenuOpen!(true);
+        } else {
+          this.isGameMenuOpen = false;
+          this.UISetIsGameMenuOpen!(false);
+        }
+      }
+    }
+
+    // quick build hotkeys
+    if (this.isGameStarted) {
+      if (e.key === "1") {
+        this.draftTower = null;
+        this.isShowGrid = false;
+        this.buildTower("one", 0);
+      }
+      if (e.key === "2") {
+        this.draftTower = null;
+        this.buildTower("two", 0);
+      }
+      if (e.key === "3") {
+        this.draftTower = null;
+        this.buildTower("three", 0);
+      }
+      if (e.key === "4") {
+        this.draftTower = null;
+        this.buildTower("four", 0);
+      }
+    }
+
+    if (e.key === "s") {
+      if (!this.isGameStarted) {
+        this.gameStart();
+      }
+    }
+    if (e.key === "p") {
+      if (this.isGameStarted) {
+        this.gameStop();
+      }
+    }
+    if (e.key === "m") {
+      // game audio toggle
+      if (this.sound?.soundArr?.gameStart?.paused) {
+        this.sound?.soundArr?.gameStart?.play();
+      } else {
+        this.sound?.soundArr?.gameStart?.pause();
+      }
+    }
+    // log mode
+    if (e.key === "0") {
+      // debug
+      console.log("engine");
+      console.log(this);
+      console.log("this.enemies");
+      console.log(this.enemies);
+      console.log(this.enemies?.length);
+      console.log("----");
+      console.log(`this.towers`);
+      console.log(this.towers);
+      console.log(this.towers?.length);
+      console.log("----");
+      console.log(`this.projectiles`);
+      console.log(this.projectiles);
+      console.log(this.projectiles?.length);
+      console.log("---");
+      console.log(`this.lives`);
+      console.log(this.lives);
+      console.log(`this.money`);
+      console.log(this.money);
+      console.log("---");
+      console.log(`this.waveGenerator.waveParams`);
+      console.log(this.waveGenerator?.waveParams);
+      console.log("---");
+      //
+    }
   };
 
   public isEnoughMoney(towerPrice: Tower["towerParams"]["price"]) {
@@ -2225,11 +2293,6 @@ class TDEngine {
 
   public pushProjectile(projectile: Projectile) {
     this.projectiles?.push(projectile);
-  }
-
-  public stopGame() {
-    cancelAnimationFrame(this.animationFrameId);
-    cancelIdleCallback(this.requestIdleCallback);
   }
 
   public gameLoop = () => {

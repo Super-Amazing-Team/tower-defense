@@ -17,6 +17,8 @@ export type TProjectileParamsDimensions =
   | "impactWidth"
   | "impactHeight";
 
+export type TProjectileAttackModifiers = "slow" | "freeze" | "splash";
+
 export interface ITower {
   engine: TDEngine;
   type: TTowerSpriteTypes;
@@ -51,7 +53,7 @@ export interface ITower {
     dimensions: Record<TProjectileParamsDimensions, number>[];
     projectileFrameLimit: number;
     impactFrameLimit: number;
-    attackModifier?: "slow" | "freeze" | "splash";
+    attackModifier?: TProjectileAttackModifiers;
     attackModifierTimeout?: number;
   };
   image: CanvasImageSource;
