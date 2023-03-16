@@ -20,6 +20,16 @@ export function Login() {
     }
   }, [params, oauthLogin]);
 
+  const handleLogin = async () => {
+    const response = await ApiClient.getYandexServiceId(REDIRECT_URI);
+    if (response.status !== 200) {
+      return;
+    }
+    window.location.replace(
+      `${OAUTH_URI}&client_id=${response.data.service_id}&redirect_uri=${REDIRECT_URI}`,
+    );
+  };
+
   return (
     <Container
       maxWidth="sm"
@@ -43,19 +53,7 @@ export function Login() {
       >
         Регистрация
       </Link>
-      <Button
-        onClick={async () => {
-          const response = await ApiClient.getYandexServiceId(REDIRECT_URI);
-          if (response.status !== 200) {
-            return;
-          }
-          window.location.replace(
-            `${OAUTH_URI}&client_id=${response.data.service_id}&redirect_uri=${REDIRECT_URI}`,
-          );
-        }}
-      >
-        Войти c помощью Яндекс
-      </Button>
+      <Button onClick={handleLogin}>Войти c помощью Яндекс</Button>
     </Container>
   );
 }

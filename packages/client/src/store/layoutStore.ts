@@ -12,7 +12,7 @@ export const useLayoutStore = create<IBearsStore>()((set) => ({
   openSidebar: false,
   colorMode:
     typeof window !== "undefined"
-      ? (localStorage.getItem("mode") as "dark" | "light")
+      ? (localStorage.getItem("mode") as IBearsStore["colorMode"]) || "light"
       : "light",
   setCloseSidebar() {
     set(() => ({ openSidebar: false }));

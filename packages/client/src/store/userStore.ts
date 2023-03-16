@@ -172,7 +172,9 @@ export const useUserStore = create<IUserStore>()(
               isAuth: true,
             },
           }));
-        } catch {}
+        } catch {
+          addToast("Failed to login OAuth");
+        }
       },
     }),
     { name: "userStore", version: 1.1 },
