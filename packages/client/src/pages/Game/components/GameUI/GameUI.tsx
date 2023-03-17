@@ -6,8 +6,10 @@ import TDEngine, {
 } from "@/pages/Game/engine/TDEngine";
 interface IGameUI {
   engine: TDEngine;
-  setIsGameStarted: (value: boolean | ((prevVar: boolean) => boolean)) => void;
   isGameStarted: boolean;
+  setIsGameStarted: (value: boolean | ((prevVar: boolean) => boolean)) => void;
+  isForceRender: boolean;
+  setIsForceRender: (value: boolean | ((prevVar: boolean) => boolean)) => void;
   lives?: number;
   score?: number;
   money?: number;
@@ -49,19 +51,16 @@ const GameUi: React.FC<IGameUI> = ({
   const [isSoundEnabled, setIsSoundEnabled] = useState<boolean>(
     engine.isSoundEnabled,
   );
-  const [isForceRender, setIsForceRender] = useState<boolean>(
-    engine.isSoundEnabled,
-  );
   const [constructionProgress, setConstructionProgress] = useState<number>(0);
   const [isTowerCanBeUpgraded, setIsTowerCanBeUpgraded] =
     useState<boolean>(true);
 
   useEffect(() => {
-    engine.UISetIsForceRender = setIsForceRender;
-    engine.UIIsForceRender = isForceRender;
-  }, [isForceRender]);
+    // debug
+    console.log(`engine!`);
+    console.log(engine!);
+    //
 
-  useEffect(() => {
     // set UI callback
     engine.UICallback = () => {
       // update game results
@@ -432,6 +431,7 @@ const GameUi: React.FC<IGameUI> = ({
                   setIsSoundEnabled(true);
                   engine.sound?.soundArr?.gameStart?.play();
                 }
+                setIsGameMenuOpen(false);
               }}
             >
               {isSoundEnabled ? "Disable" : "Enable"} music

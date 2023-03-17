@@ -10,6 +10,7 @@ export interface IGameProps extends PropsWithChildren {
 export const Game: FC<IGameProps> = ({ engine = new TDEngine() }) => {
   // game window ref
   const gameWindow = useRef<HTMLDivElement>(null);
+  const [isForceRender, setIsForceRender] = useState<boolean>(false);
   const [isGameStarted, setIsGameStarted] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(!engine.isInitialized);
 
@@ -43,10 +44,6 @@ export const Game: FC<IGameProps> = ({ engine = new TDEngine() }) => {
 
   useEffect(() => {
     if (engine.isInitialized) {
-      // debug
-      console.log(`gotcha!`);
-      console.log(engine.isGameStarted);
-      //
       // game start
       if (isGameStarted) {
         engine.gameStart();
@@ -88,6 +85,8 @@ export const Game: FC<IGameProps> = ({ engine = new TDEngine() }) => {
           engine={engine}
           isGameStarted={isGameStarted}
           setIsGameStarted={setIsGameStarted}
+          isForceRender={isForceRender}
+          setIsForceRender={setIsForceRender}
         />
       )}
     </Box>
