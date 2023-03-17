@@ -1,4 +1,4 @@
-import TDEngine, { ITwoDCoordinates, TEnemyType } from "../engine/TDEngine";
+import { TDEngine, ITwoDCoordinates, TEnemyType } from "../engine/TDEngine";
 import { TProjectileAttackModifiers } from "@/pages/Game/towers/Tower";
 export interface IEnemy {
   engine: TDEngine;
@@ -29,7 +29,7 @@ export interface IEnemy {
   currentStage: number;
 }
 
-class Enemy {
+export class Enemy {
   constructor(
     public engine: IEnemy["engine"],
     public enemyParams: IEnemy["enemyParams"] = {
@@ -346,5 +346,3 @@ class Enemy {
     this.engine.money += this.enemyParams.bounty!;
   }
 }
-
-export default Enemy;

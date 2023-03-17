@@ -1,6 +1,6 @@
 import { FC, PropsWithChildren, useEffect, useRef, useState } from "react";
 import { CircularProgress, Box } from "@mui/material";
-import TDEngine from "./engine/TDEngine";
+import { TDEngine } from "./engine/TDEngine";
 import GameUi from "@/pages/Game/components/GameUI/GameUI";
 
 export interface IGameProps extends PropsWithChildren {
@@ -10,7 +10,6 @@ export interface IGameProps extends PropsWithChildren {
 export const Game: FC<IGameProps> = ({ engine = new TDEngine() }) => {
   // game window ref
   const gameWindow = useRef<HTMLDivElement>(null);
-  const [isForceRender, setIsForceRender] = useState<boolean>(false);
   const [isGameStarted, setIsGameStarted] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(!engine.isInitialized);
 
@@ -73,7 +72,10 @@ export const Game: FC<IGameProps> = ({ engine = new TDEngine() }) => {
       }}
     >
       <Box
-        sx={{ display: isLoading ? "none" : "block", position: "absolute" }}
+        sx={{
+          position: "absolute",
+          display: !isLoading ? "flex" : "none",
+        }}
         className="b-game-window"
         id="gameWindow"
         ref={gameWindow}
@@ -85,8 +87,6 @@ export const Game: FC<IGameProps> = ({ engine = new TDEngine() }) => {
           engine={engine}
           isGameStarted={isGameStarted}
           setIsGameStarted={setIsGameStarted}
-          isForceRender={isForceRender}
-          setIsForceRender={setIsForceRender}
         />
       )}
     </Box>

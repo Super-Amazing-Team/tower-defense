@@ -1,8 +1,8 @@
-import Enemy from "../enemies/Enemy";
-import Tower from "../towers/Tower";
-import Map from "../maps/Map";
-import Projectile from "../projectiles/Projectile";
-import Sound from "@/pages/Game/sound/Sound";
+import { Enemy } from "../enemies/Enemy";
+import { Tower } from "../towers/Tower";
+import { Map } from "../maps/Map";
+import { Projectile } from "../projectiles/Projectile";
+import { Sound } from "@/pages/Game/sound/Sound";
 
 // utilities declaration
 export type TPartialRecord<K extends keyof any, T> = {
@@ -22,6 +22,7 @@ export type TEngineCanvas =
   | "enemy"
   | "deadEnemy"
   | "map"
+  | "mapDecorations"
   | "mapBackground";
 export type TTowerSpriteTypes =
   | "one"
@@ -405,11 +406,14 @@ export interface ITDEngine {
   waveGenerator: WaveGenerator | null;
   sound: Sound | null;
   UIDispatchBoolean: (value: boolean | ((prevVar: boolean) => boolean)) => void;
+  UIDispatchTower: (
+    value: Tower | null | ((prevVar: Tower | null) => Tower | null),
+  ) => void;
   UIDispatchNumber: (value: number | ((prevVar: number) => number)) => void;
   UIIsForceRender: boolean;
 }
 
-class TDEngine {
+export class TDEngine {
   constructor(
     public map?: ITDEngine["map"],
     public enemies: ITDEngine["enemies"] = [],
@@ -424,9 +428,8 @@ class TDEngine {
     public UIGameIsOver?: ITDEngine["UIDispatchBoolean"],
     public UISetIsSideMenuOpen?: ITDEngine["UIDispatchBoolean"],
     public UISetIsGameMenuOpen?: ITDEngine["UIDispatchBoolean"],
-    public UISetIsForceRender?: ITDEngine["UIDispatchBoolean"],
-    public UIIsForceRender?: ITDEngine["UIIsForceRender"],
     public UISetIsBottomMenuOpen?: ITDEngine["UIDispatchBoolean"],
+    public UISetSelectedTower?: ITDEngine["UIDispatchTower"],
     public UISetConstructionProgress?: ITDEngine["UIDispatchNumber"],
     public lives: ITDEngine["lives"] = 0,
     public score: ITDEngine["score"] = 0,
@@ -442,6 +445,7 @@ class TDEngine {
       tower: 40,
       enemy: 30,
       deadEnemy: 20,
+      mapDecorations: 13,
       mapBackground: 12,
       map: 11,
     } as const,
@@ -1113,6 +1117,7 @@ class TDEngine {
     this.isSoundEnabled = true;
     this.sound?.soundArr?.gameStart?.pause();
     this.sound!.soundArr!.gameStart!.currentTime = 0;
+    this.sound?.soundArr?.gameStart?.play();
     // clear tower canvas
     this.clearContext(this.context!.tower!);
     this.clearContext(this.context!.selection!);
@@ -1180,6 +1185,11 @@ class TDEngine {
     // game start pause sound
     if (this.isSoundEnabled) {
       this.sound?.soundArr?.gameStart?.pause();
+    }
+    // close game menu if opened
+    if (this.isGameMenuOpen) {
+      this.isGameMenuOpen = false;
+      this.UISetIsGameMenuOpen!(false);
     }
   }
 
@@ -1266,8 +1276,6 @@ class TDEngine {
         this.enemySprites[enemyType]!.spriteUpRow,
         this.enemySprites[enemyType]!.spriteDownRow,
       );
-
-      // debug
     };
   }
 
@@ -2056,6 +2064,7 @@ class TDEngine {
         tower.currentPosition.y === closestTile.y
       ) {
         this.selectedTower = tower;
+        this.UISetSelectedTower!(tower);
         this.selectedTower.towerParams.isSelected = true;
         this.clearContext(this.context?.selection!);
         this.selectedTower.drawSelection();
@@ -2461,5 +2470,3 @@ class TDEngine {
     }
   };
 }
-
-export default TDEngine;

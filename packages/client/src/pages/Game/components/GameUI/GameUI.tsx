@@ -1,15 +1,26 @@
-import React, { useEffect, useRef, useState } from "react";
-import { Box, Fade } from "@mui/material";
-import TDEngine, {
+import React, { useEffect, useState } from "react";
+import {
+  Box,
+  Fade,
+  MenuList,
+  MenuItem,
+  Typography,
+  Button,
+  createTheme,
+} from "@mui/material";
+import { ThemeProvider } from "@mui/material/styles";
+import { Image } from "@mui/icons-material";
+import sidePanelBg from "@/../public/UI/sidePanelBg.png";
+import {
+  TDEngine,
   ITDEngine,
   IWaveGenerator,
 } from "@/pages/Game/engine/TDEngine";
+
 interface IGameUI {
   engine: TDEngine;
-  isGameStarted: boolean;
   setIsGameStarted: (value: boolean | ((prevVar: boolean) => boolean)) => void;
-  isForceRender: boolean;
-  setIsForceRender: (value: boolean | ((prevVar: boolean) => boolean)) => void;
+  isGameStarted: boolean;
   lives?: number;
   score?: number;
   money?: number;
@@ -22,6 +33,37 @@ const GameUi: React.FC<IGameUI> = ({
   isGameStarted,
   setIsGameStarted,
 }) => {
+  // mui theme
+  const theme = createTheme({
+    components: {
+      MuiMenuItem: {
+        styleOverrides: {
+          root: {
+            color: "#ffae70",
+            fontFamily: "'Press Start 2P', cursive",
+          },
+        },
+      },
+      MuiTypography: {
+        styleOverrides: {
+          root: {
+            color: "#000000",
+            fontFamily: "'Press Start 2P', cursive",
+            fontSize: "0.75em",
+          },
+        },
+      },
+      MuiButton: {
+        styleOverrides: {
+          root: {
+            color: "#000000",
+            fontFamily: "'Press Start 2P', cursive",
+            fontSize: "0.75em",
+          },
+        },
+      },
+    },
+  });
   // game status params
   const [lives, setLives] = useState<IGameUI["lives"]>(
     engine.initialGameParams.lives,
@@ -45,9 +87,7 @@ const GameUi: React.FC<IGameUI> = ({
   const [isGameOver, setIsGameOver] = useState<boolean>(false);
   const [isSideMenuOpen, setIsSideMenuOpen] = useState<boolean>(false);
   const [isBottomMenuOpen, setIsBottomMenuOpen] = useState<boolean>(false);
-  const [isGameMenuOpen, setIsGameMenuOpen] = useState<boolean>(
-    engine.isGameMenuOpen,
-  );
+  const [isGameMenuOpen, setIsGameMenuOpen] = useState<boolean>(true);
   const [isSoundEnabled, setIsSoundEnabled] = useState<boolean>(
     engine.isSoundEnabled,
   );
@@ -55,120 +95,185 @@ const GameUi: React.FC<IGameUI> = ({
   const [isTowerCanBeUpgraded, setIsTowerCanBeUpgraded] =
     useState<boolean>(true);
 
-  useEffect(() => {
-    // debug
-    console.log(`engine!`);
-    console.log(engine!);
-    //
-
-    // set UI callback
-    engine.UICallback = () => {
-      // update game results
-      setScore(engine.score);
-      setCountdown(engine.waveGenerator?.waveCountdown);
-      setLives(engine.lives);
-      setMoney(engine.money);
-      setWave(engine.waveGenerator?.waveParams.currentWave);
-      setEnemiesLeft(engine.enemies?.length);
-      setSelectedTower(engine.selectedTower);
-      if (engine.lives < 1) {
-        setIsGameOver(true);
-        engine.sound?.soundArr?.gameStart?.pause();
-        engine.sound!.soundArr.gameStart!.currentTime = 0;
+  const percentToProgressBarString = (percent: number) => {
+    let result = "[oooooooooo]";
+    if (percent > 0) {
+      if (percent < 10) {
+        result = "[xooooooooo]";
+      } else if (percent < 20) {
+        result = "[xxoooooooo]";
+      } else if (percent < 30) {
+        result = "[xxxooooooo]";
+      } else if (percent < 40) {
+        result = "[xxxxoooooo]";
+      } else if (percent < 50) {
+        result = "[xxxxxooooo]";
+      } else if (percent < 60) {
+        result = "[xxxxxxoooo]";
+      } else if (percent < 70) {
+        result = "[xxxxxxxooo]";
+      } else if (percent < 80) {
+        result = "[xxxxxxxxoo]";
+      } else if (percent < 90) {
+        result = "[xxxxxxxxxo]";
+      } else if (percent === 100) {
+        result = "[xxxxxxxxxx]";
       }
-      // is tower selected?
-      setSelectedTower(engine.selectedTower);
-      setIsTowerCanBeUpgraded(
-        engine.selectedTower
-          ? engine.selectedTower.upgradeLevel <
-              engine.selectedTower.towerParams.maxUpgradeLevel!
-          : false,
-      );
-    };
+    }
+    return result;
+  };
+
+  useEffect(() => {
+    if (!engine.UICallback) {
+      engine.UICallback = () => {
+        // update game results
+        setScore(engine.score);
+        setCountdown(engine.waveGenerator?.waveCountdown);
+        setLives(engine.lives);
+        setMoney(engine.money);
+        setWave(engine.waveGenerator?.waveParams.currentWave);
+        setEnemiesLeft(engine.enemies?.length);
+        // setSelectedTower(engine.selectedTower);
+        if (engine.lives < 1) {
+          setIsGameOver(true);
+          engine.sound?.soundArr?.gameStart?.pause();
+          engine.sound!.soundArr.gameStart!.currentTime = 0;
+        } else {
+          if (isGameOver) {
+            setIsGameOver(false);
+          }
+        }
+        // is tower selected?
+        setIsTowerCanBeUpgraded(
+          engine.selectedTower
+            ? engine.selectedTower.upgradeLevel <
+                engine.selectedTower.towerParams.maxUpgradeLevel!
+            : false,
+        );
+      };
+    }
+    // debug
+    console.log(`isTowerCanBeUpgraded`);
+    console.log(isTowerCanBeUpgraded);
+    //
     engine.UIGameIsOver = setIsGameOver;
     engine.UISetIsSideMenuOpen = setIsSideMenuOpen;
     engine.UISetIsGameMenuOpen = setIsGameMenuOpen;
     engine.UISetIsBottomMenuOpen = setIsBottomMenuOpen;
+    engine.UISetSelectedTower = setSelectedTower;
     engine.UISetConstructionProgress = setConstructionProgress;
   }, []);
 
   return (
-    <>
+    <ThemeProvider theme={theme}>
       <Box
         sx={{
           position: "absolute",
           right: 0,
           zIndex: isSideMenuOpen ? 100 : 50,
-          width: `${Math.floor(engine.map?.mapParams?.width! / 4)}px`,
+          width: `270px`,
           height: "100%",
         }}
       >
-        <Fade in={isSideMenuOpen} className="b-tower-upgrade-menu-wrapper">
+        <Box
+          sx={{
+            display: isSideMenuOpen ? "flex" : "none",
+            height: "100%",
+          }}
+          className="b-tower-upgrade-menu-wrapper"
+        >
           <Box
             sx={{
               width: "100%",
               height: "100%",
-              background: "#ffb357",
+              background: `url(${sidePanelBg}) repeat`,
+              borderLeft: "3px solid #bd6a62",
             }}
           >
-            {constructionProgress &&
-            selectedTower?.renderParams?.isConstructing ? (
-              <Box>IS CONSTRUCTING {`${constructionProgress}`}%</Box>
-            ) : (
-              <>
-                <Box>
-                  <p>
-                    Tower Level: {`${engine.selectedTower?.upgradeLevel! + 1}`}
-                  </p>
-                  <p>
-                    Damage:{" "}
-                    {`${engine.selectedTower?.towerParams?.attackDamage}`}
-                  </p>
-                  <p>
-                    Attack speed:{" "}
-                    {`${engine.selectedTower?.towerParams?.attackRate}`}
-                  </p>
-                  <p>
-                    Attack range:{" "}
-                    {`${engine.selectedTower?.towerParams?.attackRange}`}
-                  </p>
-                </Box>
-                {isTowerCanBeUpgraded && (
-                  <button
-                    disabled={
-                      !engine.isEnoughMoney(
-                        engine.selectedTower?.towerParams.price,
-                      )
-                    }
-                    onClick={() => {
-                      engine.upgradeTower(engine.selectedTower!);
-                    }}
+            <Box
+              sx={{
+                "& p:first-of-type": {
+                  padding: "3em 1.5em 1em",
+                },
+                "& p": {
+                  padding: "1em 1.5em",
+                },
+                "& span": {
+                  color: "red",
+                  fontSize: "1.2em",
+                },
+              }}
+            >
+              {constructionProgress &&
+              selectedTower?.renderParams?.isConstructing ? (
+                <Typography paragraph={true} sx={{ pt: 3 }}>
+                  IS CONSTRUCTING:
+                  <span>
+                    {percentToProgressBarString(constructionProgress)}
+                  </span>
+                </Typography>
+              ) : (
+                <>
+                  <Box>
+                    <Typography paragraph={true}>
+                      Tower Level:{" "}
+                      <span>{`${
+                        engine.selectedTower?.upgradeLevel! + 1
+                      }`}</span>
+                    </Typography>
+                    <Typography paragraph={true}>
+                      Damage:{" "}
+                      <span>{`${engine.selectedTower?.towerParams?.attackDamage}`}</span>
+                    </Typography>
+                    <Typography paragraph={true}>
+                      Attack speed:{" "}
+                      <Box component="span">{`${engine.selectedTower?.towerParams?.attackRate}`}</Box>
+                    </Typography>
+                    <Typography paragraph={true}>
+                      Attack range:{" "}
+                      <Box component="span">{`${engine.selectedTower?.towerParams?.attackRange}`}</Box>
+                    </Typography>
+                  </Box>
+                  <Box
+                    sx={{ display: "flex", flexDirection: "column", mt: "2em" }}
                   >
-                    Upgrade tower
-                  </button>
-                )}
-                <button
-                  disabled={
-                    !engine.isEnoughMoney(
-                      engine.selectedTower?.towerParams.price,
-                    )
-                  }
-                  onClick={() => {
-                    engine.sellTower(engine.selectedTower!);
-                  }}
-                >
-                  Sell Tower(
-                  {`${Math.floor(
-                    (engine.selectedTower?.towerParams?.price! *
-                      (engine.selectedTower?.upgradeLevel! + 1)) /
-                      2,
-                  )}$`}
-                  )
-                </button>
-              </>
-            )}
+                    <Button
+                      disabled={
+                        isTowerCanBeUpgraded &&
+                        !engine.isEnoughMoney(
+                          engine.selectedTower?.towerParams.price,
+                        )
+                      }
+                      onClick={() => {
+                        engine.upgradeTower(engine.selectedTower!);
+                      }}
+                    >
+                      Upgrade tower
+                    </Button>
+                    <Button
+                      disabled={
+                        !engine.isEnoughMoney(
+                          engine.selectedTower?.towerParams.price,
+                        )
+                      }
+                      onClick={() => {
+                        engine.sellTower(engine.selectedTower!);
+                      }}
+                    >
+                      Sell Tower(
+                      {`${Math.floor(
+                        (engine.selectedTower?.towerParams?.price! *
+                          (engine.selectedTower?.upgradeLevel! + 1)) /
+                          2,
+                      )}$`}
+                      )
+                    </Button>
+                  </Box>
+                </>
+              )}
+            </Box>
           </Box>
-        </Fade>
+        </Box>
         {/* : (
           <div className="b-building-menu">
             <div>
@@ -347,21 +452,29 @@ const GameUi: React.FC<IGameUI> = ({
           bottom: 0,
         }}
       >
+        <Box>
+          <img
+            src="/UI/gear.png"
+            width={engine.map?.mapParams?.gridStep}
+            height={engine.map?.mapParams?.gridStep}
+            alt={"Toggle game menu"}
+          />
+        </Box>
         {isGameOver && <h1>GAME IS OVER!</h1>}
         <div>
-          <p>
+          <Typography>
+            {Boolean(countdown) && (
+              <span>{`Next wave in: ${countdown} seconds`}</span>
+            )}
+          </Typography>
+          <Typography>
             <span>{`Enemies left: ${enemiesLeft}`}</span>&nbsp;
             <span>{`Current wave: ${wave}`}</span>&nbsp;
             <span>{`Lives left: ${lives}`}</span>&nbsp;
             <span>{`Killed enemies: ${score}`}</span>&nbsp;
             <span>{`Money: $${money}`}</span>
             &nbsp;
-          </p>
-          <p>
-            {Boolean(countdown) && (
-              <span>{`Next wave in: ${countdown} seconds`}</span>
-            )}
-          </p>
+          </Typography>
         </div>
       </Box>
       <Box
@@ -373,7 +486,8 @@ const GameUi: React.FC<IGameUI> = ({
           top: 0,
           width: "100%",
           height: "100%",
-          background: "#ccc",
+          background: `url("${engine.map?.grassBackrgroundCanvas?.toDataURL()}") repeat`,
+          justifyContent: "center",
         }}
       >
         <Box
@@ -381,28 +495,33 @@ const GameUi: React.FC<IGameUI> = ({
           sx={{
             position: "relative",
             display: "flex",
+            alignItems: "center",
           }}
         >
-          <Box
+          <MenuList
             className="b-game-menu-content"
             sx={{
-              alignItems: "center",
+              display: "flex",
+              flexDirection: "column",
+              fontFamily: "'Press Start 2P', cursive",
             }}
           >
-            <button
+            <MenuItem
+              className="b-game-menu-item"
               onClick={() => {
-                if (!isGameStarted) {
+                if (!engine.isGameStarted) {
                   engine.isGameStarted = true;
                   setIsGameStarted(true);
                 }
+                engine.isGameMenuOpen = false;
                 setIsGameMenuOpen(false);
               }}
             >
               {engine.isGameStarted ? "Resume" : "Start"} game
-            </button>
-            <button
+            </MenuItem>
+            <MenuItem
               onClick={() => {
-                if (isGameStarted) {
+                if (engine.isGameStarted) {
                   engine.isGameStarted = false;
                   setIsGameStarted(false);
                 }
@@ -411,17 +530,17 @@ const GameUi: React.FC<IGameUI> = ({
               disabled={!engine.isGameStarted}
             >
               Pause game
-            </button>
-            <button
+            </MenuItem>
+            <MenuItem
               onClick={() => {
                 engine.gameRestart();
-                setIsGameStarted(!isGameStarted);
                 setIsGameMenuOpen(false);
+                setIsGameStarted(true);
               }}
             >
               Restart game
-            </button>
-            <button
+            </MenuItem>
+            <MenuItem
               onClick={() => {
                 engine.isSoundEnabled = false;
                 if (isSoundEnabled) {
@@ -435,11 +554,11 @@ const GameUi: React.FC<IGameUI> = ({
               }}
             >
               {isSoundEnabled ? "Disable" : "Enable"} music
-            </button>
-          </Box>
+            </MenuItem>
+          </MenuList>
         </Box>
       </Box>
-    </>
+    </ThemeProvider>
   );
 };
 

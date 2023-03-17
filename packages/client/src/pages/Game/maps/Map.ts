@@ -1,4 +1,4 @@
-import TDEngine, { ITwoDCoordinates } from "../engine/TDEngine";
+import { TDEngine, ITwoDCoordinates } from "../engine/TDEngine";
 
 export interface IStage {
   direction: "left" | "right" | "up" | "down" | "start" | "end";
@@ -36,7 +36,7 @@ export interface IMap {
   turnOffset: number;
 }
 
-class Map {
+export class Map {
   constructor(
     public engine: TDEngine,
     public mapParams: IMap["mapParams"] = {
@@ -521,14 +521,14 @@ class Map {
       .forEach((tile, index) => {
         try {
           if (index % 2 === 0) {
-            this.engine.context?.mapBackground?.drawImage(
+            this.engine.context?.mapDecorations?.drawImage(
               randomizeFrom[Math.floor(Math.random() * randomizeFrom.length)]!,
               tile.x,
               tile.y,
             );
           } else {
             // draw grass in half of all tiles
-            this.engine.context?.mapBackground?.drawImage(
+            this.engine.context?.mapDecorations?.drawImage(
               this.grassTileCanvas![
                 Math.floor(Math.random() + 0.5) === 1 ? "one" : "two"
               ]!,

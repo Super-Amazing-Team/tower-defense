@@ -1,9 +1,10 @@
-import TDEngine, {
+import {
+  TDEngine,
   ITwoDCoordinates,
   TTowerSpriteTypes,
 } from "../engine/TDEngine";
-import Enemy from "../enemies/Enemy";
-import Projectile from "../projectiles/Projectile";
+import { Enemy } from "../enemies/Enemy";
+import { Projectile } from "../projectiles/Projectile";
 
 export type TTowerParamsDimensions =
   | "cannonWidth"
@@ -75,7 +76,7 @@ export interface ITower {
   };
 }
 
-class Tower {
+export class Tower {
   public target?: Enemy | null;
 
   public isCanFire? = false;
@@ -660,12 +661,10 @@ class Tower {
   public destroy() {
     this.engine.map!.mapParams!.towerTilesArr =
       this.engine.map?.mapParams?.towerTilesArr!.filter(
-        (tile) =>
+        (tile: ITwoDCoordinates) =>
           tile.x !== this.currentPosition.x ||
           tile.y !== this.currentPosition.y,
       )!;
     this.engine.towers = this.engine.towers!.filter((tower) => this !== tower);
   }
 }
-
-export default Tower;

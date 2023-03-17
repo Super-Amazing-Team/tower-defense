@@ -1,12 +1,12 @@
 import { ITwoDCoordinates } from "../engine/TDEngine";
-import Enemy from "../enemies/Enemy";
-import Tower, { ITower } from "../towers/Tower";
+import { Enemy } from "../enemies/Enemy";
+import { Tower, ITower } from "../towers/Tower";
 
 export interface IProjectile {
   image: CanvasImageSource;
 }
 
-class Projectile {
+export class Projectile {
   constructor(
     public target: Enemy | null,
     public tower: Tower,
@@ -233,5 +233,3 @@ class Projectile {
     );
   }
 }
-
-export default Projectile;
