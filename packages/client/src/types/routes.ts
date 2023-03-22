@@ -1,5 +1,6 @@
 export const TRoutes = {
-  login: "/",
+  home: "/",
+  login: "/login",
   register: "/register",
   leaderboard: "/leaderboard",
   profile: "/profile",

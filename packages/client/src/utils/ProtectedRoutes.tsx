@@ -17,7 +17,7 @@ export const ProtectedToAuth = () => {
   const { isAuth } = useUserStore((store) => store.user);
 
   return isAuth ? (
-    <Navigate to="/profile" state={{ from: location }} replace />
+    <Navigate to="/game" state={{ from: location }} replace />
   ) : (
     <Outlet />
   );
