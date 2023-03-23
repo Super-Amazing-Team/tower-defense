@@ -1,7 +1,9 @@
 import { FC, PropsWithChildren, useEffect, useRef, useState } from "react";
 import { CircularProgress, Box } from "@mui/material";
+import { shallow } from "zustand/shallow";
 import { TDEngine } from "./engine/TDEngine";
 import GameUi from "@/pages/Game/components/GameUI/GameUI";
+import { useGameStore } from "@/store";
 
 export interface IGameProps extends PropsWithChildren {
   engine?: TDEngine;
@@ -10,8 +12,11 @@ export interface IGameProps extends PropsWithChildren {
 export const Game: FC<IGameProps> = ({ engine = new TDEngine() }) => {
   // game window ref
   const gameWindow = useRef<HTMLDivElement>(null);
-  const [isGameStarted, setIsGameStarted] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(!engine.isInitialized);
+  const [isGameStarted, setIsGameStarted] = useGameStore(
+    (state) => [state.isGameStarted, state.updateIsGameStarted],
+    shallow,
+  );
 
   useEffect(() => {
     // engine init
@@ -53,7 +58,7 @@ export const Game: FC<IGameProps> = ({ engine = new TDEngine() }) => {
     // componentWillUnmount
     return () => {
       if (engine.isInitialized) {
-        if (engine.isGameStarted) {
+        if (isGameStarted) {
           // pause teh game
           engine.gameStop();
         }
@@ -69,26 +74,14 @@ export const Game: FC<IGameProps> = ({ engine = new TDEngine() }) => {
         position: "relative",
         width: `${engine.map?.mapParams?.width}px`,
         height: `${engine.map?.mapParams?.height}px`,
-      }}
-    >
-      <Box
-        sx={{
+        "& .b-game-window": {
           position: "absolute",
           display: !isLoading ? "flex" : "none",
-        }}
-        className="b-game-window"
-        id="gameWindow"
-        ref={gameWindow}
-      />
-      {isLoading ? (
-        <CircularProgress />
-      ) : (
-        <GameUi
-          engine={engine}
-          isGameStarted={isGameStarted}
-          setIsGameStarted={setIsGameStarted}
-        />
-      )}
+        },
+      }}
+    >
+      <Box className="b-game-window" id="gameWindow" ref={gameWindow} />
+      {isLoading ? <CircularProgress /> : <GameUi engine={engine} />}
     </Box>
   );
 };

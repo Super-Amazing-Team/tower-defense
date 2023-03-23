@@ -3,6 +3,7 @@ import { Tower } from "../towers/Tower";
 import { Map } from "../maps/Map";
 import { Projectile } from "../projectiles/Projectile";
 import { Sound } from "@/pages/Game/sound/Sound";
+import { useGameStore } from "@/store";
 
 // utilities declaration
 export type TPartialRecord<K extends keyof any, T> = {
@@ -101,6 +102,10 @@ export interface ITwoDCoordinates {
   x: number;
   y: number;
 }
+
+// zustand
+const gameStore = useGameStore;
+
 export interface IWaveGenerator {
   waveParams: {
     currentWave: number;
@@ -138,7 +143,6 @@ class WaveGenerator {
     public waveTimeoutBetweenWaves: IWaveGenerator["waveTimeoutBetweenWaves"] = 5000, // 5000
     public waveCountdownTimer: IWaveGenerator["waveCountdownTimer"] = null,
     public waveCountdown: IWaveGenerator["waveCountdown"] = 0,
-    public isUICountdown = false,
   ) {
     this.waveCountdown = Math.floor(this.waveTimeoutBetweenWaves / 1000);
   }
@@ -267,6 +271,8 @@ class WaveGenerator {
   public init() {
     if (!this.isInitialized) {
       this.waveParams.currentWave = 1;
+      // UI update
+      gameStore.getState().updateWaveNumber(this.waveParams.currentWave);
       // fill enemies array
       this.engine.enemies = this.repeatEnemy(this.waveParams.enemyCount);
 
@@ -292,6 +298,8 @@ class WaveGenerator {
     if (this.waveParams.currentWave < this.waveParams.endWave) {
       // increment wave
       this.waveParams.currentWave += 1;
+      // zustand store update
+      gameStore.getState().updateWaveNumber(this.waveParams.currentWave);
 
       // spawn into running wave
       if (this.waveParams.isWaveInProgress) {
@@ -345,9 +353,11 @@ class WaveGenerator {
       this.waveCountdownTimer = setInterval(() => {
         if (this.waveCountdown > 0) {
           this.waveCountdown -= 1;
+          // zustand store value update
+          gameStore.getState().updateCountdown(this.waveCountdown);
         } else {
           clearInterval(this.waveCountdownTimer!);
-          this.isUICountdown = false;
+          gameStore.getState().updateCountdown(0);
         }
       }, 1000);
     }
@@ -366,12 +376,14 @@ export interface ITDEngine {
   twoDCoordinates: ITwoDCoordinates;
   lives: number;
   score: number;
+  enemiesLeft: number;
   money: number;
   idleTimeout: number;
   isInitialized: boolean;
   isCanvasCreated: boolean;
   isCanBuild: boolean;
   isGameStarted: boolean;
+  isSideMenuOpen: boolean;
   isGameOver: boolean;
   isShowGrid: boolean;
   isNotEnoughMoney: boolean;
@@ -427,9 +439,7 @@ export class TDEngine {
     public UICallback: () => void = () => {},
     public UIGameIsOver?: ITDEngine["UIDispatchBoolean"],
     public UISetIsSideMenuOpen?: ITDEngine["UIDispatchBoolean"],
-    public UISetIsGameMenuOpen?: ITDEngine["UIDispatchBoolean"],
     public UISetIsBottomMenuOpen?: ITDEngine["UIDispatchBoolean"],
-    public UISetSelectedTower?: ITDEngine["UIDispatchTower"],
     public UISetConstructionProgress?: ITDEngine["UIDispatchNumber"],
     public lives: ITDEngine["lives"] = 0,
     public score: ITDEngine["score"] = 0,
@@ -453,10 +463,10 @@ export class TDEngine {
     public isCanvasCreated: ITDEngine["isCanvasCreated"] = false,
     public isCanBuild: ITDEngine["isCanBuild"] = false,
     public isGameStarted: ITDEngine["isGameStarted"] = false,
+    public isSideMenuOpen: ITDEngine["isSideMenuOpen"] = false,
     public isGameOver: ITDEngine["isGameOver"] = false,
     public isShowGrid: ITDEngine["isShowGrid"] = false,
     public isNotEnoughMoney: ITDEngine["isNotEnoughMoney"] = false,
-    public isGameMenuOpen: ITDEngine["isGameMenuOpen"] = true,
     public isSoundEnabled: ITDEngine["isSoundEnabled"] = true,
     public draftTower: ITDEngine["draftTower"] = null,
     public selectedTower: ITDEngine["selectedTower"] = null,
@@ -678,7 +688,6 @@ export class TDEngine {
         deathFramesPerSprite: 11,
       },
     },
-    public mapSprites: ITDEngine["mapSprites"] = [],
     public predefinedTowerParams: ITDEngine["predefinedTowerParams"] = {
       one: {
         towerParams: {
@@ -997,6 +1006,9 @@ export class TDEngine {
     this.waveGenerator = new WaveGenerator(this);
     this.money = this.initialGameParams.money;
     this.lives = this.initialGameParams.lives;
+    // UI
+    gameStore.getState().updateMoney(this.money);
+    gameStore.getState().updateLives(this.lives);
   }
 
   // create game canvas stack and append it to the game container
@@ -1137,6 +1149,12 @@ export class TDEngine {
     this.money = this.initialGameParams.money;
     this.lives = this.initialGameParams.lives;
     this.score = 0;
+    // UI
+    gameStore.getState().updateMoney(this.initialGameParams.money);
+    gameStore.getState().updateLives(this.initialGameParams.lives);
+    gameStore.getState().updateScore(this.score);
+    gameStore.getState().updateWaveNumber(1);
+    gameStore.getState().updateEnemiesLeft(this.enemies.length);
     // spawner
     this.waveGenerator!.waveParams.currentWave = 1;
     this.waveGenerator!.waveCountdown = Math.floor(
@@ -1144,39 +1162,31 @@ export class TDEngine {
     );
     setTimeout(() => {
       this.waveGenerator!.waveParams.isWaveInProgress = false;
-      this.waveGenerator!.isUICountdown = false;
+      gameStore.getState().updateCountdown(0);
     }, this.waveGenerator!.waveTimeoutBetweenWaves);
   }
 
-  public gamePause() {
-    this.isGameStarted = false;
-    // game start pause sound
-    if (this.isSoundEnabled) {
-      this.sound?.soundArr?.gameStart?.pause();
-    }
-  }
-
   public gameStart() {
-    // can't start the game twice
-    if (this.isGameStarted) return;
-    this.isGameStarted = true;
-    this.gameLoop();
-    this.gameLoopLogic();
-    // add event listeners
-    this.addEventListeners();
-    // game start play sound
-    if (this.isSoundEnabled) {
-      this.sound?.soundArr?.gameStart?.play();
-    }
-    // close game menu if opened
-    if (this.isGameMenuOpen) {
-      this.isGameMenuOpen = false;
-      this.UISetIsGameMenuOpen!(false);
+    if (!gameStore.getState().isGameStarted) {
+      gameStore.getState().updateIsGameStarted(true);
+    } else {
+      this.gameLoop();
+      this.gameLoopLogic();
+      // add event listeners
+      this.addEventListeners();
+      // game start play sound
+      if (this.isSoundEnabled) {
+        this.sound?.soundArr?.gameStart?.play();
+      }
+      // close game menu if opened
+      if (gameStore.getState().isGameMenuOpen) {
+        gameStore.getState().updateIsGameMenuOpen(false);
+      }
     }
   }
 
   public gameStop() {
-    this.isGameStarted = false;
+    gameStore.getState().updateIsGameStarted(false);
     cancelAnimationFrame(this.animationFrameId);
     cancelIdleCallback(this.requestIdleCallback);
     // remove event listeners
@@ -1187,9 +1197,8 @@ export class TDEngine {
       this.sound?.soundArr?.gameStart?.pause();
     }
     // close game menu if opened
-    if (this.isGameMenuOpen) {
-      this.isGameMenuOpen = false;
-      this.UISetIsGameMenuOpen!(false);
+    if (gameStore.getState().isGameMenuOpen) {
+      gameStore.getState().updateIsGameMenuOpen(false);
     }
   }
 
@@ -1987,6 +1996,22 @@ export class TDEngine {
     if (this.isCanBuild) {
       this.draftBuildTower();
     } else {
+      // debug
+      console.log(`debug`);
+      const context = this.context?.build!;
+      this.map?.mapParams?.towerTilesArr.forEach((tile) => {
+        context.beginPath();
+        context.strokeStyle = "green";
+        context.setLineDash([]);
+        context.strokeRect(
+          tile.x - this.map?.mapParams?.gridStep!,
+          tile.y - this.map?.mapParams?.gridStep!,
+          this.map?.mapParams.gridStep!,
+          this.map?.mapParams.gridStep!,
+        );
+        context.closePath();
+      });
+      //
       this.selectTower();
     }
   };
@@ -2022,6 +2047,7 @@ export class TDEngine {
     this.money += Math.floor(
       (tower.towerParams?.price! * (tower.upgradeLevel! + 1)) / 2,
     );
+    gameStore.getState().updateMoney(this.money);
     // allow player to build towers on this tile again
     this.map!.mapParams.mapTilesArr!.push({
       x: tower.currentPosition.x - this.map?.mapParams?.gridStep!,
@@ -2033,9 +2059,8 @@ export class TDEngine {
     tower: Tower = this.selectedTower!,
     context: CanvasRenderingContext2D = this.context?.selection!,
   ) {
-    // UI
-    // close right menu
-    this.UISetIsSideMenuOpen!(false);
+    // UI close right menu
+    gameStore.getState().updateIsSideMenuOpen(false);
     //
     tower.towerParams.isSelected = false;
     this.clearContext(context);
@@ -2046,8 +2071,8 @@ export class TDEngine {
     if (!this.towers?.length) return;
     const closestTile = this.findClosestTile(
       {
-        x: this.cursorPosition.x + this.map?.mapParams?.gridStep!,
-        y: this.cursorPosition.y + this.map?.mapParams?.gridStep!,
+        x: this.draftBuildCoordinates.x + this.map?.mapParams?.gridStep!,
+        y: this.draftBuildCoordinates.y + this.map?.mapParams?.gridStep!,
       },
       this.map?.mapParams?.towerTilesArr,
     );
@@ -2064,12 +2089,12 @@ export class TDEngine {
         tower.currentPosition.y === closestTile.y
       ) {
         this.selectedTower = tower;
-        this.UISetSelectedTower!(tower);
+        // UI
+        gameStore.getState().updateSelectedTower(tower);
+        gameStore.getState().updateIsSideMenuOpen(true);
         this.selectedTower.towerParams.isSelected = true;
         this.clearContext(this.context?.selection!);
         this.selectedTower.drawSelection();
-        // UI
-        this.UISetIsSideMenuOpen!(true);
         return;
       }
     });
@@ -2081,7 +2106,7 @@ export class TDEngine {
     console.log(e.key);
     //
     if (e.key === "Escape") {
-      if (this.isGameStarted) {
+      if (gameStore.getState().isGameStarted) {
         // exit building mode
         if (this.isCanBuild) {
           this.isCanBuild = false;
@@ -2090,29 +2115,21 @@ export class TDEngine {
           // clear selected tower
           this.clearTowerSelection(this.selectedTower);
         } else {
-          // open game menu
-          if (!this.isGameMenuOpen) {
-            this.isGameMenuOpen = true;
-            this.UISetIsGameMenuOpen!(true);
-          } else {
-            this.isGameMenuOpen = false;
-            this.UISetIsGameMenuOpen!(false);
-          }
+          // toggle game menu
+          gameStore
+            .getState()
+            .updateIsGameMenuOpen(!gameStore.getState().isGameMenuOpen);
         }
       } else {
-        // open game menu
-        if (!this.isGameMenuOpen) {
-          this.isGameMenuOpen = true;
-          this.UISetIsGameMenuOpen!(true);
-        } else {
-          this.isGameMenuOpen = false;
-          this.UISetIsGameMenuOpen!(false);
-        }
+        // toggle game menu
+        gameStore
+          .getState()
+          .updateIsGameMenuOpen(!gameStore.getState().isGameMenuOpen);
       }
     }
 
     // quick build hotkeys
-    if (this.isGameStarted) {
+    if (gameStore.getState().isGameStarted) {
       if (e.key === "1") {
         this.draftTower = null;
         this.isShowGrid = false;
@@ -2133,12 +2150,12 @@ export class TDEngine {
     }
 
     if (e.key === "s") {
-      if (!this.isGameStarted) {
+      if (!gameStore.getState().isGameStarted) {
         this.gameStart();
       }
     }
     if (e.key === "p") {
-      if (this.isGameStarted) {
+      if (gameStore.getState().isGameStarted) {
         this.gameStop();
       }
     }
@@ -2250,6 +2267,7 @@ export class TDEngine {
           // disable building mode
           this.isCanBuild = false;
           this.money -= this.draftTower?.towerParams.price!;
+          gameStore.getState().updateMoney(this.money);
           this.draftTower = null;
         }
       } else {
@@ -2280,26 +2298,6 @@ export class TDEngine {
     // this.clearContext(this.context.tower!);
   }
 
-  public setMap(map: ITDEngine["map"]) {
-    this.map = map;
-  }
-
-  public setEnemies(enemies: ITDEngine["enemies"]) {
-    this.enemies = enemies;
-  }
-
-  public setTowers(towers: ITDEngine["towers"]) {
-    this.towers = towers;
-  }
-
-  public setProjectiles(projectiles: ITDEngine["projectiles"]) {
-    this.projectiles = projectiles;
-  }
-
-  public setUICallback(callback: () => void) {
-    this.UICallback = callback;
-  }
-
   public pushProjectile(projectile: Projectile) {
     this.projectiles?.push(projectile);
   }
@@ -2307,7 +2305,7 @@ export class TDEngine {
   public gameLoop = () => {
     setTimeout(() => {
       // game start
-      if (this.isGameStarted) {
+      if (gameStore.getState().isGameStarted) {
         if (this.lives > 0) {
           // clear canvas
           this.clearCanvas();
@@ -2362,7 +2360,7 @@ export class TDEngine {
           }
 
           // highlight the closest map tile to the cursor
-          // engine.highlightTile(engine.map!.mapParams.closestTile);
+          // this.highlightTile(this.map!.mapParams.closestTile);
           //
         } else {
           // GAME IS OVER!
@@ -2379,13 +2377,16 @@ export class TDEngine {
 
   public gameLoopLogic = () => {
     if (this.lives > 0) {
-      if (this.isGameStarted) {
-        // UI callback
-        this.UICallback();
+      if (gameStore.getState().isGameStarted) {
         // enemy init || move
         if (!this.waveGenerator?.isInitialized) {
           if (!this.waveGenerator?.waveTimerBetweenWaves) {
             // UI countdown between waves
+            gameStore
+              .getState()
+              .updateCountdown(
+                Math.floor(this.waveGenerator!.waveTimeoutBetweenWaves / 1000),
+              );
             this.waveGenerator?.countdown();
             this.waveGenerator!.waveTimerBetweenWaves = setTimeout(() => {
               this.waveGenerator?.init();
@@ -2401,14 +2402,20 @@ export class TDEngine {
             this.waveGenerator!.waveCountdown! = Math.floor(
               this.waveGenerator!.waveTimeoutBetweenWaves / 1000,
             );
+            gameStore
+              .getState()
+              .updateCountdown(this.waveGenerator!.waveCountdown);
             if (!this.waveGenerator.waveTimerBetweenWaves) {
               // UI countdown between waves
               this.waveGenerator.waveCountdownTimer = setInterval(() => {
                 if (this.waveGenerator!.waveCountdown > 0) {
                   this.waveGenerator!.waveCountdown -= 1;
+                  gameStore
+                    .getState()
+                    .updateCountdown(this.waveGenerator!.waveCountdown);
                 } else {
                   clearInterval(this.waveGenerator?.waveCountdownTimer!);
-                  this.waveGenerator!.isUICountdown = false;
+                  gameStore.getState().updateCountdown(0);
                 }
               }, 1000);
               this.waveGenerator!.waveTimerBetweenWaves = setTimeout(() => {
@@ -2464,7 +2471,7 @@ export class TDEngine {
       }
     } else {
       // game is over!
-      this.isGameStarted = false;
+      gameStore.getState().updateIsGameStarted(false);
       this.isGameOver = true;
       this.UIGameIsOver!(true);
     }

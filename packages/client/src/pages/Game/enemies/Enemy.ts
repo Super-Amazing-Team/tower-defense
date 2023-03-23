@@ -1,5 +1,6 @@
 import { TDEngine, ITwoDCoordinates, TEnemyType } from "../engine/TDEngine";
 import { TProjectileAttackModifiers } from "@/pages/Game/towers/Tower";
+import { useGameStore } from "@/store";
 export interface IEnemy {
   engine: TDEngine;
   sprite?: Record<string, CanvasImageSource[]>[];
@@ -344,5 +345,10 @@ export class Enemy {
 
     this.engine.score += 1;
     this.engine.money += this.enemyParams.bounty!;
+
+    // UI update
+    useGameStore.getState().updateEnemiesLeft(this.engine.enemies?.length!);
+    useGameStore.getState().updateScore(this.engine.score);
+    useGameStore.getState().updateMoney(this.engine.money);
   }
 }

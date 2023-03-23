@@ -1,7 +1,6 @@
 import React, { useEffect, useState } from "react";
 import {
   Box,
-  Fade,
   MenuList,
   MenuItem,
   Typography,
@@ -9,18 +8,18 @@ import {
   createTheme,
 } from "@mui/material";
 import { ThemeProvider } from "@mui/material/styles";
-import { Image } from "@mui/icons-material";
+import { shallow } from "zustand/shallow";
 import sidePanelBg from "@/../public/UI/sidePanelBg.png";
+import gearBg from "@/../public/UI/gear.png";
 import {
   TDEngine,
   ITDEngine,
   IWaveGenerator,
 } from "@/pages/Game/engine/TDEngine";
+import { useGameStore } from "@/store";
 
 interface IGameUI {
   engine: TDEngine;
-  setIsGameStarted: (value: boolean | ((prevVar: boolean) => boolean)) => void;
-  isGameStarted: boolean;
   lives?: number;
   score?: number;
   money?: number;
@@ -28,76 +27,96 @@ interface IGameUI {
   waveCountdown?: IWaveGenerator["waveCountdown"];
   isEnoughMoney?: boolean;
 }
-const GameUi: React.FC<IGameUI> = ({
-  engine,
-  isGameStarted,
-  setIsGameStarted,
-}) => {
-  // mui theme
-  const theme = createTheme({
-    components: {
-      MuiMenuItem: {
-        styleOverrides: {
-          root: {
-            color: "#ffae70",
-            fontFamily: "'Press Start 2P', cursive",
-          },
-        },
-      },
-      MuiTypography: {
-        styleOverrides: {
-          root: {
-            color: "#000000",
-            fontFamily: "'Press Start 2P', cursive",
-            fontSize: "0.75em",
-          },
-        },
-      },
-      MuiButton: {
-        styleOverrides: {
-          root: {
-            color: "#000000",
-            fontFamily: "'Press Start 2P', cursive",
-            fontSize: "0.75em",
-          },
+
+// mui theme
+const theme = createTheme({
+  components: {
+    MuiMenuItem: {
+      styleOverrides: {
+        root: {
+          color: "#ffae70",
+          fontFamily: "'Press Start 2P', cursive",
         },
       },
     },
-  });
+    MuiTypography: {
+      styleOverrides: {
+        root: {
+          color: "#000000",
+          fontFamily: "'Press Start 2P', cursive",
+          fontSize: "0.75em",
+        },
+      },
+    },
+    MuiButton: {
+      styleOverrides: {
+        root: {
+          color: "#000000",
+          fontFamily: "'Press Start 2P', cursive",
+          fontSize: "0.75em",
+        },
+      },
+    },
+  },
+});
+
+const GameUi: React.FC<IGameUI> = ({ engine }) => {
   // game status params
-  const [lives, setLives] = useState<IGameUI["lives"]>(
-    engine.initialGameParams.lives,
+  const [lives, setLives] = useGameStore(
+    (state) => [state.lives, state.updateLives],
+    shallow,
   );
-  const [score, setScore] = useState<IGameUI["score"]>(engine.score);
-  const [money, setMoney] = useState<IGameUI["money"]>(
-    engine.initialGameParams.money,
+  const [countdown, setCountdown] = useGameStore(
+    (state) => [state.countdown, state.updateCountdown],
+    shallow,
   );
-  const [wave, setWave] = useState<IGameUI["wave"]>(
-    engine.waveGenerator?.waveParams.currentWave,
+  const [waveNumber, setWaveNumber] = useGameStore(
+    (state) => [state.waveNumber, state.updateWaveNumber],
+    shallow,
   );
-  const [countdown, setCountdown] = useState<IGameUI["waveCountdown"]>(
-    engine.waveGenerator?.waveCountdown,
+  const [constructionProgress, setConstructionProgress] = useGameStore(
+    (state) => [state.constructionProgress, state.updateConstructionProgress],
+    shallow,
   );
-  const [enemiesLeft, setEnemiesLeft] = useState<IGameUI["wave"]>(
-    engine.enemies?.length,
+  const [isGameMenuOpen, setIsGameMenuOpen] = useGameStore(
+    (state) => [state.isGameMenuOpen, state.updateIsGameMenuOpen],
+    shallow,
   );
-  const [selectedTower, setSelectedTower] = useState<
-    ITDEngine["selectedTower"]
-  >(engine.selectedTower);
+  const [isSideMenuOpen, setIsSideMenuOpen] = useGameStore(
+    (state) => [state.isSideMenuOpen, state.updateIsSideMenuOpen],
+    shallow,
+  );
+  const [isGameStarted, setIsGameStarted] = useGameStore(
+    (state) => [state.isGameStarted, state.updateIsGameStarted],
+    shallow,
+  );
+  const [selectedTower, setSelectedTower] = useGameStore(
+    (state) => [state.selectedTower, state.updateSelectedTower],
+    shallow,
+  );
+  const [score, setScore] = useGameStore(
+    (state) => [state.score, state.updateScore],
+    shallow,
+  );
+  const [money, setMoney] = useGameStore(
+    (state) => [state.money, state.updateMoney],
+    shallow,
+  );
+  const [enemiesLeft, setEnemiesLeft] = useGameStore(
+    (state) => [state.enemiesLeft, state.updateEnemiesLeft],
+    shallow,
+  );
+  //
+
   const [isGameOver, setIsGameOver] = useState<boolean>(false);
-  const [isSideMenuOpen, setIsSideMenuOpen] = useState<boolean>(false);
   const [isBottomMenuOpen, setIsBottomMenuOpen] = useState<boolean>(false);
-  const [isGameMenuOpen, setIsGameMenuOpen] = useState<boolean>(true);
   const [isSoundEnabled, setIsSoundEnabled] = useState<boolean>(
     engine.isSoundEnabled,
   );
-  const [constructionProgress, setConstructionProgress] = useState<number>(0);
-  const [isTowerCanBeUpgraded, setIsTowerCanBeUpgraded] =
-    useState<boolean>(true);
 
   const percentToProgressBarString = (percent: number) => {
-    let result = "[oooooooooo]";
-    if (percent > 0) {
+    let result = "[]";
+    if (percent >= 0) {
       if (percent < 10) {
         result = "[xooooooooo]";
       } else if (percent < 20) {
@@ -116,7 +135,7 @@ const GameUi: React.FC<IGameUI> = ({
         result = "[xxxxxxxxoo]";
       } else if (percent < 90) {
         result = "[xxxxxxxxxo]";
-      } else if (percent === 100) {
+      } else if (percent <= 100) {
         result = "[xxxxxxxxxx]";
       }
     }
@@ -124,44 +143,47 @@ const GameUi: React.FC<IGameUI> = ({
   };
 
   useEffect(() => {
-    if (!engine.UICallback) {
-      engine.UICallback = () => {
-        // update game results
-        setScore(engine.score);
-        setCountdown(engine.waveGenerator?.waveCountdown);
-        setLives(engine.lives);
-        setMoney(engine.money);
-        setWave(engine.waveGenerator?.waveParams.currentWave);
-        setEnemiesLeft(engine.enemies?.length);
-        // setSelectedTower(engine.selectedTower);
-        if (engine.lives < 1) {
-          setIsGameOver(true);
-          engine.sound?.soundArr?.gameStart?.pause();
-          engine.sound!.soundArr.gameStart!.currentTime = 0;
-        } else {
-          if (isGameOver) {
-            setIsGameOver(false);
-          }
-        }
-        // is tower selected?
-        setIsTowerCanBeUpgraded(
-          engine.selectedTower
-            ? engine.selectedTower.upgradeLevel <
-                engine.selectedTower.towerParams.maxUpgradeLevel!
-            : false,
-        );
-      };
-    }
     // debug
-    console.log(`isTowerCanBeUpgraded`);
-    console.log(isTowerCanBeUpgraded);
+    console.log(`selectedTower`);
+    console.log(selectedTower);
     //
+
+    /*
+    engine.UICallback = () => {
+      //
+      setSelectedTower(engine.selectedTower);
+      // update game results
+      setScore(engine.score);
+      setCountdown(engine.waveGenerator?.waveCountdown);
+      setLives(engine.lives);
+      setMoney(engine.money);
+      setWave(engine.waveGenerator?.waveParams.currentWave);
+      setEnemiesLeft(engine.enemies?.length);
+      if (engine.lives < 1) {
+        setIsGameOver(true);
+        engine.sound?.soundArr?.gameStart?.pause();
+        engine.sound!.soundArr.gameStart!.currentTime = 0;
+      } else {
+        if (isGameOver) {
+          setIsGameOver(false);
+        }
+      }
+      // is tower selected?
+      setIsTowerCanBeUpgraded(
+        engine.selectedTower
+          ? engine.selectedTower.upgradeLevel <
+              engine.selectedTower.towerParams.maxUpgradeLevel!
+          : false,
+      );
+    };
     engine.UIGameIsOver = setIsGameOver;
     engine.UISetIsSideMenuOpen = setIsSideMenuOpen;
     engine.UISetIsGameMenuOpen = setIsGameMenuOpen;
     engine.UISetIsBottomMenuOpen = setIsBottomMenuOpen;
     engine.UISetSelectedTower = setSelectedTower;
     engine.UISetConstructionProgress = setConstructionProgress;
+
+     */
   }, []);
 
   return (
@@ -204,8 +226,8 @@ const GameUi: React.FC<IGameUI> = ({
                 },
               }}
             >
-              {constructionProgress &&
-              selectedTower?.renderParams?.isConstructing ? (
+              {selectedTower?.renderParams.isConstructing &&
+              !selectedTower?.renderParams.isConstructionEnd ? (
                 <Typography paragraph={true} sx={{ pt: 3 }}>
                   IS CONSTRUCTING:
                   <span>
@@ -217,21 +239,19 @@ const GameUi: React.FC<IGameUI> = ({
                   <Box>
                     <Typography paragraph={true}>
                       Tower Level:{" "}
-                      <span>{`${
-                        engine.selectedTower?.upgradeLevel! + 1
-                      }`}</span>
+                      <span>{`${selectedTower?.upgradeLevel! + 1}`}</span>
                     </Typography>
                     <Typography paragraph={true}>
                       Damage:{" "}
-                      <span>{`${engine.selectedTower?.towerParams?.attackDamage}`}</span>
+                      <span>{`${selectedTower?.towerParams?.attackDamage}`}</span>
                     </Typography>
                     <Typography paragraph={true}>
                       Attack speed:{" "}
-                      <Box component="span">{`${engine.selectedTower?.towerParams?.attackRate}`}</Box>
+                      <Box component="span">{`${selectedTower?.towerParams?.attackRate}`}</Box>
                     </Typography>
                     <Typography paragraph={true}>
                       Attack range:{" "}
-                      <Box component="span">{`${engine.selectedTower?.towerParams?.attackRange}`}</Box>
+                      <Box component="span">{`${selectedTower?.towerParams?.attackRange}`}</Box>
                     </Typography>
                   </Box>
                   <Box
@@ -239,13 +259,12 @@ const GameUi: React.FC<IGameUI> = ({
                   >
                     <Button
                       disabled={
-                        isTowerCanBeUpgraded &&
-                        !engine.isEnoughMoney(
-                          engine.selectedTower?.towerParams.price,
-                        )
+                        selectedTower?.upgradeLevel! ===
+                          selectedTower?.towerParams.maxUpgradeLevel! ||
+                        !engine.isEnoughMoney(selectedTower?.towerParams.price)
                       }
                       onClick={() => {
-                        engine.upgradeTower(engine.selectedTower!);
+                        engine.upgradeTower(selectedTower!);
                       }}
                     >
                       Upgrade tower
@@ -262,8 +281,8 @@ const GameUi: React.FC<IGameUI> = ({
                     >
                       Sell Tower(
                       {`${Math.floor(
-                        (engine.selectedTower?.towerParams?.price! *
-                          (engine.selectedTower?.upgradeLevel! + 1)) /
+                        (selectedTower?.towerParams?.price! *
+                          (selectedTower?.upgradeLevel! + 1)) /
                           2,
                       )}$`}
                       )
@@ -274,175 +293,29 @@ const GameUi: React.FC<IGameUI> = ({
             </Box>
           </Box>
         </Box>
-        {/* : (
-          <div className="b-building-menu">
-            <div>
-              <button
-                disabled={
-                  !engine.isEnoughMoney(
-                    engine.predefinedTowerParams.one!.towerParams.price,
-                  )
-                }
-                onClick={() => {
-                  engine.buildTower("one", 0);
-                }}
-              >
-                Tower 1 level 1($
-                {engine.predefinedTowerParams.one!.towerParams.price})
-              </button>
-              <button
-                disabled={
-                  !engine.isEnoughMoney(
-                    engine.predefinedTowerParams.one!.towerParams.price,
-                  )
-                }
-                onClick={() => {
-                  engine.buildTower("one", 1);
-                }}
-              >
-                Tower 1 level 2($
-                {engine.predefinedTowerParams.one!.towerParams.price})
-              </button>
-              <button
-                disabled={
-                  !engine.isEnoughMoney(
-                    engine.predefinedTowerParams.one!.towerParams.price,
-                  )
-                }
-                onClick={() => {
-                  engine.buildTower("one", 2);
-                }}
-              >
-                Tower 1 level 3($
-                {engine.predefinedTowerParams.one!.towerParams.price})
-              </button>
-            </div>
-            <div>
-              <button
-                disabled={
-                  !engine.isEnoughMoney(
-                    engine.predefinedTowerParams.two!.towerParams.price,
-                  )
-                }
-                onClick={() => {
-                  engine.buildTower("two", 0);
-                }}
-              >
-                Tower 2 level 1($
-                {engine.predefinedTowerParams.two!.towerParams.price})
-              </button>
-              <button
-                disabled={
-                  !engine.isEnoughMoney(
-                    engine.predefinedTowerParams.two!.towerParams.price,
-                  )
-                }
-                onClick={() => {
-                  engine.buildTower("two", 1);
-                }}
-              >
-                Tower 2 level 2($
-                {engine.predefinedTowerParams.two!.towerParams.price})
-              </button>
-              <button
-                disabled={
-                  !engine.isEnoughMoney(
-                    engine.predefinedTowerParams.two!.towerParams.price,
-                  )
-                }
-                onClick={() => {
-                  engine.buildTower("two", 2);
-                }}
-              >
-                Tower 2 level 3($
-                {engine.predefinedTowerParams.two!.towerParams.price})
-              </button>
-            </div>
-            <div>
-              <button
-                disabled={
-                  !engine.isEnoughMoney(
-                    engine.predefinedTowerParams.three!.towerParams.price,
-                  )
-                }
-                onClick={() => {
-                  engine.buildTower("three", 0);
-                }}
-              >
-                Tower 3 level 1($
-                {engine.predefinedTowerParams.three!.towerParams.price})
-              </button>
-              <button
-                disabled={
-                  !engine.isEnoughMoney(
-                    engine.predefinedTowerParams.three!.towerParams.price,
-                  )
-                }
-                onClick={() => {
-                  engine.buildTower("three", 1);
-                }}
-              >
-                Tower 3 level 2($
-                {engine.predefinedTowerParams.three!.towerParams.price})
-              </button>
-              <button
-                disabled={
-                  !engine.isEnoughMoney(
-                    engine.predefinedTowerParams.three!.towerParams.price,
-                  )
-                }
-                onClick={() => {
-                  engine.buildTower("three", 2);
-                }}
-              >
-                Tower 3 level 3($
-                {engine.predefinedTowerParams.three!.towerParams.price})
-              </button>
-            </div>
-            <div>
-              <button
-                disabled={
-                  !engine.isEnoughMoney(
-                    engine.predefinedTowerParams.four!.towerParams.price,
-                  )
-                }
-                onClick={() => {
-                  engine.buildTower("four", 0);
-                }}
-              >
-                Tower 4 level 1($
-                {engine.predefinedTowerParams.four!.towerParams.price})
-              </button>
-              <button
-                disabled={
-                  !engine.isEnoughMoney(
-                    engine.predefinedTowerParams.four!.towerParams.price,
-                  )
-                }
-                onClick={() => {
-                  engine.buildTower("four", 1);
-                }}
-              >
-                Tower 4 level 2($
-                {engine.predefinedTowerParams.four!.towerParams.price})
-              </button>
-              <button
-                disabled={
-                  !engine.isEnoughMoney(
-                    engine.predefinedTowerParams.four!.towerParams.price,
-                  )
-                }
-                onClick={() => {
-                  engine.buildTower("four", 2);
-                }}
-              >
-                Tower 4 level 3($
-                {engine.predefinedTowerParams.four!.towerParams.price})
-              </button>
-            </div>
-          </div>
-        )}
-        */}
+      </Box>
+      <Box
+        sx={{
+          position: "absolute",
+          top: "16px",
+          right: "16px",
+          zIndex: 101,
+          "& > div": {
+            cursor: "pointer",
+            width: "32px",
+            height: "32px",
+            background: `url("${gearBg}") 0 ${
+              isSideMenuOpen && !isGameMenuOpen ? "-32px" : "0"
+            } no-repeat`,
+          },
+        }}
+      >
+        <Box
+          onClick={() => {
+            // toggle game menu
+            setIsGameMenuOpen(!isGameMenuOpen);
+          }}
+        />
       </Box>
       <Box
         className="b-game-status"
@@ -450,32 +323,30 @@ const GameUi: React.FC<IGameUI> = ({
           position: "absolute",
           zIndex: engine.canvasZIndex.projectile + 1,
           bottom: 0,
+          width: "100%",
         }}
       >
-        <Box>
-          <img
-            src="/UI/gear.png"
-            width={engine.map?.mapParams?.gridStep}
-            height={engine.map?.mapParams?.gridStep}
-            alt={"Toggle game menu"}
-          />
-        </Box>
         {isGameOver && <h1>GAME IS OVER!</h1>}
-        <div>
+        <Box
+          sx={{
+            "& > p": {
+              textAlign: "center",
+            },
+          }}
+        >
           <Typography>
             {Boolean(countdown) && (
               <span>{`Next wave in: ${countdown} seconds`}</span>
             )}
           </Typography>
           <Typography>
-            <span>{`Enemies left: ${enemiesLeft}`}</span>&nbsp;
-            <span>{`Current wave: ${wave}`}</span>&nbsp;
-            <span>{`Lives left: ${lives}`}</span>&nbsp;
-            <span>{`Killed enemies: ${score}`}</span>&nbsp;
-            <span>{`Money: $${money}`}</span>
-            &nbsp;
+            <span>{`Money: $${money}`}</span>&nbsp;
+            <span>{`Lives: ${lives}`}</span>&nbsp;
+            <span>{`Enemies: ${enemiesLeft}`}</span>&nbsp;
+            <span>{`Wave: ${waveNumber}`}</span>&nbsp;
+            <span>{`Score: ${score}`}</span>&nbsp;
           </Typography>
-        </div>
+        </Box>
       </Box>
       <Box
         className="b-game-menu-wrapper"
@@ -509,25 +380,22 @@ const GameUi: React.FC<IGameUI> = ({
             <MenuItem
               className="b-game-menu-item"
               onClick={() => {
-                if (!engine.isGameStarted) {
-                  engine.isGameStarted = true;
+                if (!isGameStarted) {
                   setIsGameStarted(true);
                 }
-                engine.isGameMenuOpen = false;
                 setIsGameMenuOpen(false);
               }}
             >
-              {engine.isGameStarted ? "Resume" : "Start"} game
+              {isGameStarted ? "Resume" : "Start"} game
             </MenuItem>
             <MenuItem
               onClick={() => {
-                if (engine.isGameStarted) {
-                  engine.isGameStarted = false;
+                if (isGameStarted) {
                   setIsGameStarted(false);
                 }
                 setIsGameMenuOpen(false);
               }}
-              disabled={!engine.isGameStarted}
+              disabled={!isGameStarted}
             >
               Pause game
             </MenuItem>
