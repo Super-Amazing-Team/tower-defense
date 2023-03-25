@@ -1,8 +1,4 @@
-import {
-  TDEngine,
-  ITwoDCoordinates,
-  TTowerSpriteTypes,
-} from "../engine/TDEngine";
+import { TDEngine, ITwoDCoordinates, TTowerTypes } from "../engine/TDEngine";
 import { Enemy } from "../enemies/Enemy";
 import { Projectile } from "../projectiles/Projectile";
 import { useGameStore } from "@/store";
@@ -26,7 +22,7 @@ const gameStore = useGameStore;
 
 export interface ITower {
   engine: TDEngine;
-  type: TTowerSpriteTypes;
+  type: TTowerTypes;
   upgradeLevel: 0 | 1 | 2;
   towerParams: {
     attackRate: number;
@@ -239,7 +235,7 @@ export class Tower {
         // and redraw only existing towers
         this.engine.towers?.forEach((tower) => {
           tower.draw();
-          // inselect tower
+          // remove tower selection
           if (tower.towerParams.isSelected) {
             tower.towerParams.isSelected = false;
           }

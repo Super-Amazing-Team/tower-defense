@@ -6,6 +6,7 @@ export interface IGameStore {
   isGameMenuOpen: ITDEngine["isGameMenuOpen"];
   isGameStarted: ITDEngine["isGameStarted"];
   isSideMenuOpen: ITDEngine["isSideMenuOpen"];
+  isBuildMenuOpen: ITDEngine["isBuildMenuOpen"];
   selectedTower: ITDEngine["selectedTower"];
   lives: ITDEngine["lives"];
   money: ITDEngine["money"];
@@ -19,6 +20,7 @@ export type TGameAction = {
   updateIsGameMenuOpen: (bool: IGameStore["isGameMenuOpen"]) => void;
   updateIsGameStarted: (bool: IGameStore["isGameStarted"]) => void;
   updateIsSideMenuOpen: (bool: IGameStore["isSideMenuOpen"]) => void;
+  updateIsBuildMenuOpen: (bool: IGameStore["isBuildMenuOpen"]) => void;
   updateSelectedTower: (tower: IGameStore["selectedTower"]) => void;
   updateLives: (lives: IGameStore["lives"]) => void;
   updateMoney: (money: IGameStore["money"]) => void;
@@ -35,6 +37,9 @@ export const useGameStore = create<IGameStore & TGameAction>()((set) => ({
   isGameMenuOpen: true,
   updateIsGameMenuOpen: (isGameMenuOpen) =>
     set(() => ({ isGameMenuOpen: isGameMenuOpen })),
+  isBuildMenuOpen: true,
+  updateIsBuildMenuOpen: (isBuildMenuOpen) =>
+    set(() => ({ isBuildMenuOpen: isBuildMenuOpen })),
   isGameStarted: false,
   updateIsGameStarted: (isGameStarted) =>
     set(() => ({ isGameStarted: isGameStarted })),

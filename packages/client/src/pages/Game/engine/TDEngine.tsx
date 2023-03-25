@@ -25,13 +25,7 @@ export type TEngineCanvas =
   | "map"
   | "mapDecorations"
   | "mapBackground";
-export type TTowerSpriteTypes =
-  | "one"
-  | "two"
-  | "three"
-  | "four"
-  | "five"
-  | "six";
+export type TTowerTypes = "one" | "two" | "three" | "four";
 export type TEnemyType =
   | "firebug"
   | "leafbug"
@@ -39,7 +33,7 @@ export type TEnemyType =
   | "firewasp"
   | "clampbeetle"
   | "firelocust";
-type TTowerSprite = TPartialRecord<TTowerSpriteTypes, ITowerSprite | null>;
+type TTowerSprite = TPartialRecord<TTowerTypes, ITowerSprite | null>;
 export type TTowerSpriteElements =
   | "base"
   | "construction"
@@ -67,7 +61,7 @@ type TImageSprite = CanvasImageSource;
 /**
  * interfaces declaration
  */
-interface ITowerSprite {
+export interface ITowerSprite {
   spriteSourcePath?: Record<TTowerSpriteElements, string | string[]>;
   spriteSource: TPartialRecord<
     TTowerSpriteElements,
@@ -384,6 +378,7 @@ export interface ITDEngine {
   isCanBuild: boolean;
   isGameStarted: boolean;
   isSideMenuOpen: boolean;
+  isBuildMenuOpen: boolean;
   isGameOver: boolean;
   isShowGrid: boolean;
   isNotEnoughMoney: boolean;
@@ -396,8 +391,8 @@ export interface ITDEngine {
   towerSprites: TTowerSprite;
   enemySprites: TEnemySprite;
   mapSprites: TImageSprite[];
-  predefinedTowerParams: TPartialRecord<
-    TTowerSpriteTypes,
+  predefinedTowerParams: Record<
+    TTowerTypes,
     {
       towerParams: Tower["towerParams"];
       projectileParams: Tower["projectileParams"];
@@ -436,11 +431,7 @@ export class TDEngine {
     public gameWindow: ITDEngine["gameWindow"] = null,
     public animationFrameId: ITDEngine["animationFrameId"] = 0,
     public requestIdleCallback: ITDEngine["requestIdleCallback"] = 0,
-    public UICallback: () => void = () => {},
     public UIGameIsOver?: ITDEngine["UIDispatchBoolean"],
-    public UISetIsSideMenuOpen?: ITDEngine["UIDispatchBoolean"],
-    public UISetIsBottomMenuOpen?: ITDEngine["UIDispatchBoolean"],
-    public UISetConstructionProgress?: ITDEngine["UIDispatchNumber"],
     public lives: ITDEngine["lives"] = 0,
     public score: ITDEngine["score"] = 0,
     public money: ITDEngine["money"] = 0,
@@ -463,7 +454,6 @@ export class TDEngine {
     public isCanvasCreated: ITDEngine["isCanvasCreated"] = false,
     public isCanBuild: ITDEngine["isCanBuild"] = false,
     public isGameStarted: ITDEngine["isGameStarted"] = false,
-    public isSideMenuOpen: ITDEngine["isSideMenuOpen"] = false,
     public isGameOver: ITDEngine["isGameOver"] = false,
     public isShowGrid: ITDEngine["isShowGrid"] = false,
     public isNotEnoughMoney: ITDEngine["isNotEnoughMoney"] = false,
@@ -1043,7 +1033,7 @@ export class TDEngine {
       // tower sprites
       if (!this.isTowerSpritesLoaded) {
         for (const [towerType, index] of Object.entries(this.towerSprites)) {
-          this.splitTowerSprite(towerType as TTowerSpriteTypes);
+          this.splitTowerSprite(towerType as TTowerTypes);
         }
         this.isTowerSpritesLoaded = true;
       }
@@ -1211,7 +1201,7 @@ export class TDEngine {
     }
   }
 
-  public splitTowerSprite(towerType: TTowerSpriteTypes) {
+  public splitTowerSprite(towerType: TTowerTypes) {
     // load sprites from url paths
     this.towerSprites[towerType!]!.spriteSource =
       this.createTowerSpriteSource(towerType);
@@ -1298,7 +1288,7 @@ export class TDEngine {
     return img;
   };
 
-  public createTowerSpriteSource(towerType: TTowerSpriteTypes) {
+  public createTowerSpriteSource(towerType: TTowerTypes) {
     const spriteSource: ITowerSprite["spriteSource"] = {};
     const pathPrefix = `sprites/tower/${towerType}/`;
 
@@ -1339,7 +1329,7 @@ export class TDEngine {
     return spriteSource;
   }
 
-  public createTowerSpriteCanvasArr(towerType: TTowerSpriteTypes) {
+  public createTowerSpriteCanvasArr(towerType: TTowerTypes) {
     return {
       base: this.createCanvasArr(3),
       construction: [
@@ -1418,7 +1408,7 @@ export class TDEngine {
 
   public createTowerSpriteCanvasContext(
     canvasArr: ITowerSprite["canvasArr"],
-    towerType: TTowerSpriteTypes,
+    towerType: TTowerTypes,
   ) {
     let contextArr: ITowerSprite["canvasContextArr"] = {
       base: [],
@@ -1436,11 +1426,11 @@ export class TDEngine {
             if (!Array.isArray(canvas)) {
               canvas.width =
                 this.predefinedTowerParams[
-                  towerType as TTowerSpriteTypes
+                  towerType as TTowerTypes
                 ]!.towerParams.baseWidth!;
               canvas.height =
                 this.predefinedTowerParams[
-                  towerType as TTowerSpriteTypes
+                  towerType as TTowerTypes
                 ]!.towerParams.baseHeight!;
               (contextArr?.base as CanvasRenderingContext2D[]).push(
                 canvas.getContext("2d")!,
@@ -1492,11 +1482,11 @@ export class TDEngine {
             if (!Array.isArray(canvas)) {
               canvas.width =
                 this.predefinedTowerParams[
-                  towerType as TTowerSpriteTypes
+                  towerType as TTowerTypes
                 ]!.towerParams?.constructionHeight!;
               canvas.height =
                 this.predefinedTowerParams[
-                  towerType as TTowerSpriteTypes
+                  towerType as TTowerTypes
                 ]!.towerParams?.constructionWidth!;
               (contextArr?.constructionSell as CanvasRenderingContext2D[]).push(
                 canvas.getContext("2d")!,
@@ -1729,7 +1719,7 @@ export class TDEngine {
     element: TTowerSpriteElements,
     contextArr: CanvasRenderingContext2D[],
     spriteSource: CanvasImageSource,
-    towerType: TTowerSpriteTypes,
+    towerType: TTowerTypes,
     upgradeLevel = 0,
   ) {
     contextArr.forEach((context, index) => {
@@ -1912,12 +1902,13 @@ export class TDEngine {
   }
 
   public buildTower = (
-    type: TTowerSpriteTypes,
+    type: TTowerTypes,
     upgradeLevel: Tower["upgradeLevel"],
   ) => {
     if (
       this.isEnoughMoney(this.predefinedTowerParams[type]!.towerParams.price)
     ) {
+      this.clearTowerSelection();
       this.isCanBuild = true;
       this.draftTower = new Tower(
         this,
@@ -1964,6 +1955,33 @@ export class TDEngine {
     };
   }
 
+  public findClosestTower(
+    coordinates: ITwoDCoordinates,
+    tilesArr: ITwoDCoordinates[] = this.map?.mapParams?.towerTilesArr!,
+  ) {
+    let closestTile: ITwoDCoordinates | undefined = undefined;
+    let minDistance = this.map?.mapParams.width;
+    tilesArr.forEach((tile) => {
+      const distance =
+        (tile.x -
+          coordinates.x! +
+          this.map?.mapParams?.gridStep! -
+          this.map?.mapParams?.tileCenter!) *
+          (tile.x -
+            coordinates.x! +
+            this.map?.mapParams?.gridStep! -
+            this.map?.mapParams?.tileCenter!) +
+        (tile.y - coordinates.y! + this.map?.mapParams?.tileCenter!) *
+          (tile.y - coordinates.y! + this.map?.mapParams?.tileCenter!);
+      if (distance < minDistance!) {
+        minDistance = distance;
+        closestTile! = tile!;
+      }
+    });
+
+    return closestTile;
+  }
+
   public highlightTile(
     coords: ITwoDCoordinates,
     context: CanvasRenderingContext2D = this.context!.game!,
@@ -1996,16 +2014,14 @@ export class TDEngine {
     if (this.isCanBuild) {
       this.draftBuildTower();
     } else {
-      // debug
-      console.log(`debug`);
       const context = this.context?.build!;
       this.map?.mapParams?.towerTilesArr.forEach((tile) => {
         context.beginPath();
         context.strokeStyle = "green";
         context.setLineDash([]);
         context.strokeRect(
-          tile.x - this.map?.mapParams?.gridStep!,
-          tile.y - this.map?.mapParams?.gridStep!,
+          tile.x,
+          tile.y,
           this.map?.mapParams.gridStep!,
           this.map?.mapParams.gridStep!,
         );
@@ -2020,7 +2036,7 @@ export class TDEngine {
     // max upgrade level check
     if (tower.upgradeLevel === tower.towerParams.maxUpgradeLevel!) return;
     // remove selection
-    tower.towerParams.isSelected = false;
+    // tower.towerParams.isSelected = false;
     tower.isCanFire = false;
     // release tower target
     tower.target = null;
@@ -2056,55 +2072,49 @@ export class TDEngine {
   }
 
   public clearTowerSelection(
-    tower: Tower = this.selectedTower!,
+    tower: Tower | undefined = this.selectedTower!,
     context: CanvasRenderingContext2D = this.context?.selection!,
   ) {
     // UI close right menu
     gameStore.getState().updateIsSideMenuOpen(false);
     //
-    tower.towerParams.isSelected = false;
     this.clearContext(context);
     this.selectedTower = null;
+    if (tower) {
+      tower.towerParams.isSelected = false;
+    }
   }
 
   public selectTower() {
     if (!this.towers?.length) return;
-    const closestTile = this.findClosestTile(
-      {
-        x: this.draftBuildCoordinates.x + this.map?.mapParams?.gridStep!,
-        y: this.draftBuildCoordinates.y + this.map?.mapParams?.gridStep!,
-      },
-      this.map?.mapParams?.towerTilesArr,
-    );
+    const closestTile = this.findClosestTower(this.cursorPosition);
     this.towers.forEach((tower) => {
-      // can't select towers while constructing
-      // if (tower.renderParams.isConstructing) return;
       // remove previous selection
       if (this.selectedTower === tower) {
         this.clearTowerSelection();
       }
       // set new selection
-      if (
-        tower.currentPosition.x === closestTile.x &&
-        tower.currentPosition.y === closestTile.y
-      ) {
-        this.selectedTower = tower;
-        // UI
-        gameStore.getState().updateSelectedTower(tower);
-        gameStore.getState().updateIsSideMenuOpen(true);
-        this.selectedTower.towerParams.isSelected = true;
-        this.clearContext(this.context?.selection!);
-        this.selectedTower.drawSelection();
-        return;
+      if (closestTile) {
+        if (
+          tower.currentPosition.x - this.map?.mapParams?.gridStep! ===
+            (closestTile! as ITwoDCoordinates).x &&
+          tower.currentPosition.y - this.map?.mapParams?.gridStep! ===
+            (closestTile! as ITwoDCoordinates).y
+        ) {
+          this.selectedTower = tower;
+          // UI
+          gameStore.getState().updateSelectedTower(tower);
+          gameStore.getState().updateIsSideMenuOpen(true);
+          this.selectedTower.towerParams.isSelected = true;
+          this.clearContext(this.context?.selection!);
+          this.selectedTower.drawSelection();
+          return;
+        }
       }
     });
   }
 
   public gameWindowKeydown = (e: KeyboardEvent) => {
-    // debug
-    console.log(`e.key`);
-    console.log(e.key);
-    //
     if (e.key === "Escape") {
       if (gameStore.getState().isGameStarted) {
         // exit building mode
@@ -2113,18 +2123,26 @@ export class TDEngine {
           this.isShowGrid = false;
         } else if (this.selectedTower) {
           // clear selected tower
-          this.clearTowerSelection(this.selectedTower);
+          this.clearTowerSelection();
         } else {
           // toggle game menu
           gameStore
             .getState()
             .updateIsGameMenuOpen(!gameStore.getState().isGameMenuOpen);
+          // toggle build menu
+          gameStore
+            .getState()
+            .updateIsBuildMenuOpen(!gameStore.getState().isBuildMenuOpen);
         }
       } else {
         // toggle game menu
         gameStore
           .getState()
           .updateIsGameMenuOpen(!gameStore.getState().isGameMenuOpen);
+        // toggle build menu
+        gameStore
+          .getState()
+          .updateIsBuildMenuOpen(!gameStore.getState().isBuildMenuOpen);
       }
     }
 
@@ -2254,7 +2272,10 @@ export class TDEngine {
           );
 
           // push tile to towerTilesArr
-          this.map!.mapParams.towerTilesArr.push(this.draftBuildCoordinates);
+          this.map!.mapParams.towerTilesArr.push({
+            x: this.draftBuildCoordinates.x - this.map?.mapParams?.gridStep!,
+            y: this.draftBuildCoordinates.y - this.map?.mapParams?.gridStep!,
+          });
 
           // pop chosen tile from available space to build
           this.map!.mapParams.mapTilesArr! =

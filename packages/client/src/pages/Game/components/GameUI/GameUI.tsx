@@ -1,21 +1,9 @@
-import React, { useEffect, useState } from "react";
-import {
-  Box,
-  MenuList,
-  MenuItem,
-  Typography,
-  Button,
-  createTheme,
-} from "@mui/material";
-import { ThemeProvider } from "@mui/material/styles";
+import React, { useState } from "react";
+import { Box, MenuList, MenuItem, Typography, Button } from "@mui/material";
 import { shallow } from "zustand/shallow";
+import gameUIIcons from "../../../../../public/UI/gameUIIcons.png";
 import sidePanelBg from "@/../public/UI/sidePanelBg.png";
-import gearBg from "@/../public/UI/gear.png";
-import {
-  TDEngine,
-  ITDEngine,
-  IWaveGenerator,
-} from "@/pages/Game/engine/TDEngine";
+import { TDEngine, IWaveGenerator } from "@/pages/Game/engine/TDEngine";
 import { useGameStore } from "@/store";
 
 interface IGameUI {
@@ -28,39 +16,7 @@ interface IGameUI {
   isEnoughMoney?: boolean;
 }
 
-// mui theme
-const theme = createTheme({
-  components: {
-    MuiMenuItem: {
-      styleOverrides: {
-        root: {
-          color: "#ffae70",
-          fontFamily: "'Press Start 2P', cursive",
-        },
-      },
-    },
-    MuiTypography: {
-      styleOverrides: {
-        root: {
-          color: "#000000",
-          fontFamily: "'Press Start 2P', cursive",
-          fontSize: "0.75em",
-        },
-      },
-    },
-    MuiButton: {
-      styleOverrides: {
-        root: {
-          color: "#000000",
-          fontFamily: "'Press Start 2P', cursive",
-          fontSize: "0.75em",
-        },
-      },
-    },
-  },
-});
-
-const GameUi: React.FC<IGameUI> = ({ engine }) => {
+const GameUi = ({ engine }: IGameUI) => {
   // game status params
   const [lives, setLives] = useGameStore(
     (state) => [state.lives, state.updateLives],
@@ -86,6 +42,10 @@ const GameUi: React.FC<IGameUI> = ({ engine }) => {
     (state) => [state.isSideMenuOpen, state.updateIsSideMenuOpen],
     shallow,
   );
+  const [isBuildMenuOpen, setIsBuildMenuOpen] = useGameStore(
+    (state) => [state.isBuildMenuOpen, state.updateIsBuildMenuOpen],
+    shallow,
+  );
   const [isGameStarted, setIsGameStarted] = useGameStore(
     (state) => [state.isGameStarted, state.updateIsGameStarted],
     shallow,
@@ -109,7 +69,7 @@ const GameUi: React.FC<IGameUI> = ({ engine }) => {
   //
 
   const [isGameOver, setIsGameOver] = useState<boolean>(false);
-  const [isBottomMenuOpen, setIsBottomMenuOpen] = useState<boolean>(false);
+
   const [isSoundEnabled, setIsSoundEnabled] = useState<boolean>(
     engine.isSoundEnabled,
   );
@@ -142,58 +102,14 @@ const GameUi: React.FC<IGameUI> = ({ engine }) => {
     return result;
   };
 
-  useEffect(() => {
-    // debug
-    console.log(`selectedTower`);
-    console.log(selectedTower);
-    //
-
-    /*
-    engine.UICallback = () => {
-      //
-      setSelectedTower(engine.selectedTower);
-      // update game results
-      setScore(engine.score);
-      setCountdown(engine.waveGenerator?.waveCountdown);
-      setLives(engine.lives);
-      setMoney(engine.money);
-      setWave(engine.waveGenerator?.waveParams.currentWave);
-      setEnemiesLeft(engine.enemies?.length);
-      if (engine.lives < 1) {
-        setIsGameOver(true);
-        engine.sound?.soundArr?.gameStart?.pause();
-        engine.sound!.soundArr.gameStart!.currentTime = 0;
-      } else {
-        if (isGameOver) {
-          setIsGameOver(false);
-        }
-      }
-      // is tower selected?
-      setIsTowerCanBeUpgraded(
-        engine.selectedTower
-          ? engine.selectedTower.upgradeLevel <
-              engine.selectedTower.towerParams.maxUpgradeLevel!
-          : false,
-      );
-    };
-    engine.UIGameIsOver = setIsGameOver;
-    engine.UISetIsSideMenuOpen = setIsSideMenuOpen;
-    engine.UISetIsGameMenuOpen = setIsGameMenuOpen;
-    engine.UISetIsBottomMenuOpen = setIsBottomMenuOpen;
-    engine.UISetSelectedTower = setSelectedTower;
-    engine.UISetConstructionProgress = setConstructionProgress;
-
-     */
-  }, []);
-
   return (
-    <ThemeProvider theme={theme}>
+    <>
       <Box
         sx={{
           position: "absolute",
           right: 0,
           zIndex: isSideMenuOpen ? 100 : 50,
-          width: `270px`,
+          width: `${engine.map?.tileToNumber(4)}px`,
           height: "100%",
         }}
       >
@@ -300,28 +216,62 @@ const GameUi: React.FC<IGameUI> = ({ engine }) => {
           top: "16px",
           right: "16px",
           zIndex: 101,
-          "& > div": {
+          "& > p": {
             cursor: "pointer",
             width: "32px",
             height: "32px",
-            background: `url("${gearBg}") 0 ${
-              isSideMenuOpen && !isGameMenuOpen ? "-32px" : "0"
-            } no-repeat`,
+            textAlign: "center",
+            fontSize: "1.5em",
+            color: "#bd6a62",
+          },
+          "& > .game-menu-icon": {
+            cursor: "pointer",
+            width: "32px",
+            height: "32px",
+            background: `url(${gameUIIcons}) 0 0 no-repeat`,
+          },
+          "& > .game-build-icon": {
+            cursor: "pointer",
+            width: "32px",
+            height: "32px",
+            marginTop: "16px",
+            background: `url(${gameUIIcons}) 0 -32px no-repeat`,
           },
         }}
       >
-        <Box
-          onClick={() => {
-            // toggle game menu
-            setIsGameMenuOpen(!isGameMenuOpen);
-          }}
-        />
+        {isSideMenuOpen ? (
+          <Typography
+            onClick={() => {
+              // toggle side menu
+              setIsSideMenuOpen(!isSideMenuOpen);
+            }}
+          >
+            X
+          </Typography>
+        ) : (
+          <>
+            <Box
+              onClick={() => {
+                // toggle game menu
+                setIsGameMenuOpen(!isGameMenuOpen);
+              }}
+              className="game-menu-icon"
+            />
+            <Box
+              onClick={() => {
+                // toggle game menu
+                setIsBuildMenuOpen(!isBuildMenuOpen);
+              }}
+              className="game-build-icon"
+            />
+          </>
+        )}
       </Box>
       <Box
         className="b-game-status"
         sx={{
           position: "absolute",
-          zIndex: engine.canvasZIndex.projectile + 1,
+          zIndex: 101,
           bottom: 0,
           width: "100%",
         }}
@@ -426,7 +376,7 @@ const GameUi: React.FC<IGameUI> = ({ engine }) => {
           </MenuList>
         </Box>
       </Box>
-    </ThemeProvider>
+    </>
   );
 };
 
