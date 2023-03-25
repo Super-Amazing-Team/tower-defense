@@ -68,7 +68,10 @@ export class Enemy {
     this.enemyParams.rectCenterX = this.enemyParams?.width! / 2;
     this.enemyParams.rectCenterY = this.enemyParams?.height! / 2;
     this.enemyParams.maxHp = this.enemyParams.hp;
-    this.renderParams.currentFrame = 0;
+    // set random animation frame
+    this.renderParams.currentFrame = Math.floor(
+      Math.random() * this.renderParams.framesPerSprite,
+    );
   }
 
   public drawHpBar(
@@ -273,9 +276,11 @@ export class Enemy {
               this.moveLeft();
             } else {
               // end of map
-              this.destroy();
+              this.destroy(false, false);
               // decrement life quantity
               this.engine.lives -= 1;
+              // UI
+              useGameStore.getState().updateLives(this.engine.lives);
             }
             break;
           }
@@ -286,9 +291,11 @@ export class Enemy {
               this.moveRight();
             } else {
               // end of map
-              this.destroy(false);
+              this.destroy(false, false);
               // decrement life quantity
               this.engine.lives -= 1;
+              // UI
+              useGameStore.getState().updateLives(this.engine.lives);
             }
             break;
           }
@@ -300,9 +307,11 @@ export class Enemy {
               this.moveDown();
             } else {
               // end of map
-              this.destroy();
+              this.destroy(false, false);
               // decrement life quantity
               this.engine.lives -= 1;
+              // UI
+              useGameStore.getState().updateLives(this.engine.lives);
             }
             break;
           }
@@ -314,9 +323,11 @@ export class Enemy {
               this.moveUp();
             } else {
               // end of map
-              this.destroy();
+              this.destroy(false, false);
               // decrement life quantity
               this.engine.lives -= 1;
+              // UI
+              useGameStore.getState().updateLives(this.engine.lives);
             }
             break;
           }
@@ -325,7 +336,7 @@ export class Enemy {
     }
   }
 
-  public destroy(isPushDeadEnemy = true) {
+  public destroy(isPushDeadEnemy = true, isGiveBounty = true) {
     // pop en enemy
     this.engine.enemies = this.engine.enemies?.filter(
       (enemy: Enemy) => this !== enemy,
@@ -344,11 +355,13 @@ export class Enemy {
     }
 
     this.engine.score += 1;
-    this.engine.money += this.enemyParams.bounty!;
+    if (isGiveBounty) {
+      this.engine.money += this.enemyParams.bounty!;
+      useGameStore.getState().updateMoney(this.engine.money);
+    }
 
     // UI update
     useGameStore.getState().updateEnemiesLeft(this.engine.enemies?.length!);
     useGameStore.getState().updateScore(this.engine.score);
-    useGameStore.getState().updateMoney(this.engine.money);
   }
 }

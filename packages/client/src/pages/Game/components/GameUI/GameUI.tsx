@@ -6,6 +6,18 @@ import sidePanelBg from "@/../public/UI/sidePanelBg.png";
 import { TDEngine, IWaveGenerator } from "@/pages/Game/engine/TDEngine";
 import { useGameStore } from "@/store";
 
+declare global {
+  namespace JSX {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    interface IntrinsicElements {
+      marquee: React.DetailedHTMLProps<
+        React.HTMLAttributes<HTMLElement>,
+        HTMLElement
+      >;
+    }
+  }
+}
+
 interface IGameUI {
   engine: TDEngine;
   lives?: number;
@@ -15,6 +27,34 @@ interface IGameUI {
   waveCountdown?: IWaveGenerator["waveCountdown"];
   isEnoughMoney?: boolean;
 }
+
+const percentToProgressBarString = (percent: number) => {
+  let result = "[]";
+  if (percent >= 0) {
+    if (percent < 10) {
+      result = "[xooooooooo]";
+    } else if (percent < 20) {
+      result = "[xxoooooooo]";
+    } else if (percent < 30) {
+      result = "[xxxooooooo]";
+    } else if (percent < 40) {
+      result = "[xxxxoooooo]";
+    } else if (percent < 50) {
+      result = "[xxxxxooooo]";
+    } else if (percent < 60) {
+      result = "[xxxxxxoooo]";
+    } else if (percent < 70) {
+      result = "[xxxxxxxooo]";
+    } else if (percent < 80) {
+      result = "[xxxxxxxxoo]";
+    } else if (percent < 90) {
+      result = "[xxxxxxxxxo]";
+    } else if (percent <= 100) {
+      result = "[xxxxxxxxxx]";
+    }
+  }
+  return result;
+};
 
 const GameUi = ({ engine }: IGameUI) => {
   // game status params
@@ -50,6 +90,10 @@ const GameUi = ({ engine }: IGameUI) => {
     (state) => [state.isGameStarted, state.updateIsGameStarted],
     shallow,
   );
+  const [isGameOver, setIsGameOver] = useGameStore(
+    (state) => [state.isGameOver, state.updateIsGameOver],
+    shallow,
+  );
   const [selectedTower, setSelectedTower] = useGameStore(
     (state) => [state.selectedTower, state.updateSelectedTower],
     shallow,
@@ -68,54 +112,26 @@ const GameUi = ({ engine }: IGameUI) => {
   );
   //
 
-  const [isGameOver, setIsGameOver] = useState<boolean>(false);
-
   const [isSoundEnabled, setIsSoundEnabled] = useState<boolean>(
     engine.isSoundEnabled,
   );
 
-  const percentToProgressBarString = (percent: number) => {
-    let result = "[]";
-    if (percent >= 0) {
-      if (percent < 10) {
-        result = "[xooooooooo]";
-      } else if (percent < 20) {
-        result = "[xxoooooooo]";
-      } else if (percent < 30) {
-        result = "[xxxooooooo]";
-      } else if (percent < 40) {
-        result = "[xxxxoooooo]";
-      } else if (percent < 50) {
-        result = "[xxxxxooooo]";
-      } else if (percent < 60) {
-        result = "[xxxxxxoooo]";
-      } else if (percent < 70) {
-        result = "[xxxxxxxooo]";
-      } else if (percent < 80) {
-        result = "[xxxxxxxxoo]";
-      } else if (percent < 90) {
-        result = "[xxxxxxxxxo]";
-      } else if (percent <= 100) {
-        result = "[xxxxxxxxxx]";
-      }
-    }
-    return result;
-  };
-
+  // @ts-ignore
   return (
     <>
       <Box
         sx={{
           position: "absolute",
-          right: 0,
-          zIndex: isSideMenuOpen ? 100 : 50,
+          right: isSideMenuOpen ? "0px" : `-${engine.map?.tileToNumber(4)}px`,
+          zIndex: 100,
           width: `${engine.map?.tileToNumber(4)}px`,
           height: "100%",
+          transition: "all 500ms ease",
         }}
       >
         <Box
           sx={{
-            display: isSideMenuOpen ? "flex" : "none",
+            display: "flex",
             height: "100%",
           }}
           className="b-tower-upgrade-menu-wrapper"
@@ -144,28 +160,48 @@ const GameUi = ({ engine }: IGameUI) => {
             >
               {selectedTower?.renderParams.isConstructing &&
               !selectedTower?.renderParams.isConstructionEnd ? (
-                <Typography paragraph={true} sx={{ pt: 3 }}>
-                  IS CONSTRUCTING:
-                  <span>
-                    {percentToProgressBarString(constructionProgress)}
-                  </span>
-                </Typography>
+                <>
+                  <Typography
+                    sx={{
+                      mt: 3,
+                    }}
+                  >
+                    Building:
+                  </Typography>
+                  <Typography
+                    sx={{
+                      textAlign: "center",
+                      color: "red",
+                      "& > span": {
+                        fontSize: "1.5em",
+                      },
+                    }}
+                  >
+                    <span>
+                      {percentToProgressBarString(constructionProgress)}
+                    </span>
+                  </Typography>
+                </>
               ) : (
                 <>
-                  <Box>
-                    <Typography paragraph={true}>
+                  <Box
+                    sx={{
+                      mt: 3,
+                    }}
+                  >
+                    <Typography>
                       Tower Level:{" "}
                       <span>{`${selectedTower?.upgradeLevel! + 1}`}</span>
                     </Typography>
-                    <Typography paragraph={true}>
+                    <Typography>
                       Damage:{" "}
                       <span>{`${selectedTower?.towerParams?.attackDamage}`}</span>
                     </Typography>
-                    <Typography paragraph={true}>
+                    <Typography>
                       Attack speed:{" "}
                       <Box component="span">{`${selectedTower?.towerParams?.attackRate}`}</Box>
                     </Typography>
-                    <Typography paragraph={true}>
+                    <Typography>
                       Attack range:{" "}
                       <Box component="span">{`${selectedTower?.towerParams?.attackRange}`}</Box>
                     </Typography>
@@ -222,7 +258,7 @@ const GameUi = ({ engine }: IGameUI) => {
             height: "32px",
             textAlign: "center",
             fontSize: "1.5em",
-            color: "#bd6a62",
+            color: "#262626",
           },
           "& > .game-menu-icon": {
             cursor: "pointer",
@@ -257,44 +293,69 @@ const GameUi = ({ engine }: IGameUI) => {
               }}
               className="game-menu-icon"
             />
-            <Box
-              onClick={() => {
-                // toggle game menu
-                setIsBuildMenuOpen(!isBuildMenuOpen);
-              }}
-              className="game-build-icon"
-            />
+            {!isGameMenuOpen && (
+              <Box
+                onClick={() => {
+                  // toggle game menu
+                  setIsBuildMenuOpen(!isBuildMenuOpen);
+                }}
+                className="game-build-icon"
+              />
+            )}
           </>
         )}
       </Box>
+      {isGameOver && !isGameMenuOpen && (
+        <Box
+          sx={{
+            position: "absolute",
+            zIndex: 100,
+            width: "100%",
+            height: "100%",
+            display: "flex",
+            "& p": {
+              display: "flex",
+              flexGrow: 1,
+              alignItems: "center",
+              color: "#262626",
+              fontSize: "4em",
+            },
+          }}
+        >
+          <Typography>
+            {/* eslint-disable-next-line react/no-unknown-property */}
+            <marquee scrollamount="12">GAME IS OVER!</marquee>
+          </Typography>
+        </Box>
+      )}
       <Box
         className="b-game-status"
         sx={{
           position: "absolute",
           zIndex: 101,
-          bottom: 0,
+          top: 0,
           width: "100%",
         }}
       >
-        {isGameOver && <h1>GAME IS OVER!</h1>}
         <Box
           sx={{
             "& > p": {
               textAlign: "center",
+              color: "#262626",
             },
           }}
         >
-          <Typography>
-            {Boolean(countdown) && (
-              <span>{`Next wave in: ${countdown} seconds`}</span>
-            )}
-          </Typography>
           <Typography>
             <span>{`Money: $${money}`}</span>&nbsp;
             <span>{`Lives: ${lives}`}</span>&nbsp;
             <span>{`Enemies: ${enemiesLeft}`}</span>&nbsp;
             <span>{`Wave: ${waveNumber}`}</span>&nbsp;
             <span>{`Score: ${score}`}</span>&nbsp;
+          </Typography>
+          <Typography>
+            {Boolean(countdown) && (
+              <span>{`Next wave in: ${countdown} seconds`}</span>
+            )}
           </Typography>
         </Box>
       </Box>
@@ -345,7 +406,7 @@ const GameUi = ({ engine }: IGameUI) => {
                 }
                 setIsGameMenuOpen(false);
               }}
-              disabled={!isGameStarted}
+              disabled={!isGameStarted || isGameOver}
             >
               Pause game
             </MenuItem>

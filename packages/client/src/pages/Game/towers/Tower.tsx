@@ -17,9 +17,6 @@ export type TProjectileParamsDimensions =
 
 export type TProjectileAttackModifiers = "slow" | "freeze" | "splash";
 
-// zustand
-const gameStore = useGameStore;
-
 export interface ITower {
   engine: TDEngine;
   type: TTowerTypes;
@@ -209,13 +206,13 @@ export class Tower {
           this.renderParams.constructingCurrentFrame = 0;
           this.renderParams.isConstructing = false;
           this.renderParams.isConstructionEnd = false;
-          this.engine.selectedTower = null;
+          // this.engine.selectedTower = null;
           this.engine.clearContext(this.engine.context?.tower!);
           this.engine.towers?.forEach((tower) => {
             tower.draw();
-            if (tower.towerParams.isSelected) {
-              tower.towerParams.isSelected = false;
-            }
+            // if (tower.towerParams.isSelected) {
+            //  tower.towerParams.isSelected = false;
+            // }
           });
         }
       } else {
@@ -335,7 +332,7 @@ export class Tower {
             );
             // UI construction time update
             if (this.engine.selectedTower === this) {
-              gameStore
+              useGameStore
                 .getState()
                 .updateConstructionProgress(
                   this.renderParams.constructionProgressPercent,
@@ -356,7 +353,7 @@ export class Tower {
           this.renderParams.constructingCurrentFrame = 0;
           this.renderParams.isConstructionEnd = true;
           // UI construction time update
-          gameStore.getState().updateConstructionProgress(0);
+          useGameStore.getState().updateConstructionProgress(0);
         }, this.renderParams?.constructionTimeout);
       }
       // tower base

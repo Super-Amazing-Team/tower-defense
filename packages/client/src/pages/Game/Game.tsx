@@ -30,7 +30,7 @@ const theme = createTheme({
         root: {
           color: "#000000",
           fontFamily: "'Press Start 2P', cursive",
-          fontSize: "0.75em",
+          fontSize: "0.7em",
         },
       },
     },
@@ -128,6 +128,7 @@ export const Game: FC<IGameProps> = ({ engine = new TDEngine() }) => {
             position: "absolute",
             display: !isLoading ? "flex" : "none",
           },
+          overflow: "hidden",
         }}
       >
         <Box className="b-game-window" id="gameWindow" ref={gameWindow} />
@@ -139,14 +140,18 @@ export const Game: FC<IGameProps> = ({ engine = new TDEngine() }) => {
             {isGameStarted && (
               <Box
                 sx={{
-                  display: isBuildMenuOpen && !isGameMenuOpen ? "flex" : "none",
-                  zIndex: isBuildMenuOpen && !isGameMenuOpen ? 100 : 50,
+                  display: "flex",
+                  zIndex: 100,
                   position: "absolute",
-                  bottom: "0px",
                   width: "100%",
                   height: `${engine.map?.tileToNumber(4)}px`,
+                  bottom:
+                    isBuildMenuOpen && !isGameMenuOpen
+                      ? "0px"
+                      : `-${engine.map?.tileToNumber(4)}px`,
                   background: `url(${sidePanelBg}) repeat`,
                   borderTop: "3px solid #bd6a62",
+                  transition: "all 500ms ease",
                 }}
                 className="b-tower-build-menu-wrapper"
               >
@@ -175,6 +180,7 @@ export const Game: FC<IGameProps> = ({ engine = new TDEngine() }) => {
                             setIsBuildMenuOpen(false);
                             engine.buildTower(towerType, 0);
                           }}
+                          grassBg={engine.map?.grassBackrgroundCanvas?.toDataURL()}
                         />
                       );
                     },
@@ -192,7 +198,7 @@ export const Game: FC<IGameProps> = ({ engine = new TDEngine() }) => {
                       height: "32px",
                       textAlign: "center",
                       fontSize: "1.5em",
-                      color: "#bd6a62",
+                      color: "#262626",
                     },
                   }}
                 >

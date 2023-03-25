@@ -11,12 +11,14 @@ interface IBuildMenuTower {
   towerType: TTowerTypes;
   towerCanvas: ITowerSprite["canvasArr"];
   onClick: Function;
+  grassBg?: string;
 }
 export const BuildMenuTower = ({
   tower,
   towerType,
   towerCanvas,
   onClick,
+  grassBg,
 }: IBuildMenuTower) => {
   return (
     <Box
@@ -28,6 +30,11 @@ export const BuildMenuTower = ({
         borderRadius: "16px",
         fontSize: "0.7em",
         textAlign: "center",
+        transition: "all 300ms ease",
+        "&:hover": {
+          border: "2px solid #262626",
+          background: `url(${grassBg}) repeat`,
+        },
       }}
       className="b-build-menu-tower-wrapper"
       onClick={() => {
@@ -90,6 +97,9 @@ export const BuildMenuTower = ({
         <Box
           className="b-build-menu-tower-description"
           sx={{
+            "& > p": {
+              lineHeight: 2,
+            },
             "& span": {
               color: "red",
               fontSize: "1em",

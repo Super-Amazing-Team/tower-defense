@@ -1145,6 +1145,7 @@ export class TDEngine {
     gameStore.getState().updateScore(this.score);
     gameStore.getState().updateWaveNumber(1);
     gameStore.getState().updateEnemiesLeft(this.enemies.length);
+    gameStore.getState().updateIsGameOver(false);
     // spawner
     this.waveGenerator!.waveParams.currentWave = 1;
     this.waveGenerator!.waveCountdown = Math.floor(
@@ -2029,14 +2030,17 @@ export class TDEngine {
       });
       //
       this.selectTower();
+      if (!this.selectedTower && gameStore.getState().isBuildMenuOpen) {
+        gameStore.getState().updateIsBuildMenuOpen(false);
+      }
     }
   };
 
   public upgradeTower(tower: Tower) {
     // max upgrade level check
     if (tower.upgradeLevel === tower.towerParams.maxUpgradeLevel!) return;
-    // remove selection
-    // tower.towerParams.isSelected = false;
+    // update UI
+    useGameStore.getState().updateConstructionProgress(0);
     tower.isCanFire = false;
     // release tower target
     tower.target = null;
@@ -2493,8 +2497,8 @@ export class TDEngine {
     } else {
       // game is over!
       gameStore.getState().updateIsGameStarted(false);
+      gameStore.getState().updateIsGameOver(true);
       this.isGameOver = true;
-      this.UIGameIsOver!(true);
     }
   };
 }
