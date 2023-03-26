@@ -12,8 +12,8 @@ const isTest = process.env.VITEST;
 export async function createServer(
   root = process.cwd(),
   isProd = process.env.NODE_ENV === "production",
-  hmrPort = undefined
-): Promise<{app: Express, vite: ViteDevServer | undefined}> {
+  hmrPort = undefined,
+): Promise<{ app: Express; vite: ViteDevServer | undefined }> {
   const resolve = (p: string) => path.resolve(__dirname, p);
 
   const indexProd = isProd
@@ -51,9 +51,12 @@ export async function createServer(
   } else {
     app.use((await import("compression")).default());
     app.use(
-      (await import("serve-static")).default(resolve("../../client/dist/client"), {
-        index: false,
-      }),
+      (await import("serve-static")).default(
+        resolve("../../client/dist/client"),
+        {
+          index: false,
+        },
+      ),
     );
   }
 
@@ -62,7 +65,8 @@ export async function createServer(
     try {
       const url = req.originalUrl;
 
-      let template; let render;
+      let template;
+      let render;
       if (!isProd) {
         // always read fresh template in dev
         template = fs.readFileSync(resolve("client/index.html"), "utf-8");
@@ -74,7 +78,7 @@ export async function createServer(
       }
 
       const context = {
-        url: ""
+        url: "",
       };
       const appHtml = render(url, context);
 

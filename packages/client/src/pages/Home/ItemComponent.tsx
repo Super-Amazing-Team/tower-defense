@@ -17,7 +17,7 @@ export function ItemComponent({ image, text, smallImage }: IItemComponent) {
     >
       <Box
         sx={{
-          backgroundImage: `url(../../../public/images/${image}.png)`,
+          backgroundImage: `url(${image})`,
           backgroundRepeat: "no-repeat",
           backgroundSize: "cover",
           minWidth: "64px",
