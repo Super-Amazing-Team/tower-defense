@@ -292,7 +292,7 @@ class WaveGenerator {
     if (this.waveParams.currentWave < this.waveParams.endWave) {
       // increment wave
       this.waveParams.currentWave += 1;
-      // zustand store update
+      // UI update
       gameStore.getState().updateWaveNumber(this.waveParams.currentWave);
 
       // spawn into running wave
@@ -812,6 +812,8 @@ export class TDEngine {
           ],
           projectileFrameLimit: 5,
           impactFrameLimit: 5,
+          attackModifier: "shock",
+          attackModifierTimeout: 300,
         },
       },
       three: {
@@ -945,11 +947,12 @@ export class TDEngine {
           projectileFrameLimit: 6,
           impactFrameLimit: 8,
           attackModifier: "splash",
+          attackModifierRange: 100,
         },
       },
     },
     public initialGameParams: ITDEngine["initialGameParams"] = {
-      money: 1000,
+      money: 100,
       lives: 10,
       wave: 1,
       enemiesPerWave: 20,
@@ -2346,12 +2349,7 @@ export class TDEngine {
           if (this.enemies?.length) {
             this.enemies?.forEach((enemy: Enemy) => {
               if (enemy.renderParams.isAnimateDeath) return;
-              if (
-                enemy.currentPosition.x +
-                  enemy.enemyParams.width! +
-                  enemy.randomOffset.x <
-                0
-              )
+              if (enemy.currentPosition.x + enemy.enemyParams.width! < 0)
                 return;
               enemy.draw(this.context!.enemy!, true);
             });

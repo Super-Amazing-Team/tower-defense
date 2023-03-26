@@ -15,7 +15,7 @@ export type TProjectileParamsDimensions =
   | "impactWidth"
   | "impactHeight";
 
-export type TProjectileAttackModifiers = "slow" | "freeze" | "splash";
+export type TProjectileAttackModifiers = "slow" | "freeze" | "splash" | "shock";
 
 export interface ITower {
   engine: TDEngine;
@@ -53,6 +53,7 @@ export interface ITower {
     impactFrameLimit: number;
     attackModifier?: TProjectileAttackModifiers;
     attackModifierTimeout?: number;
+    attackModifierRange?: number;
   };
   image: CanvasImageSource;
   attackIntervalTimer: NodeJS.Timer | null;
@@ -331,7 +332,7 @@ export class Tower {
                 100,
             );
             // UI construction time update
-            if (this.engine.selectedTower === this) {
+            if (useGameStore.getState().selectedTower === this) {
               useGameStore
                 .getState()
                 .updateConstructionProgress(
@@ -353,7 +354,9 @@ export class Tower {
           this.renderParams.constructingCurrentFrame = 0;
           this.renderParams.isConstructionEnd = true;
           // UI construction time update
-          useGameStore.getState().updateConstructionProgress(0);
+          if (useGameStore.getState().selectedTower === this) {
+            useGameStore.getState().updateConstructionProgress(0);
+          }
         }, this.renderParams?.constructionTimeout);
       }
       // tower base
@@ -409,7 +412,7 @@ export class Tower {
       this.towerParams.baseHeight,
     );
     // is tower selected?
-    if (this.towerParams.isSelected) {
+    if (this.engine.selectedTower === this && this.towerParams.isSelected) {
       this.drawSelection();
     }
     context.closePath();
@@ -419,7 +422,7 @@ export class Tower {
     context: CanvasRenderingContext2D = this.engine.context!.selection!,
   ) {
     context.beginPath();
-    context.strokeStyle = "red";
+    context.strokeStyle = "#01FFE9";
     // context.setLineDash([15, 5]);
     context.lineWidth = 2;
     context.strokeRect(

@@ -19,7 +19,8 @@ export interface IEnemy {
     hp: number;
     isModified?: boolean;
     attackModifier?: TProjectileAttackModifiers;
-    modifiedTimer?: NodeJS.Timer | null;
+    modifiedSlowTimer?: NodeJS.Timer | null;
+    modifiedShockTimer?: NodeJS.Timer | null;
     maxHp?: number;
   };
   renderParams: {
@@ -59,8 +60,8 @@ export class Enemy {
       y: 0,
     },
     public randomOffset = {
-      x: Math.floor(Math.random() * 10),
-      y: Math.floor(Math.random() * 15) + 1,
+      x: Math.floor(Math.random() * 32),
+      y: Math.floor(Math.random() * 12),
     },
   ) {
     // save initial speed
@@ -79,6 +80,7 @@ export class Enemy {
   ) {
     const hpLeft = this.enemyParams.hp / this.enemyParams.maxHp!;
     context.beginPath();
+    // regular hpbar
     if (!this.enemyParams.isModified) {
       if (hpLeft > 0.65) {
         context.fillStyle = "green";
@@ -87,9 +89,12 @@ export class Enemy {
       } else {
         context.fillStyle = "red";
       }
+      // target have attack modifier
     } else {
       if (this.enemyParams.attackModifier === "slow") {
-        context.fillStyle = "#baffa0";
+        context.fillStyle = "#3B46DB";
+      } else if (this.enemyParams.attackModifier === "shock") {
+        context.fillStyle = "#F2E6DA";
       }
     }
     context.fillRect(
@@ -124,15 +129,18 @@ export class Enemy {
   }
 
   public getNextFrameIndex(limit: number = this.renderParams.framesPerSprite) {
+    let frame = 0;
     if (this.renderParams.currentFrame < limit - 1) {
       this.renderParams.currentFrame += 1;
+      frame = this.renderParams.currentFrame;
     } else {
       if (this.renderParams.isAnimateDeath) {
         return limit - 1;
       }
       this.renderParams.currentFrame = 0;
+      frame = this.renderParams.currentFrame;
     }
-    return this.renderParams.currentFrame;
+    return frame;
   }
 
   public draw(context: CanvasRenderingContext2D, isDrawHpBar: boolean) {
@@ -173,11 +181,11 @@ export class Enemy {
     // set initial coords of enemy
     this.currentPosition.x =
       this.engine.map?.stageArr.at(0)?.limit.x! +
-      // this.randomOffset.x +
+      this.randomOffset.x +
       initialPosition.x;
     this.currentPosition.y =
       this.engine.map?.stageArr.at(0)?.limit.y! +
-      // this.randomOffset.y +
+      this.randomOffset.y +
       initialPosition.y;
   }
 
@@ -242,7 +250,9 @@ export class Enemy {
       case "down": {
         if (
           this.currentPosition.y <=
-          currentStage.limit.y - this.engine.map!.mapParams.gridStep // + this.randomOffset.y
+          currentStage.limit.y -
+            this.engine.map!.mapParams.gridStep +
+            this.randomOffset.y
         ) {
           this.moveDown();
         } else {
@@ -255,7 +265,7 @@ export class Enemy {
       case "up": {
         if (
           this.currentPosition.y + this.engine.map!.mapParams.gridStep >=
-          currentStage.limit.y // + this.randomOffset.y
+          currentStage.limit.y + this.randomOffset.y
         ) {
           this.moveUp();
         } else {
@@ -271,7 +281,7 @@ export class Enemy {
           case "left": {
             if (
               this.currentPosition.x + this.enemyParams.width! >=
-              currentStage.limit.x // + this.randomOffset.x
+              currentStage.limit.x + this.randomOffset.x
             ) {
               this.moveLeft();
             } else {
@@ -286,7 +296,8 @@ export class Enemy {
           }
           case "right": {
             if (
-              this.currentPosition.x < currentStage.limit.x // + this.randomOffset.x
+              this.currentPosition.x <
+              currentStage.limit.x + this.randomOffset.x
             ) {
               this.moveRight();
             } else {
@@ -302,7 +313,7 @@ export class Enemy {
           case "down": {
             if (
               this.currentPosition.y + this.enemyParams.height! <=
-              currentStage.limit.y // + this.randomOffset.y
+              currentStage.limit.y + this.randomOffset.y
             ) {
               this.moveDown();
             } else {
@@ -318,7 +329,7 @@ export class Enemy {
           case "up": {
             if (
               this.currentPosition.y - this.enemyParams.height! <=
-              currentStage.limit.y // + this.randomOffset.y
+              currentStage.limit.y + this.randomOffset.y
             ) {
               this.moveUp();
             } else {
@@ -358,10 +369,10 @@ export class Enemy {
     if (isGiveBounty) {
       this.engine.money += this.enemyParams.bounty!;
       useGameStore.getState().updateMoney(this.engine.money);
+      useGameStore.getState().updateScore(this.engine.score);
     }
 
     // UI update
     useGameStore.getState().updateEnemiesLeft(this.engine.enemies?.length!);
-    useGameStore.getState().updateScore(this.engine.score);
   }
 }

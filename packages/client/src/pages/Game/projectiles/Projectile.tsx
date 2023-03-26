@@ -175,6 +175,24 @@ export class Projectile {
     }
   }
 
+  public checkEnemyInSplashRange(enemy: Enemy) {
+    const xDistance =
+      this.currentPosition.x -
+      this.tower.towerParams.baseWidth / 2 -
+      (enemy.currentPosition.x + enemy.enemyParams.width! / 2);
+    const yDistance =
+      this.currentPosition.y -
+      this.tower.towerParams.baseHeight / 2 -
+      (enemy.currentPosition.y + enemy.enemyParams.height! / 2);
+    if (
+      Math.hypot(xDistance, yDistance) <
+      this.tower.projectileParams.attackModifierRange!
+    ) {
+      return true;
+    }
+    return false;
+  }
+
   public collision() {
     // animate impact
     this.renderParams.isAnimateImpact = true;
@@ -194,10 +212,10 @@ export class Projectile {
               (this.tower.upgradeLevel + 1);
             this.target!.enemyParams.isModified = true;
             this.target!.enemyParams.attackModifier = "slow";
-            this.target!.enemyParams!.modifiedTimer = setTimeout(() => {
+            this.target!.enemyParams!.modifiedSlowTimer = setTimeout(() => {
               // clear timer
-              this.target!.enemyParams!.modifiedTimer = null;
-              clearTimeout(this.target?.enemyParams?.modifiedTimer!);
+              this.target!.enemyParams!.modifiedSlowTimer = null;
+              clearTimeout(this.target?.enemyParams?.modifiedSlowTimer!);
               // restore enemy movement speed
               this.target!.enemyParams!.speed =
                 this.target?.enemyParams?.initialSpeed;
@@ -206,9 +224,42 @@ export class Projectile {
             }, this.tower.projectileParams.attackModifierTimeout);
           }
         } else if (this.tower.projectileParams.attackModifier === "splash") {
+          // check for enemies in projectile splash range
+          this.tower.engine.enemies?.forEach((enemy) => {
+            if (this.checkEnemyInSplashRange(enemy)) {
+              if (enemy !== this.target) {
+                enemy.enemyParams.hp -= this.tower.towerParams.attackDamage;
+                if (enemy.enemyParams.hp <= 0) {
+                  // target is dead
+                  enemy.renderParams!.currentFrame = 0;
+                  enemy.renderParams!.isAnimateDeath = true;
+                  enemy.destroy();
+                }
+              }
+              // destroy projectile
+              this.destroy();
+            }
+          });
+          return;
+        } else if (this.tower.projectileParams.attackModifier === "shock") {
+          this.target!.enemyParams.isModified = true;
+          // stop enemy
+          this.target!.enemyParams!.speed! = 0;
+          this.target!.enemyParams!.modifiedShockTimer = setTimeout(() => {
+            // clear timer
+            this.target!.enemyParams!.modifiedShockTimer = null;
+            clearTimeout(this.target?.enemyParams?.modifiedShockTimer!);
+            // restore enemy movement speed
+            this.target!.enemyParams!.speed =
+              this.target?.enemyParams?.initialSpeed;
+            // restore enemy isModified state to false
+            this.target!.enemyParams.isModified = false;
+          }, this.tower.projectileParams.attackModifierTimeout);
         }
       }
-    } else if (
+    }
+
+    if (
       this.target!.enemyParams.hp <= 0 &&
       this.tower.engine.enemies!.indexOf(this.target!) > -1
     ) {
