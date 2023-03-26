@@ -29,7 +29,6 @@ export function ItemComponent({ image, text, smallImage }: IItemComponent) {
         variant="h5"
         sx={{
           margin: "26px 0 0 60px",
-          color: "#104603",
           textAlign: "left",
           fontFamily: "'Press Start 2P', cursive",
         }}

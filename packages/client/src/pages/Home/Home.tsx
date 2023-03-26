@@ -8,6 +8,7 @@ import {
   useMediaQuery,
 } from "@mui/material";
 import { Link as RouterLink } from "react-router-dom";
+import PressStart2P from "../../../public/fonts/PressStart2P-Regular.ttf";
 import backgroundImg from "../../../public/images/background.png";
 import mainPic from "../../../public/images/main-pic.png";
 import waterTiles from "../../../public/images/water-tiles.gif";
@@ -24,14 +25,28 @@ export function Home() {
   const isMatches = useMediaQuery("(max-width: 1440px)");
 
   const theme = createTheme({
+    typography: {
+      fontFamily: "'Press Start 2P', cursive",
+    },
     components: {
       MuiTypography: {
         styleOverrides: {
           root: {
-            color: "#ffae70",
-            fontFamily: "'Press Start 2P', cursive",
+            color: "#262626",
           },
         },
+      },
+      MuiCssBaseline: {
+        styleOverrides: `
+          @font-face {
+            font-family: "Press Start 2P";
+            font-style: normal;
+            font-display: swap;
+            font-weight: 400;
+            src: local("Press Start 2P"), url(${PressStart2P}) format("ttf");
+            unicodeRange: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF;
+          }
+        `,
       },
     },
   });
@@ -68,10 +83,10 @@ export function Home() {
             <Typography
               variant="h2"
               sx={{
-                color: "#DFE0E8",
                 textAlign: "center",
                 fontSize: "5rem",
                 margin: "160px 0 180px",
+                color: "#DFE0E7",
               }}
             >
               Tower Defense
@@ -80,12 +95,12 @@ export function Home() {
               variant="h4"
               component={RouterLink}
               to={isAuth ? R.game : R.login}
-              color="#FFC08B"
               sx={{
                 textAlign: "center",
                 marginBottom: "60px",
                 cursor: "pointer",
                 color: "#FFC08B",
+                textDecorationColor: "rgba(255, 192, 139, 0.4)",
               }}
             >
               {isAuth ? "Играть" : "Войти"}
@@ -157,7 +172,6 @@ export function Home() {
               variant="h5"
               sx={{
                 padding: "0 0 60px",
-                color: "#104603",
                 textAlign: "left",
               }}
             >
@@ -169,7 +183,6 @@ export function Home() {
               variant="h4"
               sx={{
                 padding: "0 0 60px 128px",
-                color: "#104603",
                 textAlign: "left",
               }}
             >
@@ -187,7 +200,6 @@ export function Home() {
               variant="h5"
               sx={{
                 padding: "0 0 60px",
-                color: "#104603",
                 textAlign: "left",
               }}
             >
@@ -208,7 +220,6 @@ export function Home() {
                 variant="h5"
                 sx={{
                   margin: "0 80px",
-                  color: "#104603",
                 }}
               >
                 -&gt;
@@ -218,7 +229,6 @@ export function Home() {
                 variant="h5"
                 sx={{
                   margin: "0 80px",
-                  color: "#104603",
                 }}
               >
                 -&gt;
@@ -229,7 +239,6 @@ export function Home() {
               variant="h4"
               sx={{
                 padding: "0 0 60px 128px",
-                color: "#104603",
                 textAlign: "left",
               }}
             >
@@ -246,7 +255,6 @@ export function Home() {
             <Typography
               variant="h4"
               sx={{
-                color: "#104603",
                 textAlign: "left",
                 margin: "40px 0 60px 128px",
               }}
@@ -257,7 +265,6 @@ export function Home() {
               variant="h5"
               sx={{
                 padding: "0 0 40px",
-                color: "#104603",
                 textAlign: "left",
               }}
             >
@@ -269,7 +276,6 @@ export function Home() {
               variant="h5"
               sx={{
                 padding: "0 0 40px",
-                color: "#104603",
                 textAlign: "left",
               }}
             >
@@ -282,7 +288,6 @@ export function Home() {
               variant="h5"
               sx={{
                 pb: 10,
-                color: "#104603",
                 textAlign: "left",
               }}
             >
@@ -295,12 +300,12 @@ export function Home() {
               variant="h4"
               component={RouterLink}
               to={isAuth ? R.game : R.login}
-              color="#FFC08B"
               sx={{
                 textAlign: "center",
                 mt: 3,
                 cursor: "pointer",
                 color: "#FFC08B",
+                textDecorationColor: "rgba(255, 192, 139, 0.4)",
               }}
             >
               {isAuth ? "Играть" : "Войти"}
