@@ -14,6 +14,7 @@ import {
 import {
   Login as LoginIcon,
   HowToReg as HowToRegIcon,
+  Home as HomeIcon,
   Leaderboard as LeaderboardIcon,
   SportsEsports as SportsEsportsIcon,
   Forum as ForumIcon,
@@ -24,6 +25,7 @@ import { TRoutes as R } from "@/types";
 import { useLayoutStore, useUserStore } from "@/store";
 
 const authMenu = [
+  { text: "home", icon: <HomeIcon />, path: R.home },
   { text: "game", icon: <SportsEsportsIcon />, path: R.game },
   { text: "leaderboard", icon: <LeaderboardIcon />, path: R.leaderboard },
   { text: "forum", icon: <ForumIcon />, path: R.forum },
@@ -31,6 +33,7 @@ const authMenu = [
 ];
 
 const notAuthMenu = [
+  { text: "main", icon: <SportsEsportsIcon />, path: R.main },
   { text: "login", icon: <LoginIcon />, path: R.login },
   { text: "register", icon: <HowToRegIcon />, path: R.register },
   { text: "leaderboard", icon: <LeaderboardIcon />, path: R.leaderboard },

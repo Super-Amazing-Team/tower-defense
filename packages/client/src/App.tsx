@@ -9,6 +9,7 @@ import {
   ErrorBoundary,
 } from "@/utils";
 import {
+  Home,
   Login,
   Register,
   Forum,
@@ -71,6 +72,7 @@ const App = () => {
                 </Route>
               </Route>
 
+              <Route path={R.home} element={<Home />} />
               <Route path={R.page500} element={<Page500 />} />
               <Route path="*" element={<Page404 />} />
             </Routes>
