@@ -178,11 +178,15 @@ export class Projectile {
   public checkEnemyInSplashRange(enemy: Enemy) {
     const xDistance =
       this.currentPosition.x -
-      this.tower.towerParams.baseWidth / 2 -
+      this.tower.projectileParams.dimensions[this.tower.upgradeLevel]
+        .projectileWidth /
+        2 -
       (enemy.currentPosition.x + enemy.enemyParams.width! / 2);
     const yDistance =
       this.currentPosition.y -
-      this.tower.towerParams.baseHeight / 2 -
+      this.tower.projectileParams.dimensions[this.tower.upgradeLevel]
+        .projectileHeight /
+        2 -
       (enemy.currentPosition.y + enemy.enemyParams.height! / 2);
     if (
       Math.hypot(xDistance, yDistance) <
@@ -240,9 +244,9 @@ export class Projectile {
               this.destroy();
             }
           });
-          return;
         } else if (this.tower.projectileParams.attackModifier === "shock") {
           this.target!.enemyParams.isModified = true;
+          this.target!.enemyParams.attackModifier = "shock";
           // stop enemy
           this.target!.enemyParams!.speed! = 0;
           this.target!.enemyParams!.modifiedShockTimer = setTimeout(() => {

@@ -4,6 +4,7 @@ import { Map } from "../maps/Map";
 import { Projectile } from "../projectiles/Projectile";
 import { Sound } from "@/pages/Game/sound/Sound";
 import { useGameStore } from "@/store";
+import { ISpell, Spell } from "@/pages/Game/spells/Spell";
 
 // utilities declaration
 export type TPartialRecord<K extends keyof any, T> = {
@@ -13,6 +14,8 @@ export type TPartialRecord<K extends keyof any, T> = {
 // types declaration
 export type TEngineCanvas =
   | "build"
+  | "spell"
+  | "spellDraft"
   | "projectile"
   | "constructing"
   | "selection"
@@ -26,6 +29,7 @@ export type TEngineCanvas =
   | "mapDecorations"
   | "mapBackground";
 export type TTowerTypes = "one" | "two" | "three" | "four";
+export type TSpellTypes = "fireball" | "tornado";
 export type TEnemyType =
   | "firebug"
   | "leafbug"
@@ -33,7 +37,9 @@ export type TEnemyType =
   | "firewasp"
   | "clampbeetle"
   | "firelocust";
-type TTowerSprite = TPartialRecord<TTowerTypes, ITowerSprite | null>;
+type TSpellSprite = Record<TSpellTypes, ISpellSprite | null>;
+export type TSpellSpriteElements = "spell" | "impact";
+type TTowerSprite = Record<TTowerTypes, ITowerSprite | null>;
 export type TTowerSpriteElements =
   | "base"
   | "construction"
@@ -61,6 +67,15 @@ type TImageSprite = CanvasImageSource;
 /**
  * interfaces declaration
  */
+export interface ISpellSprite {
+  spriteSourcePath?: string;
+  spriteSource: HTMLImageElement | null;
+  canvasArr: TPartialRecord<TSpellSpriteElements, HTMLCanvasElement[]> | null;
+  canvasContextArr: TPartialRecord<
+    TSpellSpriteElements,
+    CanvasRenderingContext2D[]
+  > | null;
+}
 export interface ITowerSprite {
   spriteSourcePath?: Record<TTowerSpriteElements, string | string[]>;
   spriteSource: TPartialRecord<
@@ -364,6 +379,7 @@ export interface ITDEngine {
   enemies?: Enemy[];
   towers?: Tower[];
   projectiles?: Projectile[];
+  spells?: Spell[];
   map?: Map;
   animationFrameId: number;
   requestIdleCallback: number;
@@ -376,6 +392,7 @@ export interface ITDEngine {
   isInitialized: boolean;
   isCanvasCreated: boolean;
   isCanBuild: boolean;
+  isCanCast: boolean;
   isGameStarted: boolean;
   isSideMenuOpen: boolean;
   isBuildMenuOpen: boolean;
@@ -385,12 +402,27 @@ export interface ITDEngine {
   isGameMenuOpen: boolean;
   isSoundEnabled: boolean;
   canvasMouseMoveEvent: EventListener | null;
+  draftSpell: Spell | null;
   draftTower: Tower | null;
   selectedTower: Tower | null;
   cursorPosition: ITwoDCoordinates;
+  spellSprites: TSpellSprite;
   towerSprites: TTowerSprite;
   enemySprites: TEnemySprite;
   mapSprites: TImageSprite[];
+  predefinedSpellParams: Record<
+    TSpellTypes,
+    Record<
+      TSpellSpriteElements,
+      {
+        framesPerSprite: number;
+        width: number;
+        height: number;
+      }
+    > & {
+      spellParams: ISpell["spellParams"];
+    }
+  >;
   predefinedTowerParams: Record<
     TTowerTypes,
     {
@@ -427,6 +459,7 @@ export class TDEngine {
     public deadEnemies: ITDEngine["enemies"] = [],
     public towers: ITDEngine["towers"] = [],
     public projectiles: ITDEngine["projectiles"] = [],
+    public spells: ITDEngine["spells"] = [],
     public context: ITDEngine["context"] = {},
     public gameWindow: ITDEngine["gameWindow"] = null,
     public animationFrameId: ITDEngine["animationFrameId"] = 0,
@@ -437,6 +470,8 @@ export class TDEngine {
     public money: ITDEngine["money"] = 0,
     public canvasZIndex: Record<TEngineCanvas, number> = {
       build: 80,
+      spell: 75,
+      spellDraft: 74,
       projectile: 73,
       hpBar: 72,
       constructing: 71,
@@ -453,16 +488,32 @@ export class TDEngine {
     public isInitialized: ITDEngine["isInitialized"] = false,
     public isCanvasCreated: ITDEngine["isCanvasCreated"] = false,
     public isCanBuild: ITDEngine["isCanBuild"] = false,
+    public isCanCast: ITDEngine["isCanCast"] = false,
     public isGameStarted: ITDEngine["isGameStarted"] = false,
     public isGameOver: ITDEngine["isGameOver"] = false,
     public isShowGrid: ITDEngine["isShowGrid"] = false,
     public isNotEnoughMoney: ITDEngine["isNotEnoughMoney"] = false,
     public isSoundEnabled: ITDEngine["isSoundEnabled"] = true,
+    public draftSpell: ITDEngine["draftSpell"] = null,
     public draftTower: ITDEngine["draftTower"] = null,
     public selectedTower: ITDEngine["selectedTower"] = null,
     public cursorPosition: ITDEngine["cursorPosition"] = { x: 0, y: 0 },
     public draftBuildCoordinates: ITwoDCoordinates = { x: 0, y: 0 },
     public towerAngleOffset: number = Math.PI / 2.5,
+    public spellSprites: ITDEngine["spellSprites"] = {
+      fireball: {
+        spriteSourcePath: "fireballSprite.png",
+        spriteSource: null,
+        canvasArr: null,
+        canvasContextArr: null,
+      },
+      tornado: {
+        spriteSourcePath: "tornadoSprite.png",
+        spriteSource: null,
+        canvasArr: null,
+        canvasContextArr: null,
+      },
+    },
     public towerSprites: ITDEngine["towerSprites"] = {
       one: {
         spriteSourcePath: {
@@ -601,6 +652,7 @@ export class TDEngine {
         canvasContextArr: null,
       },
     },
+    public isSpellSpritesLoaded = false,
     public isTowerSpritesLoaded = false,
     public isEnemySpritesLoaded = false,
     public isMapSpritesLoaded = false,
@@ -676,6 +728,44 @@ export class TDEngine {
         spriteDownRow: 7,
         framesPerSprite: 8,
         deathFramesPerSprite: 11,
+      },
+    },
+    public predefinedSpellParams: ITDEngine["predefinedSpellParams"] = {
+      fireball: {
+        spell: {
+          framesPerSprite: 10,
+          width: 64,
+          height: 64,
+        },
+        impact: {
+          framesPerSprite: 13,
+          width: 64,
+          height: 64,
+        },
+        spellParams: {
+          attackRange: 80,
+          attackDamage: 100,
+          manaCost: 70,
+          movementSpeed: 4,
+        },
+      },
+      tornado: {
+        spell: {
+          framesPerSprite: 10,
+          width: 64,
+          height: 64,
+        },
+        impact: {
+          framesPerSprite: 9,
+          width: 64,
+          height: 64,
+        },
+        spellParams: {
+          attackRange: 40,
+          attackDamage: 40,
+          manaCost: 30,
+          movementSpeed: 2,
+        },
       },
     },
     public predefinedTowerParams: ITDEngine["predefinedTowerParams"] = {
@@ -885,9 +975,9 @@ export class TDEngine {
       },
       four: {
         towerParams: {
-          attackRate: 3000,
-          attackDamage: 20,
-          attackRange: 300,
+          attackRate: 6000,
+          attackDamage: 45,
+          attackRange: 240,
           baseWidth: 64,
           baseHeight: 128,
           constructionWidth: 192,
@@ -947,7 +1037,7 @@ export class TDEngine {
           projectileFrameLimit: 6,
           impactFrameLimit: 8,
           attackModifier: "splash",
-          attackModifierRange: 100,
+          attackModifierRange: 80,
         },
       },
     },
@@ -1035,10 +1125,17 @@ export class TDEngine {
       }
       // tower sprites
       if (!this.isTowerSpritesLoaded) {
-        for (const [towerType, index] of Object.entries(this.towerSprites)) {
+        for (const [towerType, _] of Object.entries(this.towerSprites)) {
           this.splitTowerSprite(towerType as TTowerTypes);
         }
         this.isTowerSpritesLoaded = true;
+      }
+      // spell sprites
+      if (!this.isSpellSpritesLoaded) {
+        for (const [spellType, _] of Object.entries(this.spellSprites)) {
+          this.splitSpellSprite(spellType as TSpellTypes);
+        }
+        this.isSpellSpritesLoaded = true;
       }
       /* /LOAD SPRITES */
     });
@@ -1061,6 +1158,9 @@ export class TDEngine {
         if (canvasId === "build") {
           newCanvas.style.opacity = "0.4";
           newCanvas.tabIndex = 2;
+        } else if (canvasId === "spellDraft") {
+          newCanvas.style.opacity = "0.4";
+          newCanvas.tabIndex = -1;
         } else if (canvasId === "map") {
           newCanvas.style.background = `url("${this.map?.grassBackrgroundCanvas?.toDataURL()}") repeat`;
         }
@@ -1205,6 +1305,38 @@ export class TDEngine {
     }
   }
 
+  public splitSpellSprite(spellType: TSpellTypes) {
+    // load sprites from url paths
+    this.spellSprites[spellType]!.spriteSource =
+      this.createSpellSpriteSource(spellType);
+    // create canvases for each frame
+    this.spellSprites[spellType]!.canvasArr =
+      this.createSpellSpriteCanvasArr(spellType);
+    // set their render context
+    this.spellSprites[spellType]!.canvasContextArr =
+      this.createSpellSpriteCanvasContext(
+        this.spellSprites[spellType]!.canvasArr,
+        spellType,
+      );
+
+    // wait for sprites to load
+    this.spellSprites[spellType]!.spriteSource!.onload = () => {
+      // and draw proper frames in each canvas
+      for (const [element, canvas] of Object.entries(
+        this.spellSprites[spellType]!.canvasArr!,
+      )) {
+        this.drawSpellFrameOnCanvas(
+          element as TSpellSpriteElements,
+          this.spellSprites[spellType!]!.canvasContextArr![
+            element as TSpellSpriteElements
+          ]!,
+          this.spellSprites[spellType]!.spriteSource!,
+          spellType,
+        );
+      }
+    };
+  }
+
   public splitTowerSprite(towerType: TTowerTypes) {
     // load sprites from url paths
     this.towerSprites[towerType!]!.spriteSource =
@@ -1292,6 +1424,15 @@ export class TDEngine {
     return img;
   };
 
+  public createSpellSpriteSource(spellType: TSpellTypes) {
+    const pathPrefix = `sprites/spells/`;
+
+    return this.createImageBySrc(
+      pathPrefix,
+      this.spellSprites[spellType]?.spriteSourcePath!,
+    );
+  }
+
   public createTowerSpriteSource(towerType: TTowerTypes) {
     const spriteSource: ITowerSprite["spriteSource"] = {};
     const pathPrefix = `sprites/tower/${towerType}/`;
@@ -1331,6 +1472,51 @@ export class TDEngine {
       }
     }
     return spriteSource;
+  }
+
+  public createSpellSpriteCanvasArr(spellType: TSpellTypes) {
+    return {
+      spell: this.createCanvasArr(
+        this.predefinedSpellParams[spellType].spell.framesPerSprite,
+      ),
+      impact: this.createCanvasArr(
+        this.predefinedSpellParams[spellType].impact.framesPerSprite,
+      ),
+    };
+  }
+
+  public createSpellSpriteCanvasContext(
+    canvasArr: ISpellSprite["canvasArr"],
+    spellType: TSpellTypes,
+  ) {
+    let contextArr: ISpellSprite["canvasContextArr"] = {
+      spell: [],
+      impact: [],
+    };
+    for (const [element, upgradeArr] of Object.entries(canvasArr!)) {
+      switch (element as TSpellSpriteElements) {
+        case "spell": {
+          upgradeArr.forEach((canvas) => {
+            canvas.width = this.predefinedSpellParams[spellType]!.spell.width!;
+            canvas.height =
+              this.predefinedSpellParams[spellType]!.spell.height!;
+            contextArr?.spell!.push(canvas.getContext("2d")!);
+          });
+          break;
+        }
+        case "impact": {
+          upgradeArr.forEach((canvas) => {
+            canvas.width = this.predefinedSpellParams[spellType]!.impact.width!;
+            canvas.height =
+              this.predefinedSpellParams[spellType]!.impact.height!;
+            contextArr?.impact!.push(canvas.getContext("2d")!);
+          });
+          break;
+        }
+      }
+    }
+
+    return contextArr;
   }
 
   public createTowerSpriteCanvasArr(towerType: TTowerTypes) {
@@ -1719,6 +1905,48 @@ export class TDEngine {
     }
   }
 
+  public drawSpellFrameOnCanvas(
+    element: TSpellSpriteElements,
+    contextArr: CanvasRenderingContext2D[],
+    spriteSource: CanvasImageSource,
+    spellType: TSpellTypes,
+  ) {
+    contextArr.forEach((context, index) => {
+      switch (element) {
+        case "spell": {
+          this.drawFrame(
+            context,
+            spriteSource,
+            this.predefinedSpellParams[spellType]?.spell.width! * index,
+            0,
+            this.predefinedSpellParams[spellType]?.spell.width!,
+            this.predefinedSpellParams[spellType]?.spell.height!,
+            0,
+            0,
+            this.predefinedSpellParams[spellType]?.spell.width!,
+            this.predefinedSpellParams[spellType]?.spell.height!,
+          );
+          break;
+        }
+        case "impact": {
+          this.drawFrame(
+            context,
+            spriteSource,
+            this.predefinedSpellParams[spellType]?.impact.width! * index,
+            64,
+            this.predefinedSpellParams[spellType]?.impact.width!,
+            this.predefinedSpellParams[spellType]?.impact.height!,
+            0,
+            0,
+            this.predefinedSpellParams[spellType]?.impact.width!,
+            this.predefinedSpellParams[spellType]?.impact.height!,
+          );
+          break;
+        }
+      }
+    });
+  }
+
   public drawTowerFrameOnCanvas(
     element: TTowerSpriteElements,
     contextArr: CanvasRenderingContext2D[],
@@ -1905,6 +2133,67 @@ export class TDEngine {
     });
   }
 
+  public draftShowSpell() {
+    // can't cast spells in builing mode
+    if (this.isCanBuild) return;
+    if (!this.isCanCast) return;
+    this.draftSpell!.spellParams.currentPosition = this.cursorPosition;
+  }
+
+  public draftSpellCast() {
+    this.draftSpell!.spellParams!.collisionPoint = {
+      x:
+        this.draftSpell?.spellParams?.currentPosition!.x! -
+        this.map?.mapParams?.gridStep! / 2,
+      y:
+        this.draftSpell?.spellParams?.currentPosition!.y! -
+        this.map?.mapParams?.gridStep! / 2,
+    };
+    this.draftSpell!.spellParams!.currentPosition! = {
+      x:
+        this.draftSpell?.spellParams?.currentPosition!.x! -
+        this.map?.mapParams?.gridStep! * 4,
+      y:
+        this.draftSpell?.spellParams?.currentPosition!.y! -
+        this.map?.mapParams?.gridStep! * 4,
+    };
+    this.spells?.push(this.draftSpell!);
+    this.isCanCast = false;
+    this.draftSpell = null;
+  }
+
+  public castSpell(spellType: TSpellTypes) {
+    const collisionPoint = {
+      x: this.cursorPosition.x! - this.map?.mapParams?.gridStep! / 2,
+      y: this.cursorPosition.y! - this.map?.mapParams?.gridStep! / 2,
+    };
+    const currentPosition = {
+      x: this.cursorPosition.x! - this.map?.mapParams?.gridStep! * 4,
+      y: this.cursorPosition.y! - this.map?.mapParams?.gridStep! * 4,
+    };
+
+    // debug
+    console.log(`currentPosition`);
+    console.log(currentPosition);
+    //
+    // debug
+    console.log(`collisionPoint`);
+    console.log(collisionPoint);
+    //
+    this.isCanCast = true;
+    this.draftSpell = new Spell(this, spellType, {
+      collisionPoint,
+      currentPosition,
+      attackDamage:
+        this.predefinedSpellParams[spellType].spellParams.attackDamage,
+      attackRange:
+        this.predefinedSpellParams[spellType].spellParams.attackRange,
+      movementSpeed:
+        this.predefinedSpellParams[spellType].spellParams.movementSpeed,
+      manaCost: this.predefinedSpellParams[spellType].spellParams.manaCost,
+    });
+  }
+
   public buildTower = (
     type: TTowerTypes,
     upgradeLevel: Tower["upgradeLevel"],
@@ -2010,6 +2299,8 @@ export class TDEngine {
     this.map!.mapParams.closestTile = this.findClosestTile(this.cursorPosition);
     if (this.isCanBuild) {
       this.draftShowTower();
+    } else if (this.draftSpell) {
+      this.draftShowSpell();
     }
   };
 
@@ -2017,7 +2308,10 @@ export class TDEngine {
     // build tower
     if (this.isCanBuild) {
       this.draftBuildTower();
+    } else if (this.isCanCast) {
+      this.draftSpellCast();
     } else {
+      /*
       const context = this.context?.build!;
       this.map?.mapParams?.towerTilesArr.forEach((tile) => {
         context.beginPath();
@@ -2032,6 +2326,7 @@ export class TDEngine {
         context.closePath();
       });
       //
+       */
       this.selectTower();
       if (!this.selectedTower && gameStore.getState().isBuildMenuOpen) {
         gameStore.getState().updateIsBuildMenuOpen(false);
@@ -2042,7 +2337,14 @@ export class TDEngine {
   public upgradeTower(tower: Tower) {
     // max upgrade level check
     if (tower.upgradeLevel === tower.towerParams.maxUpgradeLevel!) return;
+    if (
+      !this.isEnoughMoney(tower.towerParams.price! * (tower.upgradeLevel + 1))
+    )
+      return;
+    // decrement money
+    this.money -= tower.towerParams.price! * (tower.upgradeLevel + 1);
     // update UI
+    useGameStore.getState().updateMoney(this.money);
     useGameStore.getState().updateConstructionProgress(0);
     tower.isCanFire = false;
     // release tower target
@@ -2128,6 +2430,8 @@ export class TDEngine {
         if (this.isCanBuild) {
           this.isCanBuild = false;
           this.isShowGrid = false;
+        } else if (this.isCanCast) {
+          this.isCanCast = false;
         } else if (this.selectedTower) {
           // clear selected tower
           this.clearTowerSelection();
@@ -2155,6 +2459,16 @@ export class TDEngine {
 
     // quick build hotkeys
     if (gameStore.getState().isGameStarted) {
+      // spell
+      if (e.key === "q") {
+        this.draftSpell = null;
+        this.castSpell("fireball");
+      }
+      if (e.key === "w") {
+        this.draftSpell = null;
+        this.castSpell("tornado");
+      }
+      // tower
       if (e.key === "1") {
         this.draftTower = null;
         this.isShowGrid = false;
@@ -2319,10 +2633,18 @@ export class TDEngine {
     this.clearContext(this.context!.cannon!);
     this.clearContext(this.context!.constructing!);
     this.clearContext(this.context!.hpBar!);
-    this.clearContext(this.context!.projectile!);
+    if (this.projectiles?.length) {
+      this.clearContext(this.context!.projectile!);
+    }
     this.clearContext(this.context!.build!);
-    this.clearContext(this.context!.enemy!);
-    this.clearContext(this.context!.deadEnemy!);
+    if (this.enemies?.length) {
+      this.clearContext(this.context!.enemy!);
+    }
+    if (this.deadEnemies?.length) {
+      this.clearContext(this.context!.deadEnemy!);
+    }
+    this.clearContext(this.context!.spell!);
+    this.clearContext(this.context!.spellDraft!);
     // this.clearContext(this.context.tower!);
   }
 
@@ -2342,6 +2664,13 @@ export class TDEngine {
           if (this.isCanBuild) {
             if (this.draftTower) {
               this.draftTower.drawDraft();
+            }
+          }
+
+          // cast spell mode
+          if (this.isCanCast) {
+            if (this.draftSpell) {
+              this.draftSpell.drawDraft();
             }
           }
 
@@ -2379,6 +2708,13 @@ export class TDEngine {
               } else {
                 tower.drawCannon(this.context!.cannon!);
               }
+            });
+          }
+
+          // draw spells
+          if (this.spells?.length) {
+            this.spells?.forEach((spell: Spell) => {
+              spell.draw();
             });
           }
 
@@ -2481,6 +2817,15 @@ export class TDEngine {
         if (this.projectiles?.length) {
           this.projectiles?.forEach((projectile: Projectile) => {
             projectile.move();
+          });
+        }
+
+        // move spells
+        if (this.spells?.length) {
+          this.spells?.forEach((spell: Spell) => {
+            if (spell.renderParams.isMoving) {
+              spell.move();
+            }
           });
         }
 

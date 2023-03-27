@@ -1,17 +1,13 @@
-import React, {
-  FC,
-  PropsWithChildren,
-  useEffect,
-  useRef,
-  useState,
-} from "react";
-import { CircularProgress, Box, Typography, createTheme } from "@mui/material";
+import { useEffect, useRef, useState } from "react";
+import { CircularProgress, Box, createTheme } from "@mui/material";
 import { shallow } from "zustand/shallow";
 import { ThemeProvider } from "@mui/material/styles";
 import { TDEngine, TTowerTypes } from "./engine/TDEngine";
 import GameUi from "@/pages/Game/components/GameUI/GameUI";
 import { useGameStore } from "@/store";
+import { SideMenu } from "@/pages/Game/components/SideMenu/SideMenu";
 import { BuildMenu } from "@/pages/Game/components/BuildMenu/BuildMenu";
+import { GameMenu } from "@/pages/Game/components/GameMenu/GameMenu";
 
 // mui theme
 const theme = createTheme({
@@ -45,11 +41,11 @@ const theme = createTheme({
   },
 });
 
-export interface IGameProps extends PropsWithChildren {
+export interface IGameProps {
   engine?: TDEngine;
 }
 
-export const Game: FC<IGameProps> = ({ engine = new TDEngine() }) => {
+export const Game = ({ engine = new TDEngine() }: IGameProps) => {
   // game window ref
   const gameWindow = useRef<HTMLDivElement>(null);
   const [isLoading, setIsLoading] = useState<boolean>(!engine.isInitialized);
@@ -65,7 +61,7 @@ export const Game: FC<IGameProps> = ({ engine = new TDEngine() }) => {
         .init(gameWindow.current!)
         .then(() => {
           engine.map?.drawMap();
-          engine.map?.randomizeBackgroundTiles();
+          engine.map?.drawMapDecorations();
           // set engine init flag to true
           engine.isInitialized = true;
           setIsLoading(false);
@@ -128,7 +124,9 @@ export const Game: FC<IGameProps> = ({ engine = new TDEngine() }) => {
         ) : (
           <>
             <GameUi engine={engine} />
+            <SideMenu engine={engine} />
             <BuildMenu engine={engine} />
+            <GameMenu engine={engine} />
           </>
         )}
       </Box>

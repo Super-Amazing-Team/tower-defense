@@ -8,22 +8,22 @@ interface IBuildMenuTower {
     towerParams: Tower["towerParams"];
     projectileParams: Tower["projectileParams"];
   };
-  towerType: TTowerTypes;
   towerCanvas: ITowerSprite["canvasArr"];
   onClick: Function;
+  isDisabled: boolean;
   grassBg?: string;
 }
 export const BuildMenuTower = ({
   tower,
-  towerType,
   towerCanvas,
   onClick,
+  isDisabled,
   grassBg,
 }: IBuildMenuTower) => {
   return (
     <Box
       sx={{
-        cursor: "pointer",
+        cursor: `${isDisabled ? "not-allowed" : "pointer"}`,
         border: "2px solid #bd6a62",
         margin: "16px",
         padding: "16px",
@@ -35,10 +35,20 @@ export const BuildMenuTower = ({
           border: "2px solid #262626",
           background: `url(${grassBg}) repeat`,
         },
+        "&.state__disabled": {
+          opacity: ".7",
+          background: "#CCC",
+        },
       }}
-      className="b-build-menu-tower-wrapper"
+      className={
+        isDisabled
+          ? "b-build-menu-tower-wrapper state__disabled"
+          : "b-build-menu-tower-wrapper"
+      }
       onClick={() => {
-        onClick();
+        if (!isDisabled) {
+          onClick();
+        }
       }}
     >
       <Box className="b-build-menu-tower">
@@ -52,7 +62,7 @@ export const BuildMenuTower = ({
           <Box
             sx={{
               position: "relative",
-              top: "-20px",
+              top: "-30px",
               "& > .tower-base": {
                 width: `${tower.towerParams?.baseWidth}px`,
                 height: `${tower.towerParams?.baseHeight}px`,
@@ -97,6 +107,8 @@ export const BuildMenuTower = ({
         <Box
           className="b-build-menu-tower-description"
           sx={{
+            position: "relative",
+            top: "-16px",
             "& > p": {
               lineHeight: 2,
             },
@@ -115,8 +127,30 @@ export const BuildMenuTower = ({
           <Typography>
             Range:<span>{tower.towerParams?.attackRange}</span>
           </Typography>
+          <Typography
+            sx={{
+              "& .b-attack-modifier-slow": {
+                color: "#3B46DB",
+              },
+              "& .b-attack-modifier-shock": {
+                color: "#402d19",
+              },
+              "& .b-attack-modifier-splash": {
+                color: "#155800",
+              },
+            }}
+          >
+            Special:
+            <span
+              className={`b-attack-modifier-${tower.projectileParams?.attackModifier}`}
+            >
+              {tower.projectileParams?.attackModifier
+                ? tower.projectileParams?.attackModifier
+                : "none"}
+            </span>
+          </Typography>
           <Typography>
-            Price:<span>{tower.towerParams?.price}</span>
+            Price:<span>{tower.towerParams?.price}$</span>
           </Typography>
         </Box>
       </Box>

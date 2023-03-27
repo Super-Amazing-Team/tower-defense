@@ -89,7 +89,7 @@ export class Map {
       four: document.createElement("canvas"),
     },
     public dryTreeTileCanvasContext: IMap["treeTileCanvasContext"] = {},
-    public randomTileSpriteFrequency: IMap["randomTileSpriteFrequency"] = 2,
+    public randomTileSpriteFrequency: IMap["randomTileSpriteFrequency"] = 1.75,
     public turnOffset: IMap["turnOffset"] = 24,
   ) {
     // sprite shortcuts
@@ -485,7 +485,7 @@ export class Map {
     context.closePath();
   }
 
-  public randomizeBackgroundTiles() {
+  public drawMapDecorations() {
     const shuffleArr = (array: ITwoDCoordinates[]): ITwoDCoordinates[] => {
       for (let i = array.length - 1; i > 0; i--) {
         let j = Math.floor(Math.random() * (i + 1));
@@ -521,10 +521,15 @@ export class Map {
       .forEach((tile, index) => {
         try {
           if (index % 2 === 0) {
+            // draw obstacles on map
             this.engine.context?.mapDecorations?.drawImage(
               randomizeFrom[Math.floor(Math.random() * randomizeFrom.length)]!,
               tile.x,
               tile.y,
+            );
+            // pop these tiles from map tiles arr to prevent building on stones, trees, etc
+            this.mapParams.mapTilesArr = this.mapParams.mapTilesArr.filter(
+              (canBuildTile) => canBuildTile !== tile,
             );
           } else {
             // draw grass in half of all tiles

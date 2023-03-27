@@ -82,19 +82,25 @@ export class Enemy {
     context.beginPath();
     // regular hpbar
     if (!this.enemyParams.isModified) {
-      if (hpLeft > 0.65) {
+      if (hpLeft > 0.95) {
         context.fillStyle = "green";
+      } else if (hpLeft > 0.75) {
+        context.fillStyle = "darkorange";
+      } else if (hpLeft > 0.55) {
+        context.fillStyle = "orange";
       } else if (hpLeft > 0.35) {
         context.fillStyle = "orange";
-      } else {
+      } else if (hpLeft > 0.15) {
         context.fillStyle = "red";
+      } else {
+        context.fillStyle = "maroon";
       }
       // target have attack modifier
     } else {
       if (this.enemyParams.attackModifier === "slow") {
         context.fillStyle = "#3B46DB";
       } else if (this.enemyParams.attackModifier === "shock") {
-        context.fillStyle = "#F2E6DA";
+        context.fillStyle = "#402d19";
       }
     }
     context.fillRect(
@@ -163,17 +169,19 @@ export class Enemy {
       );
       // enemy is dead? draw death animation
     } else {
-      this.drawEnemyWithSprite(
-        this.engine.enemySprites[this.enemyParams.type!]!.canvasArr![
-          `${this.engine.map?.stageArr.at(this.currentStage)!.direction!}Dead`
-        ]![
-          this.getNextFrameIndex(
-            this.engine.enemySprites[this.enemyParams.type!]
-              ?.deathFramesPerSprite,
-          )
-        ],
-        context,
-      );
+      if (this !== null) {
+        this.drawEnemyWithSprite(
+          this.engine.enemySprites[this.enemyParams.type!]!.canvasArr![
+            `${this.engine.map?.stageArr.at(this.currentStage)!.direction!}Dead`
+          ]![
+            this.getNextFrameIndex(
+              this.engine.enemySprites[this.enemyParams.type!]
+                ?.deathFramesPerSprite,
+            )
+          ],
+          context,
+        );
+      }
     }
   }
 
@@ -297,7 +305,7 @@ export class Enemy {
           case "right": {
             if (
               this.currentPosition.x <
-              currentStage.limit.x + this.randomOffset.x
+              currentStage.limit.x - this.randomOffset.x
             ) {
               this.moveRight();
             } else {

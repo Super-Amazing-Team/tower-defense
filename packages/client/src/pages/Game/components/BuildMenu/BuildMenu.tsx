@@ -1,10 +1,9 @@
-import React from "react";
 import { Box, Typography } from "@mui/material";
 import { shallow } from "zustand/shallow";
 import sidePanelBg from "../../../../../public/UI/sidePanelBg.png";
 import { TDEngine, TTowerTypes } from "@/pages/Game/engine/TDEngine";
 import { BuildMenuTower } from "@/pages/Game/components/BuildMenuTower/BuildMenuTower";
-import { useGameStore, useMenuStore } from "@/store";
+import { useGameStore } from "@/store";
 
 interface IBuildMenu {
   engine: TDEngine;
@@ -64,6 +63,7 @@ export const BuildMenu = ({ engine }: IBuildMenu) => {
                 engine.buildTower(towerType, 0);
               }}
               grassBg={engine.map?.grassBackrgroundCanvas?.toDataURL()}
+              isDisabled={!engine.isEnoughMoney(tower[1].towerParams.price!)}
             />
           );
         })}

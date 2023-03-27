@@ -37,11 +37,6 @@ interface ISideMenu {
   engine: TDEngine;
 }
 export const SideMenu = ({ engine }: ISideMenu) => {
-  // menu store
-  const [isGameMenuOpen, setIsGameMenuOpen] = useGameStore(
-    (state) => [state.isGameMenuOpen, state.updateIsGameMenuOpen],
-    shallow,
-  );
   const [isSideMenuOpen, setIsSideMenuOpen] = useGameStore(
     (state) => [state.isSideMenuOpen, state.updateIsSideMenuOpen],
     shallow,
@@ -155,14 +150,23 @@ export const SideMenu = ({ engine }: ISideMenu) => {
                       disabled={
                         selectedTower?.upgradeLevel! ===
                           selectedTower?.towerParams.maxUpgradeLevel! ||
-                        !engine.isEnoughMoney(selectedTower?.towerParams.price)
+                        !engine.isEnoughMoney(
+                          selectedTower?.towerParams.price! *
+                            (selectedTower!.upgradeLevel + 1),
+                        )
                       }
                       onClick={() => {
                         engine.upgradeTower(selectedTower!);
                       }}
                     >
                       Upgrade tower(
-                      {`${selectedTower?.towerParams.price}$`})
+                      {selectedTower
+                        ? `${
+                            selectedTower?.towerParams.price! *
+                            (selectedTower!.upgradeLevel + 1)
+                          }$`
+                        : ""}
+                      )
                     </Button>
                     <Button
                       onClick={() => {
