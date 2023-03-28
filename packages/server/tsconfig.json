@@ -23,7 +23,9 @@
     "types": ["node", "jest"],
     "baseUrl": ".",
     "paths": {
-      "*": ["types/*"]
+      "*": ["types/*"],
+      "@/*": ["../client/src/*"],
+      "@/utils": ["../client/src/utils"]
     },
     "outDir": "dist"
   }
