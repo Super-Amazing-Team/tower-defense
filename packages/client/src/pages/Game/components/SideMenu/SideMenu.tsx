@@ -1,7 +1,7 @@
 import React from "react";
 import { Box, Button, Typography } from "@mui/material";
 import { shallow } from "zustand/shallow";
-import sidePanelBg from "../../../../../public/UI/sidePanelBg.png";
+import sidePanelBg from "@/../public/UI/sidePanelBg.png";
 import { TDEngine } from "@/pages/Game/engine/TDEngine";
 import { useGameStore } from "@/store";
 
@@ -64,6 +64,7 @@ export const SideMenu = ({ engine }: ISideMenu) => {
           width: `${engine.map?.tileToNumber(4)}px`,
           height: "100%",
           transition: "all 500ms ease",
+          userSelect: "none",
         }}
       >
         <Box
@@ -81,6 +82,26 @@ export const SideMenu = ({ engine }: ISideMenu) => {
               borderLeft: "3px solid #bd6a62",
             }}
           >
+            <Box
+              sx={{
+                position: "absolute",
+                top: "16px",
+                right: "16px",
+                fontSize: "1.5em",
+                cursor: "pointer",
+              }}
+            >
+              <Typography
+                onClick={() => {
+                  // toggle side menu
+                  setIsSideMenuOpen(!isSideMenuOpen);
+                  // clear tower selection
+                  engine.clearTowerSelection(engine.selectedTower!);
+                }}
+              >
+                X
+              </Typography>
+            </Box>
             <Box
               sx={{
                 "& p:first-of-type": {

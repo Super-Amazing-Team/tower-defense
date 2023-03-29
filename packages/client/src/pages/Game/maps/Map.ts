@@ -520,7 +520,16 @@ export class Map {
       )
       .forEach((tile, index) => {
         try {
-          if (index % 2 === 0) {
+          if (index % 4 === 0) {
+            // draw grass in 1\4 of all tiles
+            this.engine.context?.mapDecorations?.drawImage(
+              this.grassTileCanvas![
+                Math.floor(Math.random() + 0.5) === 1 ? "one" : "two"
+              ]!,
+              tile.x,
+              tile.y,
+            );
+          } else {
             // draw obstacles on map
             this.engine.context?.mapDecorations?.drawImage(
               randomizeFrom[Math.floor(Math.random() * randomizeFrom.length)]!,
@@ -530,15 +539,6 @@ export class Map {
             // pop these tiles from map tiles arr to prevent building on stones, trees, etc
             this.mapParams.mapTilesArr = this.mapParams.mapTilesArr.filter(
               (canBuildTile) => canBuildTile !== tile,
-            );
-          } else {
-            // draw grass in half of all tiles
-            this.engine.context?.mapDecorations?.drawImage(
-              this.grassTileCanvas![
-                Math.floor(Math.random() + 0.5) === 1 ? "one" : "two"
-              ]!,
-              tile.x,
-              tile.y,
             );
           }
         } catch (e) {

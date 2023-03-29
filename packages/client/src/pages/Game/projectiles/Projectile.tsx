@@ -175,7 +175,7 @@ export class Projectile {
     }
   }
 
-  public checkEnemyInSplashRange(enemy: Enemy) {
+  public isEnemyInSplashRange(enemy: Enemy) {
     const xDistance =
       this.currentPosition.x -
       this.tower.projectileParams.dimensions[this.tower.upgradeLevel]
@@ -209,28 +209,32 @@ export class Projectile {
       // apply attack modifier
       if (this.tower.projectileParams.attackModifier) {
         if (this.tower.projectileParams.attackModifier === "slow") {
-          if (!this.target!.enemyParams.isModified) {
+          if (this.target!.enemyParams!.modifiedSlowTimer) {
+            clearTimeout(this.target?.enemyParams?.modifiedSlowTimer!);
+            this.target!.enemyParams!.modifiedSlowTimer = null;
+          }
+          if (!this.target?.enemyParams?.isModified) {
+            this.target!.enemyParams.isModified = true;
+            this.target!.enemyParams.attackModifier = "slow";
             this.target!.enemyParams!.speed! -=
               this.target!.enemyParams!.speed! *
               0.2 *
               (this.tower.upgradeLevel + 1);
-            this.target!.enemyParams.isModified = true;
-            this.target!.enemyParams.attackModifier = "slow";
-            this.target!.enemyParams!.modifiedSlowTimer = setTimeout(() => {
-              // clear timer
-              this.target!.enemyParams!.modifiedSlowTimer = null;
-              clearTimeout(this.target?.enemyParams?.modifiedSlowTimer!);
-              // restore enemy movement speed
-              this.target!.enemyParams!.speed =
-                this.target?.enemyParams?.initialSpeed;
-              // restore enemy isModified state to false
-              this.target!.enemyParams.isModified = false;
-            }, this.tower.projectileParams.attackModifierTimeout);
           }
+          this.target!.enemyParams!.modifiedSlowTimer = setTimeout(() => {
+            // clear timer
+            this.target!.enemyParams!.modifiedSlowTimer = null;
+            clearTimeout(this.target?.enemyParams?.modifiedSlowTimer!);
+            // restore enemy movement speed
+            this.target!.enemyParams!.speed =
+              this.target?.enemyParams?.initialSpeed;
+            // restore enemy isModified state to false
+            this.target!.enemyParams.isModified = false;
+          }, this.tower.projectileParams.attackModifierTimeout);
         } else if (this.tower.projectileParams.attackModifier === "splash") {
           // check for enemies in projectile splash range
           this.tower.engine.enemies?.forEach((enemy) => {
-            if (this.checkEnemyInSplashRange(enemy)) {
+            if (this.isEnemyInSplashRange(enemy)) {
               if (enemy !== this.target) {
                 enemy.enemyParams.hp -= this.tower.towerParams.attackDamage;
                 if (enemy.enemyParams.hp <= 0) {

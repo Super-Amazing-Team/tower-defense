@@ -1,13 +1,10 @@
 import React, { useState } from "react";
 import { Box, MenuList, MenuItem, Typography, Button } from "@mui/material";
 import { shallow } from "zustand/shallow";
-import gameUIIcons from "../../../../../public/UI/gameUIIcons.png";
-import sidePanelBg from "@/../public/UI/sidePanelBg.png";
+import gameUIIcons from "@/../public/UI/gameUIIcons.png";
+import manaIcon from "@/../public/sprites/spells/manaIcon.png";
 import { TDEngine, IWaveGenerator } from "@/pages/Game/engine/TDEngine";
 import { useGameStore } from "@/store";
-import { SideMenu } from "@/pages/Game/components/SideMenu/SideMenu";
-import { BuildMenu } from "@/pages/Game/components/BuildMenu/BuildMenu";
-import { GameMenu } from "@/pages/Game/components/GameMenu/GameMenu";
 
 declare global {
   namespace JSX {
@@ -35,6 +32,10 @@ const GameUi = ({ engine }: IGameUI) => {
   // game status params
   const [lives, setLives] = useGameStore(
     (state) => [state.lives, state.updateLives],
+    shallow,
+  );
+  const [mana, setMana] = useGameStore(
+    (state) => [state.mana, state.updateMana],
     shallow,
   );
   const [countdown, setCountdown] = useGameStore(
@@ -107,18 +108,7 @@ const GameUi = ({ engine }: IGameUI) => {
           },
         }}
       >
-        {isSideMenuOpen ? (
-          <Typography
-            onClick={() => {
-              // toggle side menu
-              setIsSideMenuOpen(!isSideMenuOpen);
-              // clear tower selection
-              engine.clearTowerSelection(engine.selectedTower!);
-            }}
-          >
-            X
-          </Typography>
-        ) : (
+        {!isSideMenuOpen && (
           <>
             <Box
               onClick={() => {
@@ -168,11 +158,28 @@ const GameUi = ({ engine }: IGameUI) => {
         className="b-game-status"
         sx={{
           position: "absolute",
+          top: "8px",
           zIndex: 101,
-          top: 0,
           width: "100%",
+          userSelect: "none",
         }}
       >
+        <Box
+          sx={{
+            background: `url(${manaIcon}) 0 0 no-repeat`,
+            height: "32px",
+            paddingLeft: "32px",
+            paddingTop: "10px",
+            position: "absolute",
+            top: "8px",
+            left: "16px",
+            "& p": {
+              color: "white",
+            },
+          }}
+        >
+          <Typography>{mana}</Typography>
+        </Box>
         <Box
           sx={{
             "& > p": {

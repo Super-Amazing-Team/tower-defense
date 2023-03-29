@@ -12,6 +12,10 @@ export const GameMenu = ({ engine }: IGameMenu) => {
     (state) => [state.isGameMenuOpen, state.updateIsGameMenuOpen],
     shallow,
   );
+  const [isBuildMenuOpen, setIsBuildMenuOpen] = useGameStore(
+    (state) => [state.isBuildMenuOpen, state.updateIsBuildMenuOpen],
+    shallow,
+  );
   const [isGameStarted, setIsGameStarted] = useGameStore(
     (state) => [state.isGameStarted, state.updateIsGameStarted],
     shallow,
@@ -62,6 +66,7 @@ export const GameMenu = ({ engine }: IGameMenu) => {
                 setIsGameStarted(true);
               }
               setIsGameMenuOpen(false);
+              setIsBuildMenuOpen(true);
             }}
             disabled={isGameOver}
           >

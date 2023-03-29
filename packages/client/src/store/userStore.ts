@@ -5,6 +5,7 @@ import { addToast } from "@/store";
 import { checkOnLine } from "@/utils";
 import type { TNullable } from "@/utils";
 import type { IEError } from "@/types";
+import { IOauthSignInRequest } from "@/api/ApiClient/types";
 
 interface IUserData {
   first_name: string;
@@ -22,7 +23,7 @@ export interface IUser {
   email: string;
   first_name: string;
   id: number;
-  phone: string;
+  phone: TNullable<string>;
   second_name: string;
 
   isAuth: boolean;
@@ -43,6 +44,7 @@ interface IUserStore {
   fetchUser: () => void;
   updateUser: (body: IUserData) => void;
   updateAvatar: (body: FormData) => void;
+  oauthLogin: (body: IOauthSignInRequest) => void;
 }
 
 const initialUser = {
@@ -59,7 +61,7 @@ const initialUser = {
 
 export const useUserStore = create<IUserStore>()(
   persist(
-    (set, get) => ({
+    (set) => ({
       user: initialUser,
       login: async (body) => {
         try {
@@ -125,7 +127,9 @@ export const useUserStore = create<IUserStore>()(
             },
           }));
         } catch (error: unknown) {
-          get().logout();
+          set(() => ({
+            user: initialUser,
+          }));
         }
       },
       updateUser: async (body: IUserData) => {
@@ -155,6 +159,21 @@ export const useUserStore = create<IUserStore>()(
           }));
         } catch (error: unknown) {
           addToast((error as IEError).response.data.reason);
+        }
+      },
+      // Oauth
+      oauthLogin: async (code: IOauthSignInRequest) => {
+        try {
+          await ApiClient.signInWithYandex(code);
+          const data = await ApiClient.getUserInfo();
+          set(() => ({
+            user: {
+              ...data,
+              isAuth: true,
+            },
+          }));
+        } catch {
+          addToast("Failed to login OAuth");
         }
       },
     }),

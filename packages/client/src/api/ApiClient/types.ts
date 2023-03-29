@@ -1,4 +1,5 @@
 import type { z } from "zod";
+import type { AxiosResponse } from "axios";
 import type { registerSchema, userSchema } from "./schema";
 
 interface IBaseUser {
@@ -33,13 +34,34 @@ interface ILeaderboard {
   limit: number;
 }
 
+interface ILeaderboardPost {
+  data: {
+    score: number;
+    name: string;
+  };
+  ratingFieldName: string;
+  teamName: string;
+}
+
+interface IYandexServiceId {
+  service_id: string;
+}
+
+export interface IOauthSignInRequest {
+  code: string;
+  redirect_uri: string;
+}
+
 export interface IApiClient {
   signIn(body: ISignIn): Promise<void>;
   logout(): Promise<void>;
   signUp(body: ISignUp): Promise<z.infer<typeof registerSchema>>;
   getAllLeaderboard(body: ILeaderboard): Promise<any>; // TODO: when the leaderboard will be created, change types
+  postLeaderboard(body: ILeaderboardPost): Promise<void>;
   getUserInfo(): Promise<z.infer<typeof userSchema>>;
   changeUserProfile(body: ITuneUser): Promise<z.infer<typeof userSchema>>;
   changeUserPassword(body: IChangePass): Promise<void>;
   updateAvatar(body: FormData): Promise<z.infer<typeof userSchema>>;
+  getYandexServiceId(query: string): Promise<AxiosResponse<IYandexServiceId>>;
+  signInWithYandex(body: IOauthSignInRequest): Promise<void>;
 }

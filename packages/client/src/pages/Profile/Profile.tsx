@@ -3,8 +3,8 @@ import type { ChangeEvent } from "react";
 import { Avatar, Button, ButtonGroup, Container, Dialog } from "@mui/material";
 import { useProfileStore, useUserStore } from "@/store";
 import { joinUrl } from "@/utils";
-import FormProfile from "@/pages/Profile/FormProfile";
-import EditPasswordForm from "@/pages/Profile/EditPasswordForm";
+import { FormProfile } from "@/pages/Profile/FormProfile";
+import { EditPasswordForm } from "@/pages/Profile/EditPasswordForm";
 import { baseUrl } from "@/constants";
 
 export function Profile() {
@@ -58,7 +58,9 @@ export function Profile() {
     >
       <Avatar
         alt={user.login}
-        src={joinUrl(baseUrl, `/api/v2/resources${user.avatar}`) || ""}
+        src={
+          user.avatar ? joinUrl(baseUrl, `/api/v2/resources${user.avatar}`) : ""
+        }
         sx={{ width: 64, height: 64, m: "0 auto" }}
       />
       <Button

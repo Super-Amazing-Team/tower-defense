@@ -62,9 +62,6 @@ export const Game = ({ engine = new TDEngine() }: IGameProps) => {
         .then(() => {
           engine.map?.drawMap();
           engine.map?.drawMapDecorations();
-          // set engine init flag to true
-          engine.isInitialized = true;
-          setIsLoading(false);
 
           // add hotkey listeners
           engine.addDocumentEventListeners();
@@ -73,6 +70,10 @@ export const Game = ({ engine = new TDEngine() }: IGameProps) => {
           console.log(`engine`);
           console.log(engine);
           //
+
+          // set engine init flag to true
+          engine.isInitialized = true;
+          setIsLoading(false);
         })
         .catch((error) => {
           throw new Error(

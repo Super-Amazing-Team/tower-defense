@@ -1,9 +1,11 @@
 import { Box, Typography } from "@mui/material";
 import { shallow } from "zustand/shallow";
-import sidePanelBg from "../../../../../public/UI/sidePanelBg.png";
+import { useEffect } from "react";
+import sidePanelBg from "@/../public/UI/sidePanelBg.png";
 import { TDEngine, TTowerTypes } from "@/pages/Game/engine/TDEngine";
 import { BuildMenuTower } from "@/pages/Game/components/BuildMenuTower/BuildMenuTower";
 import { useGameStore } from "@/store";
+import { SpellMenu } from "@/pages/Game/components/SpellMenu/SpellMenu";
 
 interface IBuildMenu {
   engine: TDEngine;
@@ -22,10 +24,10 @@ export const BuildMenu = ({ engine }: IBuildMenu) => {
     shallow,
   );
 
-  return isGameStarted ? (
+  return (
     <Box
       sx={{
-        display: "flex",
+        display: isGameStarted ? "flex" : "none",
         zIndex: 100,
         position: "absolute",
         width: "100%",
@@ -40,6 +42,7 @@ export const BuildMenu = ({ engine }: IBuildMenu) => {
       }}
       className="b-tower-build-menu-wrapper"
     >
+      <SpellMenu engine={engine} />
       <Box
         sx={{
           display: "flex",
@@ -53,18 +56,18 @@ export const BuildMenu = ({ engine }: IBuildMenu) => {
         {Object.entries(engine.predefinedTowerParams).map((tower, index) => {
           const towerType: TTowerTypes = tower[0] as TTowerTypes;
           return (
-            <BuildMenuTower
-              key={`build-menu-tower-tower-${towerType}`}
-              tower={tower[1]}
-              towerType={towerType}
-              towerCanvas={engine.towerSprites[towerType]!.canvasArr}
+            <Box
+              key={`build-menu-tower-${towerType}-wrapper`}
               onClick={() => {
                 setIsBuildMenuOpen(false);
-                engine.buildTower(towerType, 0);
               }}
-              grassBg={engine.map?.grassBackrgroundCanvas?.toDataURL()}
-              isDisabled={!engine.isEnoughMoney(tower[1].towerParams.price!)}
-            />
+            >
+              <BuildMenuTower
+                key={`build-menu-tower-${towerType}`}
+                engine={engine}
+                towerType={towerType}
+              />
+            </Box>
           );
         })}
       </Box>
@@ -89,12 +92,13 @@ export const BuildMenu = ({ engine }: IBuildMenu) => {
             // toggle build menu
             setIsBuildMenuOpen(!isBuildMenuOpen);
           }}
+          sx={{
+            fontSize: "1.05em",
+          }}
         >
           X
         </Typography>
       </Box>
     </Box>
-  ) : (
-    <div />
   );
 };

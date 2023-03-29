@@ -1,39 +1,42 @@
-import React from "react";
+import React, { memo } from "react";
 import { Box, Typography } from "@mui/material";
-import { ITowerSprite, TTowerTypes } from "@/pages/Game/engine/TDEngine";
+import { shallow } from "zustand/shallow";
+import {
+  ITowerSprite,
+  TDEngine,
+  TTowerTypes,
+} from "@/pages/Game/engine/TDEngine";
 import { Tower } from "@/pages/Game/towers/Tower";
+import { useGameStore } from "@/store";
 
 interface IBuildMenuTower {
-  tower: {
-    towerParams: Tower["towerParams"];
-    projectileParams: Tower["projectileParams"];
-  };
-  towerCanvas: ITowerSprite["canvasArr"];
-  onClick: Function;
-  isDisabled: boolean;
-  grassBg?: string;
+  engine: TDEngine;
+  towerType: TTowerTypes;
 }
-export const BuildMenuTower = ({
-  tower,
-  towerCanvas,
-  onClick,
-  isDisabled,
-  grassBg,
-}: IBuildMenuTower) => {
+export const BuildMenuTower = memo(({ engine, towerType }: IBuildMenuTower) => {
+  /*
+  const [isBuildMenuOpen, setIsBuildMenuOpen] = useGameStore(
+    (state) => [state.isBuildMenuOpen, state.updateIsBuildMenuOpen],
+    shallow,
+  );
+   */
+  const isDisabled = !engine.isEnoughMoney(
+    engine.predefinedTowerParams[towerType].towerParams.price!,
+  );
   return (
     <Box
       sx={{
         cursor: `${isDisabled ? "not-allowed" : "pointer"}`,
         border: "2px solid #bd6a62",
         margin: "16px",
-        padding: "16px",
+        padding: "16px 16px 0",
         borderRadius: "16px",
         fontSize: "0.7em",
         textAlign: "center",
         transition: "all 300ms ease",
         "&:hover": {
           border: "2px solid #262626",
-          background: `url(${grassBg}) repeat`,
+          background: `url(${engine.map?.grassBackrgroundCanvas?.toDataURL()}) repeat`,
         },
         "&.state__disabled": {
           opacity: ".7",
@@ -47,7 +50,8 @@ export const BuildMenuTower = ({
       }
       onClick={() => {
         if (!isDisabled) {
-          onClick();
+          // setIsBuildMenuOpen(false);
+          engine.buildTower(towerType, 0);
         }
       }}
     >
@@ -64,8 +68,8 @@ export const BuildMenuTower = ({
               position: "relative",
               top: "-30px",
               "& > .tower-base": {
-                width: `${tower.towerParams?.baseWidth}px`,
-                height: `${tower.towerParams?.baseHeight}px`,
+                width: `${engine.predefinedTowerParams[towerType].towerParams?.baseWidth}px`,
+                height: `${engine.predefinedTowerParams[towerType].towerParams?.baseHeight}px`,
               },
             }}
             className="b-tower-image"
@@ -73,21 +77,27 @@ export const BuildMenuTower = ({
             <Box
               sx={{
                 background: `url(${(
-                  towerCanvas!.weapon[0] as HTMLCanvasElement[]
+                  engine.towerSprites[towerType]!.canvasArr!
+                    .weapon[0] as HTMLCanvasElement[]
                 )[0].toDataURL()}) 0 0 no-repeat`,
                 zIndex: 2,
-                width: `${tower.towerParams?.dimensions[0].cannonWidth}px`,
-                height: `${tower.towerParams?.dimensions[0].cannonHeight}px`,
+                width: `${engine.predefinedTowerParams[towerType].towerParams?.dimensions[0].cannonWidth}px`,
+                height: `${engine.predefinedTowerParams[towerType].towerParams?.dimensions[0].cannonHeight}px`,
                 position: "absolute",
                 left: `${Math.floor(
-                  (tower.towerParams?.baseWidth -
-                    tower.towerParams?.dimensions[0].cannonWidth) /
+                  (engine.predefinedTowerParams[towerType].towerParams
+                    ?.baseWidth -
+                    engine.predefinedTowerParams[towerType].towerParams
+                      ?.dimensions[0].cannonWidth) /
                     2,
                 )}px`,
                 top: `${Math.floor(
-                  (tower.towerParams?.baseHeight -
-                    tower.towerParams?.dimensions[0].cannonHeight -
-                    tower.towerParams?.dimensions[0].cannonOffsetY) /
+                  (engine.predefinedTowerParams[towerType].towerParams
+                    ?.baseHeight -
+                    engine.predefinedTowerParams[towerType].towerParams
+                      ?.dimensions[0].cannonHeight -
+                    engine.predefinedTowerParams[towerType].towerParams
+                      ?.dimensions[0].cannonOffsetY) /
                     2,
                 )}px`,
               }}
@@ -96,7 +106,8 @@ export const BuildMenuTower = ({
             <Box
               sx={{
                 background: `url(${(
-                  towerCanvas!.base[0] as HTMLCanvasElement
+                  engine.towerSprites[towerType]!.canvasArr!
+                    .base[0] as HTMLCanvasElement
                 ).toDataURL()}) 0 0 no-repeat`,
                 zIndex: 1,
               }}
@@ -119,13 +130,25 @@ export const BuildMenuTower = ({
           }}
         >
           <Typography>
-            Damage:<span>{tower.towerParams?.attackDamage}</span>
+            Damage:
+            <span>
+              {
+                engine.predefinedTowerParams[towerType].towerParams
+                  ?.attackDamage
+              }
+            </span>
           </Typography>
           <Typography>
-            Speed:<span>{tower.towerParams?.attackRate}</span>
+            Speed:
+            <span>
+              {engine.predefinedTowerParams[towerType].towerParams?.attackRate}
+            </span>
           </Typography>
           <Typography>
-            Range:<span>{tower.towerParams?.attackRange}</span>
+            Range:
+            <span>
+              {engine.predefinedTowerParams[towerType].towerParams?.attackRange}
+            </span>
           </Typography>
           <Typography
             sx={{
@@ -142,18 +165,23 @@ export const BuildMenuTower = ({
           >
             Special:
             <span
-              className={`b-attack-modifier-${tower.projectileParams?.attackModifier}`}
+              className={`b-attack-modifier-${engine.predefinedTowerParams[towerType].projectileParams?.attackModifier}`}
             >
-              {tower.projectileParams?.attackModifier
-                ? tower.projectileParams?.attackModifier
+              {engine.predefinedTowerParams[towerType].projectileParams
+                ?.attackModifier
+                ? engine.predefinedTowerParams[towerType].projectileParams
+                    ?.attackModifier
                 : "none"}
             </span>
           </Typography>
           <Typography>
-            Price:<span>{tower.towerParams?.price}$</span>
+            Price:
+            <span>
+              {engine.predefinedTowerParams[towerType].towerParams?.price}$
+            </span>
           </Typography>
         </Box>
       </Box>
     </Box>
   );
-};
+});

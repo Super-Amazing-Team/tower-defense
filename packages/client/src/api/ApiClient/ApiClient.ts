@@ -24,7 +24,10 @@ export const ApiClient: IApiClient = {
     return data;
   },
   async getAllLeaderboard(body) {
-    return APIService.post("/leaderboard/all", body);
+    return APIService.post("/leaderboard/superAmazingTeam", body);
+  },
+  async postLeaderboard(body) {
+    return APIService.post("/leaderboard", body);
   },
   async getUserInfo() {
     const { data } = await APIService.get<z.infer<typeof userSchema>>(
@@ -48,5 +51,15 @@ export const ApiClient: IApiClient = {
     const { data } = await APIService.put("/user/profile/avatar", body);
     await userSchema.parseAsync(data);
     return data;
+  },
+
+  // Oauth
+  async getYandexServiceId(redirect_uri) {
+    return APIService.get("/oauth/yandex/service-id", {
+      params: { redirect_uri },
+    });
+  },
+  async signInWithYandex(body) {
+    return APIService.post("/oauth/yandex", body);
   },
 };

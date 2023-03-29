@@ -11,6 +11,6 @@ export const userSchema = z.object({
   display_name: z.string().nullable(),
   login: z.string(),
   email: z.string(),
-  phone: z.string(),
+  phone: z.string().nullable(),
   avatar: z.string().nullable(),
 });
