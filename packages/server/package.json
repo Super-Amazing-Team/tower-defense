@@ -8,6 +8,7 @@
   "scripts": {
     "preview": "node ./dist/index.js",
     "build": "rimraf -rf dist && tsc --p ./tsconfig.prod.json",
+    "build_docker": "tsc --p ./tsconfig.prod.json",
     "dev": "cross-env NODE_ENV=development nodemon index.ts",
     "serve": "cross-env NODE_ENV=production node dist/index.js",
     "lint": "eslint .",
