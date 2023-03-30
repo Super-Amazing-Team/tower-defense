@@ -8,7 +8,7 @@ export interface ISound {
   soundSourceArr: TPartialRecord<TSoundType, string>;
   isInitialized: boolean;
 }
-class Sound {
+export class Sound {
   constructor(
     public context: ISound["context"] = document.createElement("audio"),
     public soundSourceArr: ISound["soundSourceArr"] = {
@@ -30,5 +30,3 @@ class Sound {
     }
   }
 }
-
-export default Sound;
