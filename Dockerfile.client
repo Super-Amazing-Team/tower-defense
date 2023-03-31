@@ -9,11 +9,13 @@ RUN curl -f https://get.pnpm.io/v6.16.js | node - add --global pnpm
 
 COPY package.json pnpm-lock.yaml ./
 
-RUN pnpm install --frozen-lockfile --prod
+RUN pnpm install --frozen-lockfile
+RUN pnpm install -D lerna
+
 
 COPY . .
 
-RUN rm -rf /app/packages/client/dist/ && pnpm --filter client build
+RUN rm -rf /app/packages/client/dist/ && yarn build --scope=client
 
 FROM nginx:latest as production
 WORKDIR /app
