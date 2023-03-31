@@ -24,14 +24,10 @@ import { TDEngine } from "@/pages/Game/engine/TDEngine";
 import { Layout } from "@/layout";
 import { useLayoutStore, useUserStore } from "@/store";
 
+const engine = new TDEngine();
 const App = () => {
-  const [engine, setEngine] = React.useState<TDEngine>();
   const mode = useLayoutStore((store) => store.colorMode);
   const fetchUser = useUserStore((store) => store.fetchUser);
-
-  useEffect(() => {
-    setEngine(new TDEngine());
-  }, []);
 
   useEffect(() => {
     fetchUser();
