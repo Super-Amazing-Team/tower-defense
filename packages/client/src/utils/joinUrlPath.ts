@@ -1,4 +1,4 @@
-export function joinUrl(...args: string[]): string | null {
+export function joinUrl(...args: string[]): string {
   try {
     if (args.length === 1) {
       return new URL(args[0]).toString();
@@ -20,6 +20,6 @@ export function joinUrl(...args: string[]): string | null {
 
     return new URL(restUrl.join("/").replace(/\/{2,}/g, "/"), base).toString();
   } catch {
-    return null;
+    return "";
   }
 }

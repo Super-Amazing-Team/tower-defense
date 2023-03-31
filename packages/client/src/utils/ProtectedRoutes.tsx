@@ -1,5 +1,6 @@
 import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { useUserStore } from "@/store";
+import { TRoutes as R } from "@/types";
 
 export const ProtectedRoutes = () => {
   const location = useLocation();
@@ -17,7 +18,7 @@ export const ProtectedToAuth = () => {
   const { isAuth } = useUserStore((store) => store.user);
 
   return isAuth ? (
-    <Navigate to="/profile" state={{ from: location }} replace />
+    <Navigate to={R.game} state={{ from: location }} replace />
   ) : (
     <Outlet />
   );

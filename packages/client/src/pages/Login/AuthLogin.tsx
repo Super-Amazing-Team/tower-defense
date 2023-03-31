@@ -14,14 +14,13 @@ import {
   FormControl,
   FormHelperText,
 } from "@mui/material";
-import Visibility from "@mui/icons-material/Visibility";
-import VisibilityOff from "@mui/icons-material/VisibilityOff";
+import { Visibility, VisibilityOff } from "@mui/icons-material";
 import { useUserStore } from "@/store";
 import { loginSchema as schema } from "@/types";
 
 type TSchema = z.infer<typeof schema>;
 
-const AuthLogin = () => {
+export function AuthLogin() {
   const [isShowPassword, setIsShowPassword] = useState(false);
   const login = useUserStore((store) => store.login);
 
@@ -108,6 +107,4 @@ const AuthLogin = () => {
       </Grid>
     </form>
   );
-};
-
-export default AuthLogin;
+}

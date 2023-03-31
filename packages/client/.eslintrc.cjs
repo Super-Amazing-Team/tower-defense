@@ -69,7 +69,7 @@ module.exports = {
     "react/display-name": "off",
     "prefer-destructuring": 0,
     "import/no-unresolved": ["error", { caseSensitive: false }],
-    "no-console": ["warn", { allow: ["warn", "error"] }],
+    "no-console": ["warn", { allow: ["warn", "error", "info"] }],
     "jsx-a11y/no-autofocus": [
       "error",
       {
