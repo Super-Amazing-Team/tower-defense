@@ -1,13 +1,25 @@
-import { useEffect, useState } from "react";
-import {
-  TDEngine,
-  ITDEngine,
-  IWaveGenerator,
-} from "@/pages/Game/engine/TDEngine";
+import React, { useState } from "react";
+import { Box, MenuList, MenuItem, Typography, Button } from "@mui/material";
+import { shallow } from "zustand/shallow";
+import gameUIIcons from "@/../public/UI/gameUIIcons.png";
+import manaIcon from "@/../public/sprites/spells/manaIcon.png";
+import { TDEngine, IWaveGenerator } from "@/pages/Game/engine/TDEngine";
+import { useGameStore } from "@/store";
+
+declare global {
+  namespace JSX {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    interface IntrinsicElements {
+      marquee: React.DetailedHTMLProps<
+        React.HTMLAttributes<HTMLElement>,
+        HTMLElement
+      >;
+    }
+  }
+}
+
 interface IGameUI {
   engine: TDEngine;
-  setIsGameStarted: (value: boolean | ((prevVar: boolean) => boolean)) => void;
-  isGameStarted: boolean;
   lives?: number;
   score?: number;
   money?: number;
@@ -15,277 +27,183 @@ interface IGameUI {
   waveCountdown?: IWaveGenerator["waveCountdown"];
   isEnoughMoney?: boolean;
 }
-export function GameUi({ engine, isGameStarted, setIsGameStarted }: IGameUI) {
-  // game status params
-  const [lives, setLives] = useState<IGameUI["lives"]>(
-    engine.initialGameParams.lives,
-  );
-  const [score, setScore] = useState<IGameUI["score"]>(engine.score);
-  const [money, setMoney] = useState<IGameUI["money"]>(
-    engine.initialGameParams.money,
-  );
-  const [wave, setWave] = useState<IGameUI["wave"]>(
-    engine.waveGenerator?.waveParams.currentWave,
-  );
-  const [countdown, setCountdown] = useState<IGameUI["waveCountdown"]>(
-    engine.waveGenerator?.waveCountdown,
-  );
-  const [enemiesLeft, setEnemiesLeft] = useState<IGameUI["wave"]>(
-    engine.enemies?.length,
-  );
-  const [selectedTower, setSelectedTower] =
-    useState<ITDEngine["selectedTower"]>(null);
-  const [isGameOver, setIsGameOver] = useState<boolean>(false);
 
-  useEffect(() => {
-    engine.UICallback = () => {
-      // update game results
-      setScore(engine.score);
-      setCountdown(engine.waveGenerator?.waveCountdown);
-      setLives(engine.lives);
-      setMoney(engine.money);
-      setWave(engine.waveGenerator?.waveParams.currentWave);
-      setEnemiesLeft(engine.enemies?.length);
-      if (engine.lives < 1) {
-        setIsGameOver(false);
-        engine.sound?.soundArr?.gameStart?.pause();
-        engine.sound!.soundArr.gameStart!.currentTime = 0;
-      }
-      // is tower selected?
-      setSelectedTower(engine.selectedTower);
-    };
-  }, []);
+const GameUi = ({ engine }: IGameUI) => {
+  // game status params
+  const [lives, setLives] = useGameStore(
+    (state) => [state.lives, state.updateLives],
+    shallow,
+  );
+  const [mana, setMana] = useGameStore(
+    (state) => [state.mana, state.updateMana],
+    shallow,
+  );
+  const [countdown, setCountdown] = useGameStore(
+    (state) => [state.countdown, state.updateCountdown],
+    shallow,
+  );
+  const [waveNumber, setWaveNumber] = useGameStore(
+    (state) => [state.waveNumber, state.updateWaveNumber],
+    shallow,
+  );
+  const [isGameMenuOpen, setIsGameMenuOpen] = useGameStore(
+    (state) => [state.isGameMenuOpen, state.updateIsGameMenuOpen],
+    shallow,
+  );
+  const [isSideMenuOpen, setIsSideMenuOpen] = useGameStore(
+    (state) => [state.isSideMenuOpen, state.updateIsSideMenuOpen],
+    shallow,
+  );
+  const [isBuildMenuOpen, setIsBuildMenuOpen] = useGameStore(
+    (state) => [state.isBuildMenuOpen, state.updateIsBuildMenuOpen],
+    shallow,
+  );
+  const [isGameOver, setIsGameOver] = useGameStore(
+    (state) => [state.isGameOver, state.updateIsGameOver],
+    shallow,
+  );
+  const [score, setScore] = useGameStore(
+    (state) => [state.score, state.updateScore],
+    shallow,
+  );
+  const [money, setMoney] = useGameStore(
+    (state) => [state.money, state.updateMoney],
+    shallow,
+  );
+  const [enemiesLeft, setEnemiesLeft] = useGameStore(
+    (state) => [state.enemiesLeft, state.updateEnemiesLeft],
+    shallow,
+  );
+  //
 
   return (
-    <div className="b-game-status">
-      {isGameOver && <h1>GAME IS OVER!</h1>}
-      <div>
-        <p>
-          <span>{`Enemies left: ${enemiesLeft}`}</span>&nbsp;
-          <span>{`Current wave: ${wave}`}</span>&nbsp;
-          <span>{`Lives left: ${lives}`}</span>&nbsp;
-          <span>{`Killed enemies: ${score}`}</span>&nbsp;
-          <span>{`Money: $${money}`}</span>
-          &nbsp;
-        </p>
-        <p>
-          {Boolean(countdown) && (
-            <span>{`Next wave in: ${countdown} seconds`}</span>
-          )}
-        </p>
-      </div>
-      <hr />
-      <div className="b-game-menu">
-        <button
-          onClick={() => {
-            engine.isGameStarted = true;
-            setIsGameStarted(true);
-            // game start play sound
-            // engine.sound?.soundArr?.gameStart?.play();
+    <>
+      {/* UI Game icons */}
+      <Box
+        sx={{
+          position: "absolute",
+          top: "16px",
+          right: "16px",
+          zIndex: 101,
+          "& > p": {
+            cursor: "pointer",
+            width: "32px",
+            height: "32px",
+            textAlign: "center",
+            fontSize: "1.5em",
+            color: "#262626",
+          },
+          "& > .game-menu-icon": {
+            cursor: "pointer",
+            width: "32px",
+            height: "32px",
+            background: `url(${gameUIIcons}) 0 0 no-repeat`,
+          },
+          "& > .game-build-icon": {
+            cursor: "pointer",
+            width: "32px",
+            height: "32px",
+            marginTop: "16px",
+            background: `url(${gameUIIcons}) 0 -32px no-repeat`,
+          },
+        }}
+      >
+        {!isSideMenuOpen && (
+          <>
+            <Box
+              onClick={() => {
+                // toggle game menu
+                setIsGameMenuOpen(!isGameMenuOpen);
+              }}
+              className="game-menu-icon"
+            />
+            {!isGameMenuOpen && (
+              <Box
+                onClick={() => {
+                  // toggle game menu
+                  setIsBuildMenuOpen(!isBuildMenuOpen);
+                }}
+                className="game-build-icon"
+              />
+            )}
+          </>
+        )}
+      </Box>
+      {isGameOver && !isGameMenuOpen && (
+        <Box
+          sx={{
+            position: "absolute",
+            zIndex: 100,
+            width: "100%",
+            height: "100%",
+            display: "flex",
+            "& p": {
+              display: "flex",
+              flexGrow: 1,
+              alignItems: "center",
+              color: "#262626",
+              fontSize: "4em",
+            },
           }}
         >
-          Start
-        </button>
-        <button
-          onClick={() => {
-            engine.isGameStarted = false;
-            setIsGameStarted(false);
-            // game start pause sound
-            // engine.sound?.soundArr?.gameStart?.pause();
-          }}
-        >
-          Pause
-        </button>
-        <button
-          onClick={() => {
-            engine.gameRestart();
-            setIsGameStarted(!isGameStarted);
-          }}
-        >
-          Restart
-        </button>
-      </div>
-      {selectedTower ? (
-        <div className="b-tower-upgrade-menu">
-          <button
-            disabled={
-              !engine.isEnoughMoney(engine.selectedTower!.towerParams.price)
-            }
-            onClick={() => {
-              engine.upgradeTower(engine.selectedTower!);
-            }}
-          >
-            Upgrade tower
-          </button>
-        </div>
-      ) : (
-        <div className="b-building-menu">
-          <div>
-            <button
-              disabled={
-                !engine.isEnoughMoney(
-                  engine.predefinedTowerParams.one!.towerParams.price,
-                )
-              }
-              onClick={() => {
-                engine.buildTower("one", 0);
-              }}
-            >
-              Tower 1 level 1($
-              {engine.predefinedTowerParams.one!.towerParams.price})
-            </button>
-            <button
-              disabled={
-                !engine.isEnoughMoney(
-                  engine.predefinedTowerParams.one!.towerParams.price,
-                )
-              }
-              onClick={() => {
-                engine.buildTower("one", 1);
-              }}
-            >
-              Tower 1 level 2($
-              {engine.predefinedTowerParams.one!.towerParams.price})
-            </button>
-            <button
-              disabled={
-                !engine.isEnoughMoney(
-                  engine.predefinedTowerParams.one!.towerParams.price,
-                )
-              }
-              onClick={() => {
-                engine.buildTower("one", 2);
-              }}
-            >
-              Tower 1 level 3($
-              {engine.predefinedTowerParams.one!.towerParams.price})
-            </button>
-          </div>
-          <div>
-            <button
-              disabled={
-                !engine.isEnoughMoney(
-                  engine.predefinedTowerParams.two!.towerParams.price,
-                )
-              }
-              onClick={() => {
-                engine.buildTower("two", 0);
-              }}
-            >
-              Tower 2 level 1($
-              {engine.predefinedTowerParams.two!.towerParams.price})
-            </button>
-            <button
-              disabled={
-                !engine.isEnoughMoney(
-                  engine.predefinedTowerParams.two!.towerParams.price,
-                )
-              }
-              onClick={() => {
-                engine.buildTower("two", 1);
-              }}
-            >
-              Tower 2 level 2($
-              {engine.predefinedTowerParams.two!.towerParams.price})
-            </button>
-            <button
-              disabled={
-                !engine.isEnoughMoney(
-                  engine.predefinedTowerParams.two!.towerParams.price,
-                )
-              }
-              onClick={() => {
-                engine.buildTower("two", 2);
-              }}
-            >
-              Tower 2 level 3($
-              {engine.predefinedTowerParams.two!.towerParams.price})
-            </button>
-          </div>
-          <div>
-            <button
-              disabled={
-                !engine.isEnoughMoney(
-                  engine.predefinedTowerParams.three!.towerParams.price,
-                )
-              }
-              onClick={() => {
-                engine.buildTower("three", 0);
-              }}
-            >
-              Tower 3 level 1($
-              {engine.predefinedTowerParams.three!.towerParams.price})
-            </button>
-            <button
-              disabled={
-                !engine.isEnoughMoney(
-                  engine.predefinedTowerParams.three!.towerParams.price,
-                )
-              }
-              onClick={() => {
-                engine.buildTower("three", 1);
-              }}
-            >
-              Tower 3 level 2($
-              {engine.predefinedTowerParams.three!.towerParams.price})
-            </button>
-            <button
-              disabled={
-                !engine.isEnoughMoney(
-                  engine.predefinedTowerParams.three!.towerParams.price,
-                )
-              }
-              onClick={() => {
-                engine.buildTower("three", 2);
-              }}
-            >
-              Tower 3 level 3($
-              {engine.predefinedTowerParams.three!.towerParams.price})
-            </button>
-          </div>
-          <div>
-            <button
-              disabled={
-                !engine.isEnoughMoney(
-                  engine.predefinedTowerParams.four!.towerParams.price,
-                )
-              }
-              onClick={() => {
-                engine.buildTower("four", 0);
-              }}
-            >
-              Tower 4 level 1($
-              {engine.predefinedTowerParams.four!.towerParams.price})
-            </button>
-            <button
-              disabled={
-                !engine.isEnoughMoney(
-                  engine.predefinedTowerParams.four!.towerParams.price,
-                )
-              }
-              onClick={() => {
-                engine.buildTower("four", 1);
-              }}
-            >
-              Tower 4 level 2($
-              {engine.predefinedTowerParams.four!.towerParams.price})
-            </button>
-            <button
-              disabled={
-                !engine.isEnoughMoney(
-                  engine.predefinedTowerParams.four!.towerParams.price,
-                )
-              }
-              onClick={() => {
-                engine.buildTower("four", 2);
-              }}
-            >
-              Tower 4 level 3($
-              {engine.predefinedTowerParams.four!.towerParams.price})
-            </button>
-          </div>
-        </div>
+          <Typography>
+            {/* eslint-disable-next-line react/no-unknown-property */}
+            <marquee behavior="alternate" scrollamount="12">
+              GAME IS OVER!
+            </marquee>
+          </Typography>
+        </Box>
       )}
-    </div>
+      <Box
+        className="b-game-status"
+        sx={{
+          position: "absolute",
+          top: "8px",
+          zIndex: 101,
+          width: "100%",
+          userSelect: "none",
+        }}
+      >
+        <Box
+          sx={{
+            background: `url(${manaIcon}) 0 0 no-repeat`,
+            height: "32px",
+            paddingLeft: "32px",
+            paddingTop: "10px",
+            position: "absolute",
+            top: "8px",
+            left: "16px",
+            "& p": {
+              color: "white",
+            },
+          }}
+        >
+          <Typography>{mana}</Typography>
+        </Box>
+        <Box
+          sx={{
+            "& > p": {
+              textAlign: "center",
+              color: "#262626",
+            },
+          }}
+        >
+          <Typography>
+            <span>{`Money: $${money}`}</span>&nbsp;
+            <span>{`Lives: ${lives}`}</span>&nbsp;
+            <span>{`Enemies: ${enemiesLeft}`}</span>&nbsp;
+            <span>{`Wave: ${waveNumber}`}</span>&nbsp;
+            <span>{`Score: ${score}`}</span>&nbsp;
+          </Typography>
+          <Typography>
+            {Boolean(countdown) && (
+              <span>{`Next wave in: ${countdown} seconds`}</span>
+            )}
+          </Typography>
+        </Box>
+      </Box>
+    </>
   );
-}
+};
+
+export default GameUi;

@@ -1,12 +1,12 @@
 import { ITwoDCoordinates } from "../engine/TDEngine";
-import Enemy from "../enemies/Enemy";
-import Tower, { ITower } from "../towers/Tower";
+import { Enemy } from "../enemies/Enemy";
+import { Tower, ITower } from "../towers/Tower";
 
 export interface IProjectile {
   image: CanvasImageSource;
 }
 
-class Projectile {
+export class Projectile {
   constructor(
     public target: Enemy | null,
     public tower: Tower,
@@ -175,6 +175,28 @@ class Projectile {
     }
   }
 
+  public isEnemyInSplashRange(enemy: Enemy) {
+    const xDistance =
+      this.currentPosition.x -
+      this.tower.projectileParams.dimensions[this.tower.upgradeLevel]
+        .projectileWidth /
+        2 -
+      (enemy.currentPosition.x + enemy.enemyParams.width! / 2);
+    const yDistance =
+      this.currentPosition.y -
+      this.tower.projectileParams.dimensions[this.tower.upgradeLevel]
+        .projectileHeight /
+        2 -
+      (enemy.currentPosition.y + enemy.enemyParams.height! / 2);
+    if (
+      Math.hypot(xDistance, yDistance) <
+      this.tower.projectileParams.attackModifierRange!
+    ) {
+      return true;
+    }
+    return false;
+  }
+
   public collision() {
     // animate impact
     this.renderParams.isAnimateImpact = true;
@@ -184,7 +206,68 @@ class Projectile {
     ) {
       this.target!.enemyParams.hp -= this.damage;
       this.damage = 0;
-    } else if (
+      // apply attack modifier
+      if (this.tower.projectileParams.attackModifier) {
+        if (this.tower.projectileParams.attackModifier === "slow") {
+          if (this.target!.enemyParams!.modifiedSlowTimer) {
+            clearTimeout(this.target?.enemyParams?.modifiedSlowTimer!);
+            this.target!.enemyParams!.modifiedSlowTimer = null;
+          }
+          if (!this.target?.enemyParams?.isModified) {
+            this.target!.enemyParams.isModified = true;
+            this.target!.enemyParams.attackModifier = "slow";
+            this.target!.enemyParams!.speed! -=
+              this.target!.enemyParams!.speed! *
+              0.2 *
+              (this.tower.upgradeLevel + 1);
+          }
+          this.target!.enemyParams!.modifiedSlowTimer = setTimeout(() => {
+            // clear timer
+            this.target!.enemyParams!.modifiedSlowTimer = null;
+            clearTimeout(this.target?.enemyParams?.modifiedSlowTimer!);
+            // restore enemy movement speed
+            this.target!.enemyParams!.speed =
+              this.target?.enemyParams?.initialSpeed;
+            // restore enemy isModified state to false
+            this.target!.enemyParams.isModified = false;
+          }, this.tower.projectileParams.attackModifierTimeout);
+        } else if (this.tower.projectileParams.attackModifier === "splash") {
+          // check for enemies in projectile splash range
+          this.tower.engine.enemies?.forEach((enemy) => {
+            if (this.isEnemyInSplashRange(enemy)) {
+              if (enemy !== this.target) {
+                enemy.enemyParams.hp -= this.tower.towerParams.attackDamage;
+                if (enemy.enemyParams.hp <= 0) {
+                  // target is dead
+                  enemy.renderParams!.currentFrame = 0;
+                  enemy.renderParams!.isAnimateDeath = true;
+                  enemy.destroy();
+                }
+              }
+              // destroy projectile
+              this.destroy();
+            }
+          });
+        } else if (this.tower.projectileParams.attackModifier === "shock") {
+          this.target!.enemyParams.isModified = true;
+          this.target!.enemyParams.attackModifier = "shock";
+          // stop enemy
+          this.target!.enemyParams!.speed! = 0;
+          this.target!.enemyParams!.modifiedShockTimer = setTimeout(() => {
+            // clear timer
+            this.target!.enemyParams!.modifiedShockTimer = null;
+            clearTimeout(this.target?.enemyParams?.modifiedShockTimer!);
+            // restore enemy movement speed
+            this.target!.enemyParams!.speed =
+              this.target?.enemyParams?.initialSpeed;
+            // restore enemy isModified state to false
+            this.target!.enemyParams.isModified = false;
+          }, this.tower.projectileParams.attackModifierTimeout);
+        }
+      }
+    }
+
+    if (
       this.target!.enemyParams.hp <= 0 &&
       this.tower.engine.enemies!.indexOf(this.target!) > -1
     ) {
@@ -209,5 +292,3 @@ class Projectile {
     );
   }
 }
-
-export default Projectile;
