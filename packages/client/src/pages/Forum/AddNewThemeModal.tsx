@@ -12,7 +12,8 @@ import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { newForumThemeSchema as schema } from "@/types";
-import { useForumStore } from "@/store";
+import { useForumStore, useUserStore } from "@/store";
+import { ICreateTopic } from "@/store/forumStore";
 
 type TSchema = z.infer<typeof schema>;
 export interface IAddNewThemeModalProps {
@@ -20,6 +21,7 @@ export interface IAddNewThemeModalProps {
   onCloseModal: (val: boolean) => void;
 }
 export const AddNewThemeModal = (props: IAddNewThemeModalProps) => {
+  const { id } = useUserStore((store) => store.user);
   const [isOpen, setIsOpen] = React.useState<boolean>(false);
   const createTopic = useForumStore((store) => store.createTopic);
 
@@ -37,8 +39,12 @@ export const AddNewThemeModal = (props: IAddNewThemeModalProps) => {
   });
 
   const onSubmit = (data: TSchema) => {
-    console.log(data);
-    createTopic(data);
+    const topic: ICreateTopic = {
+      title: data.title,
+      description: data.description,
+      ownerId: id.toString(),
+    };
+    createTopic(topic);
     handleClose();
   };
 

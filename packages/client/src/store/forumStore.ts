@@ -18,6 +18,7 @@ export interface ITopicStore {
 export interface ICreateTopic {
   title: string;
   description: string;
+  ownerId: string;
 }
 
 export interface ICreateMessage {
