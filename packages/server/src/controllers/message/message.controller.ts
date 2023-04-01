@@ -54,6 +54,7 @@ export const likeMessage = (req: Request, res: Response) => {
           }
         ).then(() => res.json(item))
       } if (item && item.likes.some((i: string) => i === userId)) {
+        // eslint-disable-next-line no-param-reassign
         item.likes = item.likes.filter((i: string) => i !== userId);
         return CommentsModel.update(
           {likes: item.likes},
