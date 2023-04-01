@@ -5,8 +5,8 @@ export const sequelizeOptions: SequelizeOptions = {
     host: "localhost",
     port: 5432,
     username: "postgres",
-    password: "rootroot",
-    database: "tower",
+    password: "postgres",
+    database: "postgres",
     dialect: "postgres", // 'mysql', 'sqlite', 'mariadb', 'mssql'
 };
 

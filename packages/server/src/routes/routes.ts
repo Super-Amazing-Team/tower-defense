@@ -1,7 +1,13 @@
 import {Router} from "express";
-import {themesRoutes} from "./theme/theme.routes";
-import {topicRoutes} from "./topic/topic.routes";
-import {messageRoutes} from "./message/message.routes";
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
+import {themesRoutes} from "./theme/theme.routes.ts";
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
+import {topicRoutes} from "./topic/topic.routes.ts";
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
+import {messageRoutes} from "./message/message.routes.ts";
 
 const router: Router = Router();
 

@@ -1,5 +1,7 @@
 import type {Request, Response} from "express";
-import {CommentsModel} from "../../models/forum/comments.model";
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
+import {CommentsModel} from "../../models/forum/comments.model.ts";
 
 export const createMessage = async (req: Request, res: Response) => {
   const { message, topicId, ownerId } = req.body;

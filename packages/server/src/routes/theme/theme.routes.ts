@@ -3,7 +3,9 @@ import {
   createTheme,
   getAllThemeSite,
   getMyTheme
-} from "../../controllers/theme/theme.controller";
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
+} from "../../controllers/theme/theme.controller.ts";
 
 
 export const themesRoutes = (router: Router) => {

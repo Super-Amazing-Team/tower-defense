@@ -1,5 +1,7 @@
 import {DataTypes} from "sequelize";
-import {sequelize} from "../../db/database";
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
+import {sequelize} from "../../db/database.ts";
 
 export const UserThemeModel = sequelize.define(
   "user_theme",

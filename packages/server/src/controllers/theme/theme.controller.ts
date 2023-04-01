@@ -1,6 +1,10 @@
 import type {Request, Response} from "express";
-import {SiteThemeModel} from "../../models/theme/site-theme.model";
-import {UserThemeModel} from "../../models/theme/user-theme.model";
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
+import {SiteThemeModel} from "../../models/theme/site-theme.model.ts";
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
+import {UserThemeModel} from "../../models/theme/user-theme.model.ts";
 
 const updateMyTheme = (userId: string, themeId: string) => {
   try {

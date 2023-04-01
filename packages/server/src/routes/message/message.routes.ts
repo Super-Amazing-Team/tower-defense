@@ -1,10 +1,13 @@
 import {Router} from "express";
+
 import {
   createMessage,
   dislikeMessage,
   getAllMessagesByTopicId,
   likeMessage
-} from "../../controllers/message/message.controller";
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
+} from "../../controllers/message/message.controller.ts";
 
 export const messageRoutes = (router: Router) => {
   const messageRouter: Router = Router();
