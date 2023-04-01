@@ -16,7 +16,7 @@ export const registerSchema = z.object({
 
 export const newForumThemeSchema = z.object({
   title: z.string().min(3).max(30),
-  theme: z.string().min(6).max(300),
+  description: z.string().min(6).max(300),
 });
 
 export const newForumMsgSchema = z.object({

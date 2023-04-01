@@ -1,7 +1,7 @@
 import {Router} from "express";
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
-import { createTopic, getAllTopic } from "../../controllers/topic/topic.controller.ts";
+import { createTopic, getAllTopic, getTopicById } from "../../controllers/topic/topic.controller.ts"
 
 
 export const topicRoutes = (router: Router) => {
@@ -10,6 +10,7 @@ export const topicRoutes = (router: Router) => {
   topicRouter
     .post("/", createTopic)
     .get("/", getAllTopic)
+    .get("/:id", getTopicById)
 
   router.use("/topic", topicRouter);
 };

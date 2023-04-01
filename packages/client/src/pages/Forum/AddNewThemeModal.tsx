@@ -12,6 +12,7 @@ import { z } from "zod";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { newForumThemeSchema as schema } from "@/types";
+import { useForumStore } from "@/store";
 
 type TSchema = z.infer<typeof schema>;
 export interface IAddNewThemeModalProps {
@@ -20,6 +21,7 @@ export interface IAddNewThemeModalProps {
 }
 export const AddNewThemeModal = (props: IAddNewThemeModalProps) => {
   const [isOpen, setIsOpen] = React.useState<boolean>(false);
+  const createTopic = useForumStore((store) => store.createTopic);
 
   React.useEffect(() => {
     setIsOpen(props.isOpenAddNewThemeModal);
@@ -36,6 +38,7 @@ export const AddNewThemeModal = (props: IAddNewThemeModalProps) => {
 
   const onSubmit = (data: TSchema) => {
     console.log(data);
+    createTopic(data);
     handleClose();
   };
 
@@ -73,9 +76,9 @@ export const AddNewThemeModal = (props: IAddNewThemeModalProps) => {
                 multiline
                 minRows={3}
                 maxRows={6}
-                helperText={errors.theme?.message || " "}
-                error={Boolean(errors.theme)}
-                {...register("theme")}
+                helperText={errors.description?.message || " "}
+                error={Boolean(errors.description)}
+                {...register("description")}
               />
             </Grid>
           </Grid>
@@ -86,7 +89,8 @@ export const AddNewThemeModal = (props: IAddNewThemeModalProps) => {
             type="submit"
             autoFocus
             disabled={
-              !!errors.title?.message?.length || !!errors.theme?.message?.length
+              !!errors.title?.message?.length ||
+              !!errors.description?.message?.length
             }
           >
             Создать

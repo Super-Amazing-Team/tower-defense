@@ -3,7 +3,8 @@ import { useNavigate } from "react-router-dom";
 
 export interface ITopicProps {
   title: string;
-  id: number;
+  id: string;
+  description: string;
 }
 export function TopicSheet(props: ITopicProps) {
   const { title, id } = props;

@@ -81,7 +81,7 @@ export async function createServer(
   }
 
   // middleware
-  app.use(limiter);
+  //app.use(limiter);
   app.use(express.json());
 
 // routes
