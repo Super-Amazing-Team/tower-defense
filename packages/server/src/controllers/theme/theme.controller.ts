@@ -45,6 +45,7 @@ export const createTheme = async (req: Request, res: Response) => {
   }
 };
 
+// eslint-disable-next-line consistent-return
 export const getMyTheme = async (req: any, res: any) => {
   const { userId } = req.params;
   try {
@@ -59,6 +60,7 @@ export const getMyTheme = async (req: any, res: any) => {
   }
 };
 
+// eslint-disable-next-line consistent-return
 export const getAllThemeSite = async (_req: any, res: any) => {
   try {
     const theme = await SiteThemeModel.findAll({

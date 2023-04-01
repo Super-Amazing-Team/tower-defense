@@ -92,7 +92,8 @@ export const dislikeMessage = (req: Request, res: Response) => {
             }
           }
         ).then(() => res.json(item))
-      } else if (item && item.dislikes.some((i: string) => i === userId)) {
+      } if (item && item.dislikes.some((i: string) => i === userId)) {
+        // eslint-disable-next-line no-param-reassign
         item.dislikes = item.dislikes.filter((i: string) => i !== userId);
         return CommentsModel.update(
           {dislikes: item.dislikes},
@@ -102,9 +103,9 @@ export const dislikeMessage = (req: Request, res: Response) => {
             }
           }
         ).then(() => res.json(item))
-      } else {
-        return res.status(404).json({ message: "Not Found message" });
       }
+        return res.status(404).json({ message: "Not Found message" });
+
     });
   } catch (error: any) {
     return res.status(500).json({ message: error.message });
