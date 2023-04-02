@@ -61,7 +61,7 @@ const initialUser = {
 
 export const useUserStore = create<IUserStore>()(
   persist(
-    (set) => ({
+    (set, get) => ({
       user: initialUser,
       login: async (body) => {
         try {

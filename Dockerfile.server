@@ -3,67 +3,19 @@ ARG SERVER_PORT=3001
 
 FROM node:$NODE_VERSION-buster as base
 
-WORKDIR /app
 
 FROM base as builder
+WORKDIR /app
 
 RUN curl -f https://get.pnpm.io/v6.16.js | node - add --global pnpm
 
-COPY package.json pnpm-lock.yaml ./
-
-RUN pnpm install --frozen-lockfile
-RUN pnpm --filter server install --frozen-lockfile --prod
-RUN pnpm install -D jest @types/node \
-    @sinclair/typebox  \
-    jest-haste-map  \
-    jest-resolve  \
-    yargs-parser  \
-    yargs  \
-    pg  \
-    express  \
-    vite  \
-    compression  \
-    serve-static \
-    @vitejs/plugin-react  \
-    @babel/core  \
-    @types/yargs-parser  \
-    @types/babel__core  \
-    @types/babel__generator  \
-    @types/pg  \
-    @types/express  \
-    @types/serve-static  \
-    @babel/generator  \
-    @babel/parser \
-    @babel/traverse  \
-    @babel/types  \
-    @types/body-parser  \
-    @types/express-serve-static-core  \
-    @types/pg-types  \
-    @types/yargs  \
-    @types/babel__traverse  \
-    @types/compression  \
-    @babel/template  \
-    connect \
-    range-parser  \
-    qs  \
-    pg-protocol  \
-    mime  \
-    source-map-js \
-    @types/babel__template  \
-    @types/connect  \
-    @types/range-parser  \
-    @types/qs \
-    @types/mime \
-    pg-types \
-    @types/istanbul-reports@3.0.1 \
-    istanbul-lib-report \
-    @types/istanbul-lib-report \
-    istanbul-lib-coverage \
-    @types/istanbul-lib-coverage
-
 COPY . .
 
-RUN rm -rf /app/packages/server/dist/ &&  pnpm --filter server build_docker
+RUN pnpm install --frozen-lockfile
+RUN npm i -g lerna
+RUN pnpm --filter server install --frozen-lockfile --prod
+
+RUN rm -rf /app/packages/server/dist/ && yarn build_docker --scope=server
 
 FROM node:$NODE_VERSION-buster-slim as production
 WORKDIR /app
