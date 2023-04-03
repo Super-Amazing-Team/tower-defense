@@ -17,7 +17,7 @@ services:
           - SERVER_PORT=${SERVER_PORT}
     server:
         container_name: prakticum-server
-        image: prackicum-server
+        image: prackicum-server-2
         build:
             context: .
             dockerfile: Dockerfile.server

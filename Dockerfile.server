@@ -11,18 +11,19 @@ RUN curl -f https://get.pnpm.io/v6.16.js | node - add --global pnpm
 
 COPY . .
 
-RUN pnpm install --frozen-lockfile
-RUN npm i -g lerna
-RUN pnpm --filter server install --frozen-lockfile --prod
+RUN pnpm install
+RUN npm i -g lerna typescript
 
-RUN rm -rf /app/packages/server/dist/ && yarn build_docker --scope=server
+RUN pnpm --filter server install --frozen-lockfile
+
+RUN rm -rf /app/packages/server/dist/ && npm run build:server
 
 FROM node:$NODE_VERSION-buster-slim as production
 WORKDIR /app
-
+RUN npm install -g npm@9.6.3
 COPY --from=builder /app/packages/server/dist/ /app/
 COPY --from=builder /app/packages/server/package.json /app/package.json
-RUN npm install --production=true
+RUN npm install
 
 EXPOSE $SERVER_PORT
 CMD [ "node", "/app/index.js" ]
