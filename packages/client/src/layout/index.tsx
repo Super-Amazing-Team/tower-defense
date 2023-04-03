@@ -9,7 +9,7 @@ export function Layout() {
       <Header />
       <Sidebar />
       <Toolbar />
-      <Box component="main" sx={{ flexGrow: 1, p: 3, display: "flex" }}>
+      <Box component="main" sx={{ flexGrow: 1, display: "flex" }}>
         <Outlet />
       </Box>
     </>

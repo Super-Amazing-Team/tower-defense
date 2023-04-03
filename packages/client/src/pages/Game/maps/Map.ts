@@ -1,4 +1,4 @@
-import { TDEngine, ITwoDCoordinates } from "../engine/TDEngine";
+import { TDEngine, ITwoDCoordinates, ColorDict } from "../engine/TDEngine";
 
 export interface IStage {
   direction: "left" | "right" | "up" | "down" | "start" | "end";
@@ -14,6 +14,7 @@ export interface IMap {
     gridColor: string;
     mapTilesArr: ITwoDCoordinates[];
     towerTilesArr: ITwoDCoordinates[];
+    obstacleTilesArr: ITwoDCoordinates[];
     tileCenter: number;
     closestTile: ITwoDCoordinates;
   };
@@ -24,6 +25,8 @@ export interface IMap {
   mapRoadDirections: Record<string, ITwoDCoordinates>;
   grassBackrgroundCanvas: HTMLCanvasElement;
   grassBackrgroundCanvasContext: CanvasRenderingContext2D | null;
+  clearBackgroundCanvas: HTMLCanvasElement;
+  clearBackgroundCanvasContext: CanvasRenderingContext2D | null;
   towerSelectionCanvas: HTMLCanvasElement;
   towerSelectionCanvasContext: CanvasRenderingContext2D | null;
   grassTileCanvas: Record<string, HTMLCanvasElement | null>;
@@ -32,6 +35,8 @@ export interface IMap {
   stoneTileCanvasContext: Record<string, CanvasRenderingContext2D>;
   treeTileCanvas: Record<string, HTMLCanvasElement | null>;
   treeTileCanvasContext: Record<string, CanvasRenderingContext2D>;
+  showelCanvas: HTMLCanvasElement;
+  showelCanvasContext: CanvasRenderingContext2D | null;
   randomTileSpriteFrequency: number;
   turnOffset: number;
 }
@@ -43,10 +48,11 @@ export class Map {
       width: 960,
       height: 960,
       gridStep: 64,
-      backgroundColor: "#ffae70",
+      backgroundColor: ColorDict.sandColor,
       gridColor: "#000000",
       mapTilesArr: [{ x: 0, y: 0 }],
       towerTilesArr: [],
+      obstacleTilesArr: [],
       tileCenter: 0,
       closestTile: { x: 0, y: 0 },
     },
@@ -59,6 +65,14 @@ export class Map {
       "canvas",
     ),
     public grassBackrgroundCanvasContext: IMap["grassBackrgroundCanvasContext"] = null,
+    public clearBackgroundCanvas: IMap["clearBackgroundCanvas"] = document.createElement(
+      "canvas",
+    ),
+    public clearBackgroundCanvasContext: IMap["clearBackgroundCanvasContext"] = null,
+    public showelCanvas: IMap["showelCanvas"] = document.createElement(
+      "canvas",
+    ),
+    public showelCanvasContext: IMap["showelCanvasContext"] = null,
     public towerSelectionCanvas: IMap["towerSelectionCanvas"] = document.createElement(
       "canvas",
     ),
@@ -89,7 +103,7 @@ export class Map {
       four: document.createElement("canvas"),
     },
     public dryTreeTileCanvasContext: IMap["treeTileCanvasContext"] = {},
-    public randomTileSpriteFrequency: IMap["randomTileSpriteFrequency"] = 1.75,
+    public randomTileSpriteFrequency: IMap["randomTileSpriteFrequency"] = 1.15,
     public turnOffset: IMap["turnOffset"] = 24,
   ) {
     // sprite shortcuts
@@ -340,6 +354,15 @@ export class Map {
     this.grassBackrgroundCanvas!.height = this.mapParams.gridStep;
     this.grassBackrgroundCanvasContext =
       this.grassBackrgroundCanvas?.getContext("2d")!;
+    // clear background
+    this.clearBackgroundCanvas!.width = this.mapParams.gridStep;
+    this.clearBackgroundCanvas!.height = this.mapParams.gridStep;
+    this.clearBackgroundCanvasContext =
+      this.clearBackgroundCanvas?.getContext("2d")!;
+    // showel clean tile icon
+    this.showelCanvas!.width = this.mapParams.gridStep;
+    this.showelCanvas!.height = this.mapParams.gridStep;
+    this.showelCanvasContext = this.showelCanvas?.getContext("2d")!;
     // tower selection
     this.towerSelectionCanvas!.width = this.mapParams.gridStep + 10;
     this.towerSelectionCanvas!.height = this.mapParams.gridStep + 10;
@@ -381,6 +404,30 @@ export class Map {
         this.grassBackrgroundCanvasContext?.drawImage(
           this.mapSprite!,
           this.tileToNumber(0),
+          this.tileToNumber(2),
+          this.mapParams.gridStep,
+          this.mapParams.gridStep,
+          0,
+          0,
+          this.mapParams.gridStep,
+          this.mapParams.gridStep,
+        );
+        // clear background
+        this.clearBackgroundCanvasContext?.drawImage(
+          this.mapSprite!,
+          this.tileToNumber(3),
+          this.tileToNumber(0),
+          this.mapParams.gridStep,
+          this.mapParams.gridStep,
+          0,
+          0,
+          this.mapParams.gridStep,
+          this.mapParams.gridStep,
+        );
+        // showel clean tile
+        this.showelCanvasContext?.drawImage(
+          this.mapSprite!,
+          this.tileToNumber(4),
           this.tileToNumber(2),
           this.mapParams.gridStep,
           this.mapParams.gridStep,
@@ -474,14 +521,10 @@ export class Map {
 
   public drawEmptyBackgroundTile(
     tile: ITwoDCoordinates,
-    context: CanvasRenderingContext2D = this.engine.context?.mapBackground!,
+    context: CanvasRenderingContext2D = this.engine.context?.mapDecorations!,
   ) {
     context.beginPath();
-    context.drawImage(
-      this.grassBackrgroundCanvas,
-      tile.x - this.mapParams.gridStep,
-      tile.y - this.mapParams.gridStep,
-    );
+    context.drawImage(this.clearBackgroundCanvas, tile.x, tile.y);
     context.closePath();
   }
 
@@ -540,6 +583,8 @@ export class Map {
             this.mapParams.mapTilesArr = this.mapParams.mapTilesArr.filter(
               (canBuildTile) => canBuildTile !== tile,
             );
+            // push tile to obstacle tiles arr
+            this.mapParams.obstacleTilesArr.push(tile);
           }
         } catch (e) {
           throw new Error(

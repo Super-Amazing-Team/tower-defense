@@ -6,6 +6,7 @@ import {
 import { Enemy, IEnemy } from "@/pages/Game/enemies/Enemy";
 import { TProjectileAttackModifiers } from "@/pages/Game/towers/Tower";
 
+export type TSpellDirection = "left" | "down";
 export interface ISpell {
   engine: TDEngine;
   spellType: TSpellTypes;
@@ -14,8 +15,10 @@ export interface ISpell {
     attackRange: number;
     movementSpeed: number;
     manaCost: number;
+    spellDirection: TSpellDirection;
     attackModifierTimeout?: number;
     attackModifier?: TProjectileAttackModifiers;
+    attackModifierStrength?: number;
     currentPosition?: ITwoDCoordinates;
     collisionPoint?: ITwoDCoordinates;
     width?: number;
@@ -41,6 +44,7 @@ export class Spell {
       attackModifierTimeout: 1000,
       movementSpeed: 2,
       manaCost: 90,
+      spellDirection: "left",
     },
     public renderParams: ISpell["renderParams"] = {
       isMoving: true,
@@ -105,8 +109,8 @@ export class Spell {
       if (this.renderParams.currentFrame < limit - 1) {
         this.renderParams.currentFrame += 1;
       } else {
-        this.destroy();
         this.renderParams.isAnimateImpact = false;
+        this.destroy();
       }
     }
     return this.renderParams.currentFrame;
@@ -115,18 +119,19 @@ export class Spell {
   public move() {
     // is moving
     if (
-      this.spellParams.currentPosition!.x !==
-        this.spellParams.collisionPoint!.x &&
       this.spellParams.currentPosition!.y !== this.spellParams.collisionPoint!.y
     ) {
-      this.spellParams.currentPosition!.x += this.spellParams.movementSpeed;
+      this.spellParams.currentPosition!.x +=
+        this.spellParams.spellDirection === "left"
+          ? this.spellParams.movementSpeed
+          : 0;
       this.spellParams.currentPosition!.y += this.spellParams.movementSpeed;
       // collision
     } else {
-      this.collision();
       this.renderParams.isMoving = false;
       this.renderParams.currentFrame = 0;
       this.renderParams.isAnimateImpact = true;
+      this.collision();
     }
     if (
       this.spellParams.currentPosition!.x >
@@ -150,8 +155,10 @@ export class Spell {
       0,
       this.engine.predefinedSpellParams[this.spellType!]?.spell.width,
       this.engine.predefinedSpellParams[this.spellType!]?.spell.height,
-      this.engine.cursorPosition!.x - 32,
-      this.engine.cursorPosition!.y - 32,
+      this.engine.cursorPosition!.x -
+        this.engine.predefinedSpellParams[this.spellType!]?.spell.width / 2,
+      this.engine.cursorPosition!.y -
+        this.engine.predefinedSpellParams[this.spellType!]?.spell.height / 2,
       this.engine.predefinedSpellParams[this.spellType!]?.spell.width,
       this.engine.predefinedSpellParams[this.spellType!]?.spell.height,
     );
@@ -193,55 +200,90 @@ export class Spell {
   }
 
   public collision() {
-    if (this.engine.enemies?.length) {
-      if (!this.spellParams.attackModifier) {
-        this.engine.enemies.forEach((enemy) => {
+    if (!this.engine.enemies?.length) return;
+    if (!this.spellParams.attackModifier) {
+      this.engine.enemies.forEach((enemy) => {
+        if (this.isEnemyInRange(enemy)) {
+          enemy.enemyParams.hp -= this.spellParams.attackDamage;
+          if (enemy.enemyParams.hp <= 0) {
+            // target is dead
+            enemy.renderParams!.currentFrame = 0;
+            enemy.renderParams!.isAnimateDeath = true;
+            enemy.destroy();
+          }
+        }
+      });
+    } else {
+      if (this.spellParams.attackModifier === "shock") {
+        this.engine.enemies?.forEach((enemy) => {
           if (this.isEnemyInRange(enemy)) {
             enemy.enemyParams.hp -= this.spellParams.attackDamage;
+
+            // target is dead
             if (enemy.enemyParams.hp <= 0) {
-              // target is dead
               enemy.renderParams!.currentFrame = 0;
               enemy.renderParams!.isAnimateDeath = true;
               enemy.destroy();
+            } else {
+              // target is alive
+              // if we already have slow attack modifier timer, reset it
+              if (enemy.enemyParams.modifiedShockTimer) {
+                clearTimeout(enemy.enemyParams!.modifiedShockTimer);
+                enemy.enemyParams!.modifiedShockTimer = null;
+              }
+              if (!enemy.enemyParams!.modifiedShockTimer) {
+                enemy.enemyParams!.speed! = 0;
+                enemy.enemyParams.isModified = true;
+                enemy.enemyParams.attackModifier = "shock";
+              }
+              enemy.enemyParams!.modifiedShockTimer = setTimeout(() => {
+                // clear timer
+                enemy.enemyParams!.modifiedShockTimer = null;
+                clearTimeout(enemy.enemyParams?.modifiedShockTimer!);
+                // restore enemy movement speed
+                enemy.enemyParams!.speed = enemy.enemyParams?.initialSpeed;
+                // restore enemy isModified state to false
+                enemy.enemyParams.isModified = false;
+              }, this.spellParams.attackModifierTimeout);
             }
           }
         });
-      } else {
-        if (this.spellParams.attackModifier === "slow") {
-          this.engine.enemies?.forEach((enemy) => {
-            if (this.isEnemyInRange(enemy)) {
-              enemy.enemyParams.hp -= this.spellParams.attackDamage;
+      } else if (this.spellParams.attackModifier === "slow") {
+        this.engine.enemies?.forEach((enemy) => {
+          if (this.isEnemyInRange(enemy)) {
+            enemy.enemyParams.hp -= this.spellParams.attackDamage;
 
-              // target is dead
-              if (enemy.enemyParams.hp <= 0) {
-                enemy.renderParams!.currentFrame = 0;
-                enemy.renderParams!.isAnimateDeath = true;
-                enemy.destroy();
-              } else {
-                // target is alive
-                // if we already have slow attack modifier timer, reset it
-                if (enemy.enemyParams.modifiedSlowTimer) {
-                  clearTimeout(enemy.enemyParams!.modifiedSlowTimer);
-                  enemy.enemyParams!.modifiedSlowTimer = null;
-                }
-                if (!enemy.enemyParams.isModified) {
-                  enemy.enemyParams!.speed! -= enemy.enemyParams!.speed! * 0.4;
-                  enemy.enemyParams.isModified = true;
-                  enemy.enemyParams.attackModifier = "slow";
-                }
-                enemy.enemyParams!.modifiedSlowTimer = setTimeout(() => {
-                  // clear timer
-                  enemy.enemyParams!.modifiedSlowTimer = null;
-                  clearTimeout(enemy.enemyParams?.modifiedSlowTimer!);
-                  // restore enemy movement speed
-                  enemy.enemyParams!.speed = enemy.enemyParams?.initialSpeed;
-                  // restore enemy isModified state to false
-                  enemy.enemyParams.isModified = false;
-                }, this.spellParams.attackModifierTimeout);
+            // target is dead
+            if (enemy.enemyParams.hp <= 0) {
+              enemy.renderParams!.currentFrame = 0;
+              enemy.renderParams!.isAnimateDeath = true;
+              enemy.destroy();
+            } else {
+              // target is alive
+              // if we already have slow attack modifier timer, reset it
+              if (enemy.enemyParams.modifiedSlowTimer) {
+                clearTimeout(enemy.enemyParams!.modifiedSlowTimer);
+                enemy.enemyParams!.modifiedSlowTimer = null;
               }
+              if (!enemy.enemyParams.isModified) {
+                enemy.enemyParams!.speed! -=
+                  enemy.enemyParams!.speed! *
+                  this.spellParams.attackModifierStrength!;
+                enemy.enemyParams.isModified = true;
+                enemy.enemyParams.attackModifier = "slow";
+              }
+              enemy.enemyParams!.modifiedSlowTimer = setTimeout(() => {
+                // clear timer
+                enemy.enemyParams!.modifiedSlowTimer = null;
+                clearTimeout(enemy.enemyParams?.modifiedSlowTimer!);
+                // restore enemy movement speed
+                enemy.enemyParams!.speed = enemy.enemyParams?.initialSpeed;
+                // restore enemy isModified state to false
+                enemy.enemyParams.isModified = false;
+              }, this.spellParams.attackModifierTimeout);
             }
-          });
-        }
+          }
+        });
       }
     }
   }
@@ -251,5 +293,12 @@ export class Spell {
     this.engine.spells = this.engine.spells?.filter(
       (spell: Spell) => this !== spell,
     );
+
+    /*
+    // clear spell canvas
+    setTimeout(() => {
+      this.engine.clearContext(this.engine.context!.spell!);
+    }, 20);
+     */
   }
 }

@@ -1,4 +1,9 @@
-import { TDEngine, ITwoDCoordinates, TTowerTypes } from "../engine/TDEngine";
+import {
+  TDEngine,
+  ITwoDCoordinates,
+  TTowerTypes,
+  ColorDict,
+} from "../engine/TDEngine";
 import { Enemy } from "../enemies/Enemy";
 import { Projectile } from "../projectiles/Projectile";
 import { useGameStore } from "@/store";
@@ -207,13 +212,10 @@ export class Tower {
           this.renderParams.constructingCurrentFrame = 0;
           this.renderParams.isConstructing = false;
           this.renderParams.isConstructionEnd = false;
-          // this.engine.selectedTower = null;
+          // clear tower canvas
           this.engine.clearContext(this.engine.context?.tower!);
           this.engine.towers?.forEach((tower) => {
             tower.draw();
-            // if (tower.towerParams.isSelected) {
-            //  tower.towerParams.isSelected = false;
-            // }
           });
         }
       } else {
@@ -332,7 +334,11 @@ export class Tower {
                 100,
             );
             // UI construction time update
-            if (useGameStore.getState().selectedTower === this) {
+            if (
+              useGameStore.getState().selectedTower === this &&
+              (this.renderParams.constructionProgressPercent < 10 ||
+                this.renderParams.constructionProgressPercent % 10 === 0)
+            ) {
               useGameStore
                 .getState()
                 .updateConstructionProgress(
@@ -422,7 +428,7 @@ export class Tower {
     context: CanvasRenderingContext2D = this.engine.context!.selection!,
   ) {
     context.beginPath();
-    context.strokeStyle = "#01FFE9";
+    context.strokeStyle = ColorDict.tileSelectionColor;
     // context.setLineDash([15, 5]);
     context.lineWidth = 2;
     context.strokeRect(
@@ -435,38 +441,58 @@ export class Tower {
   }
 
   public drawCannon(context: CanvasRenderingContext2D) {
+    const isShouldRotate =
+      this.towerParams.prevFiringAngle === this.towerParams.firingAngle;
+    // find rectangle diagonal
+    const canvasHypot = Math.ceil(
+      Math.hypot(
+        this.engine.predefinedTowerParams[this.type]?.towerParams?.dimensions[
+          this.upgradeLevel
+        ].cannonWidth!,
+        this.engine.predefinedTowerParams[this.type]?.towerParams?.dimensions[
+          this.upgradeLevel
+        ].cannonHeight!,
+      ),
+    );
+    if (isShouldRotate) {
+      const canvas = (
+        this.engine.towerSprites[this.type]!.canvasArr?.weapon![
+          this.upgradeLevel
+        ] as HTMLCanvasElement[]
+      )[this.getNextCannonFrame()]!;
+      // get current frame to rotate projectile image and draw it in main projectile context
+      const rotationContext = (
+        this.engine.towerSprites[this.type]!.canvasContextArr?.weapon[
+          this.upgradeLevel
+        ]! as CanvasRenderingContext2D[]
+      )[this.towerParams.cannonFrameLimit]!;
+
+      // rotate frame
+      rotationContext.save();
+      rotationContext.clearRect(0, 0, canvasHypot, canvasHypot);
+      rotationContext.beginPath();
+      rotationContext.translate(canvasHypot / 2, canvasHypot / 2);
+      rotationContext.rotate(this.towerParams.firingAngle! - 1);
+      rotationContext.drawImage(canvas, -canvasHypot / 2, -canvasHypot / 2);
+      rotationContext.closePath();
+      rotationContext.restore();
+    }
+
     // tower cannon
-    context.save();
-    context.beginPath();
-    context.translate(
-      this.currentPosition.x -
-        this.towerParams.baseWidth +
-        this.towerParams.baseWidth / 2,
-      this.currentPosition.y -
-        this.towerParams.baseHeight +
-        this.towerParams.baseWidth / 2 +
-        this.towerParams.dimensions[this.upgradeLevel].cannonOffsetY,
-    );
-    context.rotate(
-      this.towerParams.firingAngle! - this.engine.towerAngleOffset,
-    );
-    context.translate(
-      -(this.towerParams.dimensions[this.upgradeLevel].cannonWidth / 2),
-      -(this.towerParams.dimensions[this.upgradeLevel].cannonHeight / 2),
-    );
     context.drawImage(
       (
         this.engine.towerSprites[this.type]!.canvasArr?.weapon![
           this.upgradeLevel
-        ]! as HTMLCanvasElement[]
-      )[this.getNextCannonFrame()]!,
-      0,
-      0,
+        ] as HTMLCanvasElement[]
+      )[isShouldRotate ? this.towerParams.cannonFrameLimit : 0]!,
+      this.currentPosition.x -
+        canvasHypot +
+        (canvasHypot - this.towerParams.baseWidth) / 2,
+      this.currentPosition.y -
+        this.towerParams.baseHeight +
+        (this.towerParams.baseWidth - canvasHypot) / 2 +
+        this.towerParams.dimensions[this.upgradeLevel].cannonOffsetY,
     );
-    context.closePath();
-    context.restore();
-    // set new firing angle
-    this.towerParams.prevFiringAngle = this.towerParams.firingAngle;
     // set new firing point
     this.towerParams.fireFromCoords = {
       x:
@@ -606,8 +632,13 @@ export class Tower {
       this.currentPosition.y +
       this.target.enemyParams.rectCenterY!;
 
+    // set new firing angle
     this.towerParams.firingAngle =
       Math.atan2(yDistance, xDistance) + Math.PI - Math.PI / 4;
+
+    if (this.towerParams.prevFiringAngle !== this.towerParams.firingAngle) {
+      this.towerParams.prevFiringAngle = this.towerParams.firingAngle;
+    }
   }
 
   public fire() {

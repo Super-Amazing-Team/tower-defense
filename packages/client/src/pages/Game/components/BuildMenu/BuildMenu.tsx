@@ -1,6 +1,5 @@
 import { Box, Typography } from "@mui/material";
 import { shallow } from "zustand/shallow";
-import { useEffect } from "react";
 import sidePanelBg from "@/../public/UI/sidePanelBg.png";
 import { TDEngine, TTowerTypes } from "@/pages/Game/engine/TDEngine";
 import { BuildMenuTower } from "@/pages/Game/components/BuildMenuTower/BuildMenuTower";
@@ -11,14 +10,8 @@ interface IBuildMenu {
   engine: TDEngine;
 }
 export const BuildMenu = ({ engine }: IBuildMenu) => {
-  const [isGameStarted, setIsGameStarted] = useGameStore(
-    (state) => [state.isGameStarted, state.updateIsGameStarted],
-    shallow,
-  );
-  const [isGameMenuOpen, setIsGameMenuOpen] = useGameStore(
-    (state) => [state.isGameMenuOpen, state.updateIsGameMenuOpen],
-    shallow,
-  );
+  const isGameStarted = useGameStore((state) => state.isGameStarted);
+  const isGameMenuOpen = useGameStore((state) => state.isGameMenuOpen);
   const [isBuildMenuOpen, setIsBuildMenuOpen] = useGameStore(
     (state) => [state.isBuildMenuOpen, state.updateIsBuildMenuOpen],
     shallow,
@@ -32,6 +25,7 @@ export const BuildMenu = ({ engine }: IBuildMenu) => {
         position: "absolute",
         width: "100%",
         height: `${engine.map?.tileToNumber(4)}px`,
+        left: 0,
         bottom:
           isBuildMenuOpen && !isGameMenuOpen
             ? "0px"
@@ -66,6 +60,11 @@ export const BuildMenu = ({ engine }: IBuildMenu) => {
                 key={`build-menu-tower-${towerType}`}
                 engine={engine}
                 towerType={towerType}
+                isDisabled={
+                  !engine.isEnoughMoney(
+                    engine.predefinedTowerParams[towerType].towerParams.price!,
+                  )
+                }
               />
             </Box>
           );

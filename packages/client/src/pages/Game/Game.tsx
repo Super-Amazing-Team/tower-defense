@@ -1,13 +1,14 @@
 import { useEffect, useRef, useState } from "react";
-import { CircularProgress, Box, createTheme } from "@mui/material";
+import { CircularProgress, Box, createTheme, Grid } from "@mui/material";
 import { shallow } from "zustand/shallow";
 import { ThemeProvider } from "@mui/material/styles";
-import { TDEngine, TTowerTypes } from "./engine/TDEngine";
-import GameUi from "@/pages/Game/components/GameUI/GameUI";
+import { ColorDict, TDEngine } from "./engine/TDEngine";
+import { GameUi } from "@/pages/Game/components/GameUI/GameUI";
 import { useGameStore } from "@/store";
 import { SideMenu } from "@/pages/Game/components/SideMenu/SideMenu";
 import { BuildMenu } from "@/pages/Game/components/BuildMenu/BuildMenu";
 import { GameMenu } from "@/pages/Game/components/GameMenu/GameMenu";
+import { UiMessage } from "@/pages/Game/components/UIMessage/UIMessage";
 
 // mui theme
 const theme = createTheme({
@@ -15,7 +16,7 @@ const theme = createTheme({
     MuiMenuItem: {
       styleOverrides: {
         root: {
-          color: "#ffae70",
+          color: ColorDict.sandColor,
           fontFamily: "'Press Start 2P', cursive",
         },
       },
@@ -23,7 +24,7 @@ const theme = createTheme({
     MuiTypography: {
       styleOverrides: {
         root: {
-          color: "#000000",
+          color: ColorDict.fontColor,
           fontFamily: "'Press Start 2P', cursive",
           fontSize: "0.7em",
         },
@@ -32,7 +33,7 @@ const theme = createTheme({
     MuiButton: {
       styleOverrides: {
         root: {
-          color: "#000000",
+          color: ColorDict.fontColor,
           fontFamily: "'Press Start 2P', cursive",
           fontSize: "0.75em",
         },
@@ -107,30 +108,41 @@ export const Game = ({ engine = new TDEngine() }: IGameProps) => {
 
   return (
     <ThemeProvider theme={theme}>
-      <Box
+      <Grid
+        container
+        justifyContent="center"
+        alignItems="center"
         sx={{
           position: "relative",
-          width: `${engine.map?.mapParams?.width}px`,
-          height: `${engine.map?.mapParams?.height}px`,
           "& .b-game-window": {
             position: "absolute",
             display: !isLoading ? "flex" : "none",
           },
-          overflow: "hidden",
+          background: `url("${
+            !isLoading ? engine.map?.grassBackrgroundCanvas?.toDataURL() : 0
+          }") 0 0 repeat`,
         }}
       >
+        {!isLoading && <GameUi engine={engine} />}
         <Box className="b-game-window" id="gameWindow" ref={gameWindow} />
         {isLoading ? (
           <CircularProgress />
         ) : (
-          <>
-            <GameUi engine={engine} />
+          <Box
+            sx={{
+              position: "relative",
+              width: `${engine.map?.mapParams?.width}px`,
+              height: `${engine.map?.mapParams?.height}px`,
+              overflow: "hidden",
+            }}
+          >
             <SideMenu engine={engine} />
             <BuildMenu engine={engine} />
             <GameMenu engine={engine} />
-          </>
+            <UiMessage />
+          </Box>
         )}
-      </Box>
+      </Grid>
     </ThemeProvider>
   );
 };

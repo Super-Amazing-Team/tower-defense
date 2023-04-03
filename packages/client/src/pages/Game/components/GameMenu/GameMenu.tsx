@@ -3,27 +3,27 @@ import { Box, MenuItem, MenuList } from "@mui/material";
 import { shallow } from "zustand/shallow";
 import { useGameStore } from "@/store";
 import { TDEngine } from "@/pages/Game/engine/TDEngine";
+import wispAnimation from "@/../public/UI/wispAnimation.gif";
 
 interface IGameMenu {
   engine: TDEngine;
 }
 export const GameMenu = ({ engine }: IGameMenu) => {
-  const [isGameMenuOpen, setIsGameMenuOpen] = useGameStore(
-    (state) => [state.isGameMenuOpen, state.updateIsGameMenuOpen],
+  const isGameMenuOpen = useGameStore((state) => state.isGameMenuOpen, shallow);
+  const setIsGameMenuOpen = useGameStore(
+    (state) => state.updateIsGameMenuOpen,
     shallow,
   );
-  const [isBuildMenuOpen, setIsBuildMenuOpen] = useGameStore(
-    (state) => [state.isBuildMenuOpen, state.updateIsBuildMenuOpen],
+  const setIsBuildMenuOpen = useGameStore(
+    (state) => state.updateIsBuildMenuOpen,
     shallow,
   );
-  const [isGameStarted, setIsGameStarted] = useGameStore(
-    (state) => [state.isGameStarted, state.updateIsGameStarted],
+  const isGameStarted = useGameStore((state) => state.isGameStarted, shallow);
+  const setIsGameStarted = useGameStore(
+    (state) => state.updateIsGameStarted,
     shallow,
   );
-  const [isGameOver, setIsGameOver] = useGameStore(
-    (state) => [state.isGameOver, state.updateIsGameOver],
-    shallow,
-  );
+  const isGameOver = useGameStore((state) => state.isGameOver, shallow);
   const [isSoundEnabled, setIsSoundEnabled] = useState<boolean>(
     engine.isSoundEnabled,
   );
@@ -56,6 +56,12 @@ export const GameMenu = ({ engine }: IGameMenu) => {
             display: "flex",
             flexDirection: "column",
             fontFamily: "'Press Start 2P', cursive",
+            "& > li": {
+              paddingLeft: "36px",
+            },
+            "& > li:hover": {
+              background: `url("${wispAnimation}") 0 0 no-repeat`,
+            },
           }}
         >
           <MenuItem
@@ -68,7 +74,7 @@ export const GameMenu = ({ engine }: IGameMenu) => {
               setIsGameMenuOpen(false);
               setIsBuildMenuOpen(true);
             }}
-            disabled={isGameOver}
+            disabled={!isGameStarted && isGameOver}
           >
             {isGameStarted ? "Resume" : "Start"} game
           </MenuItem>
@@ -105,6 +111,7 @@ export const GameMenu = ({ engine }: IGameMenu) => {
               }
               setIsGameMenuOpen(false);
             }}
+            disabled={!isGameStarted}
           >
             {isSoundEnabled ? "Disable" : "Enable"} music
           </MenuItem>
