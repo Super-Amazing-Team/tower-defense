@@ -4,16 +4,15 @@ ARG CLIENT_PORT=3001
 FROM node:$NODE_VERSION-buster as base
 
 FROM base as builder
+WORKDIR /app
 
 RUN curl -f https://get.pnpm.io/v6.16.js | node - add --global pnpm
 
-COPY package.json pnpm-lock.yaml ./
-
-RUN pnpm install --frozen-lockfile --prod
-
 COPY . .
 
-RUN rm -rf /app/packages/client/dist/ && pnpm --filter client build
+RUN pnpm bootstrap
+
+RUN rm -rf /app/packages/client/dist/ && pnpm run build:client
 
 FROM nginx:latest as production
 WORKDIR /app
