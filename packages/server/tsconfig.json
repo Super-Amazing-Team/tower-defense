@@ -1,5 +1,5 @@
 {
-  "ts-node": { "esm": true },
+  "ts-node": { "esm": true, "files": true },
   "compilerOptions": {
     "composite": true,
     "target": "esnext",
@@ -18,12 +18,10 @@
     "noUnusedParameters": true,
     "noUnusedLocals": true,
     "forceConsistentCasingInFileNames": true,
-    "importsNotUsedAsValues": "error",
     "lib": ["DOM", "es2021", "esnext.asynciterable"],
     "types": ["node", "jest"],
     "baseUrl": ".",
     "paths": {
-      "*": ["types/*"],
       "@/*": ["../client/src/*"],
       "@/utils": ["../client/src/utils"]
     },

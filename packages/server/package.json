@@ -22,7 +22,10 @@
     "cross-env": "7.0.3",
     "dotenv": "16.0.3",
     "express": "4.18.2",
+    "express-rate-limit": "6.7.0",
     "pg": "8.9.0",
+    "sequelize": "6.29.3",
+    "sequelize-typescript": "2.1.5",
     "zustand": "4.3.2"
   },
   "devDependencies": {

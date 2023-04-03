@@ -11,31 +11,36 @@ import {
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { IForum, IForumMessage } from "@/pages/Forum/const";
-import { useTopicStore } from "@/store/forumStore";
+import { ICreateMessage, IMessages, useTopicStore } from "@/store/forumStore";
 import { TopicMessage } from "@/pages/Topic/TopicMessage";
 import { newForumMsgSchema as schema } from "@/types";
-
+import { useUserStore } from "@/store";
 type TSchema = z.infer<typeof schema>;
 
 export function Topic() {
   const params = useParams();
   const navigate = useNavigate();
-  const forumMock: IForum = useTopicStore((store) => store.topic);
-
-  const [forum, setForum] = React.useState<IForum>();
+  const getTopicById = useTopicStore((store) => store.getTopicById);
+  const topic = useTopicStore((store) => store.topic);
+  const messages = useTopicStore((store) => store.messages);
+  const createMesage = useTopicStore((store) => store.createMessage);
+  const { id } = useUserStore((store) => store.user);
   const [countPagination, setCountPagination] = React.useState(0);
+  const [topicId, setTopicId] = React.useState("");
 
   React.useEffect(() => {
     // Запрос к апи по id форума
-    setForum(forumMock);
+    if (params.id) {
+      getTopicById(params.id);
+      setTopicId(params.id);
+    }
   }, [params.id]);
 
   React.useEffect(() => {
-    const countMessage: number = forumMock.messages.length;
+    const countMessage: number = topic.messages?.length || 1;
     const count: number = Math.ceil(countMessage / 10);
     setCountPagination(count);
-  }, [forumMock.messages]);
+  }, [topic]);
 
   const {
     register,
@@ -51,7 +56,12 @@ export function Topic() {
   }
 
   const onSubmit = (data: TSchema) => {
-    console.log(data);
+    const message: ICreateMessage = {
+      ownerId: id.toString(),
+      topicId: topicId,
+      message: data.message,
+    };
+    createMesage(message);
   };
 
   function handleChangePagination(
@@ -69,7 +79,7 @@ export function Topic() {
         flexDirection: "column",
       }}
     >
-      {forum ? (
+      {topic ? (
         <>
           <Box
             sx={{
@@ -84,23 +94,27 @@ export function Topic() {
                 alignSelf: "center",
               }}
             >
-              {forum.title}
+              {topic.title}
             </Typography>
             <Typography
               sx={{
                 flex: 2,
               }}
             >
-              {forum.description}
+              {topic.description}
             </Typography>
           </Box>
           <Box sx={{ flex: 1, maxHeight: "60vh" }} overflow={"auto"}>
-            {forumMock.messages.map((item: IForumMessage) => (
+            {messages?.map((item: IMessages) => (
               <TopicMessage
-                key={item.date}
-                text={item.text}
-                user={item.user}
+                key={item.id}
+                message={item.message}
+                ownerId={item.ownerId}
                 date={item.date}
+                likes={item.likes}
+                dislikes={item.dislikes}
+                id={item.id}
+                topicId={item.topicId}
               />
             ))}
           </Box>

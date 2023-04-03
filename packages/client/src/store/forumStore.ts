@@ -1,37 +1,74 @@
 import { create } from "zustand";
-import {
-  forumMock,
-  IDataNamesChats,
-  IForum,
-  IForumInfo,
-  namesChatsMock,
-} from "@/pages/Forum/const";
+import { ApiClient } from "@/api";
+import { ITopic } from "@/api/ApiClient/types";
 export interface IForumStore {
-  forums: IDataNamesChats;
+  allTopics: ITopic[];
   isShowMoreForums: boolean;
-  fiveForums: IForumInfo[];
-  allForums: IForumInfo[];
+  allForums: () => Promise<void>;
+  createTopic: (body: ICreateTopic) => Promise<void>;
 }
 
 export interface ITopicStore {
-  topic: IForum;
+  topic: ITopic;
+  messages: IMessages[];
+  getTopicById: (body: string) => Promise<void>;
+  createMessage: (body: ICreateMessage) => Promise<void>;
 }
 
-const getFiveForum = () => {
-  return namesChatsMock.data.slice(0, 4);
+export interface ICreateTopic {
+  title: string;
+  description: string;
+  ownerId: string;
+}
+
+export interface ICreateMessage {
+  message: string;
+  ownerId: string;
+  topicId: string;
+}
+
+const initialValueTopic: ITopic = {
+  id: "",
+  title: "",
+  description: "",
+  ownerId: "",
+  messages: [],
 };
 
-const getAllForums = () => {
-  return namesChatsMock.data;
-};
+const initialValueMessages: IMessages[] = [];
 
-export const useForumStore = create<IForumStore>()((set) => ({
-  forums: namesChatsMock,
+export interface IMessages {
+  id: number;
+  message: string;
+  topicId: string;
+  ownerId: string;
+  date: string;
+  likes: string[];
+  dislikes: string[];
+}
+
+export const useForumStore = create<IForumStore>()((set, get) => ({
+  allTopics: [],
   isShowMoreForums: false,
-  fiveForums: getFiveForum(),
-  allForums: getAllForums(),
+  allForums: async () => {
+    const topics = await ApiClient.getAllTopics();
+    set({ allTopics: topics.data });
+  },
+  createTopic: async (data: ICreateTopic) => {
+    const topic = await ApiClient.createTopic(data);
+    set({ allTopics: [...get().allTopics, topic.data] });
+  },
 }));
 
-export const useTopicStore = create<ITopicStore>()((set) => ({
-  topic: forumMock,
+export const useTopicStore = create<ITopicStore>()((set, get) => ({
+  topic: initialValueTopic,
+  messages: initialValueMessages,
+  getTopicById: async (body: string) => {
+    const topicRes = await ApiClient.getTopicById(body);
+    set({ topic: topicRes.data.topic, messages: topicRes.data.messages });
+  },
+  createMessage: async (body: ICreateMessage) => {
+    const message = await ApiClient.createMessage(body);
+    set({ messages: [...get().messages, message.data] });
+  },
 }));

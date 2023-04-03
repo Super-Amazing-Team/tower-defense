@@ -1,19 +1,19 @@
 import { Avatar, Box, Typography } from "@mui/material";
-import { IForumMessage } from "@/pages/Forum/const";
+import { IMessages } from "@/store/forumStore";
 
-export function TopicMessage(props: IForumMessage) {
-  const { date, text, user } = props;
+export function TopicMessage(props: IMessages) {
+  const { date, topicId, message, likes, ownerId, dislikes } = props;
 
   return (
     <>
       <Box sx={{ display: "flex", alignItems: "center", padding: "8px 0" }}>
-        <Avatar alt={user.userName} src={user.avatar} />
+        <Avatar alt={ownerId} src={ownerId} />
         <Typography sx={{ margin: "0 10px" }} component="span">
-          {user.userName}
+          {ownerId}
         </Typography>
         <Typography component="span">{date}</Typography>
       </Box>
-      <Typography>{text}</Typography>
+      <Typography>{message}</Typography>
     </>
   );
 }
