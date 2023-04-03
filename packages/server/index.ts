@@ -59,6 +59,9 @@ export async function createServer(
       ),
     );
   }
+  if (!isProd) {
+    app.use("/assets", express.static(resolve("../client/dist/client/assets")))
+  }
 
   // eslint-disable-next-line consistent-return
   app.use("*", async (req: Request, res: Response) => {
@@ -69,11 +72,12 @@ export async function createServer(
       let render;
       if (!isProd) {
         // always read fresh template in dev
-        template = fs.readFileSync(resolve("client/index.html"), "utf-8");
+        template = fs.readFileSync(resolve("../client/dist/client/index.html"), "utf-8");
         template = await vite!.transformIndexHtml(url, template);
-        render = (await vite!.ssrLoadModule("../../client/ssr.jsx")).render;
+        render = (await vite!.ssrLoadModule("../client/ssr.tsx")).render;
       } else {
         template = indexProd;
+        /* @ts-ignore */
         render = (await import("client/dist/server/ssr.js")).render;
       }
 
