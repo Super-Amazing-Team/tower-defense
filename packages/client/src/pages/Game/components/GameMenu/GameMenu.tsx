@@ -1,14 +1,17 @@
 import React, { useState } from "react";
 import { Box, MenuItem, MenuList } from "@mui/material";
 import { shallow } from "zustand/shallow";
+import { useNavigate } from "react-router-dom";
 import { useGameStore } from "@/store";
 import { TDEngine } from "@/pages/Game/engine/TDEngine";
 import wispAnimation from "@/../public/UI/wispAnimation.gif";
+import { TRoutes as R } from "@/types";
 
 interface IGameMenu {
   engine: TDEngine;
 }
 export const GameMenu = ({ engine }: IGameMenu) => {
+  const navigate = useNavigate();
   const isGameMenuOpen = useGameStore((state) => state.isGameMenuOpen, shallow);
   const setIsGameMenuOpen = useGameStore(
     (state) => state.updateIsGameMenuOpen,
@@ -69,7 +72,6 @@ export const GameMenu = ({ engine }: IGameMenu) => {
             onClick={() => {
               if (!isGameStarted) {
                 engine.gameStart();
-                setIsGameStarted(true);
               }
               setIsGameMenuOpen(false);
               setIsBuildMenuOpen(true);
@@ -82,7 +84,6 @@ export const GameMenu = ({ engine }: IGameMenu) => {
             onClick={() => {
               if (isGameStarted) {
                 engine.gameStop();
-                setIsGameStarted(false);
               }
               setIsGameMenuOpen(false);
             }}
@@ -92,10 +93,13 @@ export const GameMenu = ({ engine }: IGameMenu) => {
           </MenuItem>
           <MenuItem
             onClick={() => {
-              engine.gameRestart();
-              setIsGameMenuOpen(false);
-              setIsGameStarted(true);
+              if (engine.waveGenerator?.isInitialized) {
+                engine.gameRestart();
+                setIsGameMenuOpen(false);
+                setIsGameStarted(true);
+              }
             }}
+            disabled={!engine.waveGenerator?.isInitialized}
           >
             Restart game
           </MenuItem>
@@ -114,6 +118,13 @@ export const GameMenu = ({ engine }: IGameMenu) => {
             disabled={!isGameStarted}
           >
             {isSoundEnabled ? "Disable" : "Enable"} music
+          </MenuItem>
+          <MenuItem
+            onClick={() => {
+              navigate(R.home);
+            }}
+          >
+            Main page
           </MenuItem>
         </MenuList>
       </Box>

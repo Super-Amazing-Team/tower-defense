@@ -12,6 +12,7 @@ interface IBuildMenu {
 export const BuildMenu = ({ engine }: IBuildMenu) => {
   const isGameStarted = useGameStore((state) => state.isGameStarted);
   const isGameMenuOpen = useGameStore((state) => state.isGameMenuOpen);
+  const money = useGameStore((state) => state.money);
   const [isBuildMenuOpen, setIsBuildMenuOpen] = useGameStore(
     (state) => [state.isBuildMenuOpen, state.updateIsBuildMenuOpen],
     shallow,
@@ -63,6 +64,7 @@ export const BuildMenu = ({ engine }: IBuildMenu) => {
                 isDisabled={
                   !engine.isEnoughMoney(
                     engine.predefinedTowerParams[towerType].towerParams.price!,
+                    money,
                   )
                 }
               />

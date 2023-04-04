@@ -67,14 +67,14 @@ export const Game = ({ engine = new TDEngine() }: IGameProps) => {
           // add hotkey listeners
           engine.addDocumentEventListeners();
 
+          // set engine init flag to true
+          engine.isInitialized = true;
+          setIsLoading(false);
+
           // debug
           console.log(`engine`);
           console.log(engine);
           //
-
-          // set engine init flag to true
-          engine.isInitialized = true;
-          setIsLoading(false);
         })
         .catch((error) => {
           throw new Error(
@@ -93,6 +93,11 @@ export const Game = ({ engine = new TDEngine() }: IGameProps) => {
         engine.gameStop();
       }
     }
+    if (engine?.waveGenerator?.isInitialized) {
+      // add hotkey listeners
+      engine.addDocumentEventListeners();
+    }
+
     // componentWillUnmount
     return () => {
       if (engine.isInitialized) {
@@ -102,6 +107,9 @@ export const Game = ({ engine = new TDEngine() }: IGameProps) => {
         }
         // remove event listeners
         // engine.removeDocumentEventListeners();
+        // set engine init flag to false
+        // engine.isInitialized = false;
+        // engine.isCanvasCreated = false;
       }
     };
   }, [isGameStarted]);
@@ -139,7 +147,7 @@ export const Game = ({ engine = new TDEngine() }: IGameProps) => {
             <SideMenu engine={engine} />
             <BuildMenu engine={engine} />
             <GameMenu engine={engine} />
-            <UiMessage />
+            <UiMessage engine={engine} />
           </Box>
         )}
       </Grid>

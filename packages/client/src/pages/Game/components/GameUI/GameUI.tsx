@@ -81,11 +81,7 @@ export const GameUi = ({ engine }: IGameUI) => {
               // toggle game menu
               setIsGameMenuOpen(!isGameMenuOpen);
             }}
-            className={
-              isGameStarted
-                ? "game-menu-icon icon"
-                : "game-menu-icon icon state__disabled"
-            }
+            className="game-menu-icon icon"
           />
           <Box
             onClick={() => {

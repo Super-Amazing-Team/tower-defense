@@ -1,6 +1,6 @@
 import { Enemy } from "../enemies/Enemy";
 import { Tower } from "../towers/Tower";
-import { Map } from "../maps/Map";
+import { IMap, Map } from "../maps/Map";
 import { Projectile } from "../projectiles/Projectile";
 import { Sound } from "@/pages/Game/sound/Sound";
 import { useGameStore } from "@/store";
@@ -70,6 +70,7 @@ export const ColorDict = {
   borderColor: "#bd6a62",
   sandColor: "#ffae70",
   fontColor: "#262626",
+  towerRangeColor: "green",
 } as const;
 
 /**
@@ -390,6 +391,7 @@ export interface ITDEngine {
   projectiles?: Projectile[];
   spells?: Spell[];
   map?: Map;
+  currentMapVariant: IMap["stageArr"];
   animationFrameId: number;
   requestIdleCallbackId: number;
   twoDCoordinates: ITwoDCoordinates;
@@ -508,6 +510,7 @@ export class TDEngine {
       mapBackground: 12,
       map: 11,
     } as const,
+    public currentMapVariant: ITDEngine["currentMapVariant"] = [],
     public isInitialized: ITDEngine["isInitialized"] = false,
     public promiseArr: ITDEngine["promiseArr"] = [],
     public isCanvasCreated: ITDEngine["isCanvasCreated"] = false,
@@ -1391,25 +1394,29 @@ export class TDEngine {
   }
 
   public gameStop() {
-    gameStore.getState().updateIsGameStarted(false);
-    cancelAnimationFrame(this.animationFrameId);
-    cancelIdleCallback(this.requestIdleCallbackId);
-    // remove event listeners
-    this.removeEventListeners();
+    if (gameStore.getState().isGameStarted) {
+      gameStore.getState().updateIsGameStarted(false);
+    } else {
+      cancelAnimationFrame(this.animationFrameId);
+      cancelIdleCallback(this.requestIdleCallbackId);
+      // remove event listeners
+      this.removeEventListeners();
 
-    // game start pause sound
-    if (this.isSoundEnabled) {
-      this.sound?.soundArr?.gameStart?.pause();
-    }
-    // close game menu if opened
-    if (gameStore.getState().isGameMenuOpen) {
-      gameStore.getState().updateIsGameMenuOpen(false);
+      // game start pause sound
+      if (this.isSoundEnabled) {
+        this.sound?.soundArr?.gameStart?.pause();
+      }
+      // close game menu if opened
+      if (gameStore.getState().isGameMenuOpen) {
+        gameStore.getState().updateIsGameMenuOpen(false);
+      }
     }
   }
 
   public clearMemory() {
     this.enemies = [];
     this.deadEnemies = [];
+    this.clearContext(this.context!.deadEnemy!);
     this.projectiles = [];
     for (let tower of this.towers!) {
       tower.target = null;
@@ -2444,7 +2451,7 @@ export class TDEngine {
   public findClosestBuildTile(
     coordinates: ITwoDCoordinates,
     tilesArr: ITwoDCoordinates[] = this.map?.mapParams.mapTilesArr!,
-  ): ITwoDCoordinates {
+  ) {
     let minDistance = this.map?.mapParams.width;
     tilesArr.forEach((tile) => {
       const distance =
@@ -2524,9 +2531,6 @@ export class TDEngine {
       x: e.offsetX,
       y: e.offsetY,
     };
-    this.map!.mapParams.closestTile = this.findClosestBuildTile(
-      this.cursorPosition,
-    );
     if (this.isCanBuild) {
       this.draftShowTower();
     } else if (this.draftSpell) {
@@ -2683,7 +2687,7 @@ export class TDEngine {
       }
     }
 
-    // quick build hotkeys
+    // game hotkeys
     if (gameStore.getState().isGameStarted) {
       // spell
       if (e.key === "q") {
@@ -2717,6 +2721,12 @@ export class TDEngine {
       if (e.key === "4") {
         this.draftTower = null;
         this.buildTower("four", 0);
+      }
+      // game menu
+      if (e.key === "b") {
+        gameStore
+          .getState()
+          .updateIsBuildMenuOpen(!gameStore.getState().isBuildMenuOpen);
       }
     }
 
@@ -2775,22 +2785,20 @@ export class TDEngine {
     return false;
   }
 
-  public isEnoughMoney(price: ITDEngine["money"]) {
-    if (this.money >= price!) {
-      return true;
-    }
-    this.isNotEnoughMoney = true;
-    return false;
+  public isEnoughMoney(
+    price: ITDEngine["money"],
+    money: ITDEngine["money"] = this.money,
+  ) {
+    return money >= price;
   }
 
   public draftShowTower() {
     if (!this.isCanBuild) return;
-    // show building grid
-    // this.isShowGrid = true;
-
+    this.map!.mapParams.closestTile = this.findClosestBuildTile(
+      this.cursorPosition,
+    );
     this.draftTower!.currentPosition = this.draftBuildCoordinates;
-    this.draftTower!.towerParams.strokeStyle = "green";
-    // this.draftTower!.drawDraft();
+    this.draftTower!.towerParams.strokeStyle = ColorDict.towerRangeColor;
   }
 
   public draftBuildTower() {

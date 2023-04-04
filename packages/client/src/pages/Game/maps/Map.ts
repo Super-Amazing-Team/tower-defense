@@ -50,7 +50,7 @@ export class Map {
       gridStep: 64,
       backgroundColor: ColorDict.sandColor,
       gridColor: "#000000",
-      mapTilesArr: [{ x: 0, y: 0 }],
+      mapTilesArr: [],
       towerTilesArr: [],
       obstacleTilesArr: [],
       tileCenter: 0,
@@ -339,14 +339,21 @@ export class Map {
 
     // get random stage arr
     // this.stageArr = this.stageArrStack[2];
-    this.stageArr =
-      this.stageArrStack[Math.floor(Math.random() * this.stageArrStack.length)];
+    // randomize engine map
+    if (!this.engine.currentMapVariant.length) {
+      this.engine.currentMapVariant =
+        this.stageArrStack[
+          Math.floor(Math.random() * this.stageArrStack.length)
+        ];
+    }
+    this.stageArr = this.engine.currentMapVariant;
 
-    // create mapTilesArr
-    this.createMapTilesArr();
-
-    // pop tiles which is occupied by map path
-    this.popMapPathTiles();
+    if (!this.mapParams.mapTilesArr.length) {
+      // create mapTilesArr
+      this.createMapTilesArr();
+      // pop tiles which is occupied by map path
+      this.popMapPathTiles();
+    }
 
     // map canvas tiles create
     // grass background
