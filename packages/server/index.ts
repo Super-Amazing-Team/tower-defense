@@ -4,15 +4,9 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import type { ViteDevServer } from "vite";
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
-import { sequelize } from "./src/db/database.ts";
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
-import { limiter } from "./src/middlewares/limiter.ts";
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
-import router from "./src/routes/routes.ts";
+import { sequelize } from "./src/db/database";
+import router from "./src/routes/routes";
+// import { limiter } from "./src/middlewares/limiter.ts";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const isTest = process.env.VITEST;

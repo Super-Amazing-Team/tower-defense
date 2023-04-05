@@ -303,6 +303,9 @@ importers:
       vite:
         specifier: 4.1.1
         version: 4.1.1(@types/node@18.14.6)
+      vite-tsconfig-paths:
+        specifier: 4.0.7
+        version: 4.0.7(typescript@5.0.3)(vite@4.1.1)
 
 packages:
 
@@ -10204,6 +10207,23 @@ packages:
       eslint: 8.35.0
       rollup: 2.79.1
       vite: 4.1.4
+    dev: true
+
+  /vite-tsconfig-paths@4.0.7(typescript@5.0.3)(vite@4.1.1):
+    resolution: {integrity: sha512-MwIYaby6kcbQGZqMH+gAK6h0UYQGOkjsuAgw4q6bP/5vWkn8VKvnmLuCQHA2+IzHAJHnE8OFTO4lnJLFMf9+7Q==}
+    peerDependencies:
+      vite: '*'
+    peerDependenciesMeta:
+      vite:
+        optional: true
+    dependencies:
+      debug: 4.3.4
+      globrex: 0.1.2
+      tsconfck: 2.1.0(typescript@5.0.3)
+      vite: 4.1.1(@types/node@18.14.6)
+    transitivePeerDependencies:
+      - supports-color
+      - typescript
     dev: true
 
   /vite-tsconfig-paths@4.0.7(typescript@5.0.3)(vite@4.1.4):

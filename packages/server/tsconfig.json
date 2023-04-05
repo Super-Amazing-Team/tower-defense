@@ -1,10 +1,10 @@
 {
-  "ts-node": { "esm": true, "files": true },
+  "ts-node": { "esm": true },
   "compilerOptions": {
     "composite": true,
     "target": "esnext",
     "module": "esnext",
-    "moduleResolution": "Node",
+    "moduleResolution": "node",
     "esModuleInterop": true,
     "sourceMap": true,
     "declaration": true,
