@@ -196,12 +196,15 @@ export class Projectile {
             this.target!.enemyParams!.modifiedSlowTimer = null;
           }
           if (!this.target?.enemyParams?.isModified) {
+            const slowCoefficient =
+              this.tower.engine.waveGenerator?.waveParams?.waveType === "boss"
+                ? this.target!.enemyParams!.speed! * 0.15
+                : this.target!.enemyParams!.speed! *
+                  0.2 *
+                  (this.tower.upgradeLevel + 1);
             this.target!.enemyParams.isModified = true;
             this.target!.enemyParams.attackModifier = "slow";
-            this.target!.enemyParams!.speed! -=
-              this.target!.enemyParams!.speed! *
-              0.2 *
-              (this.tower.upgradeLevel + 1);
+            this.target!.enemyParams!.speed! -= slowCoefficient;
           }
           this.target!.enemyParams!.modifiedSlowTimer = setTimeout(() => {
             // clear timer
@@ -231,20 +234,27 @@ export class Projectile {
             }
           });
         } else if (this.tower.projectileParams.attackModifier === "shock") {
-          this.target!.enemyParams.isModified = true;
-          this.target!.enemyParams.attackModifier = "shock";
           // stop enemy
-          this.target!.enemyParams!.speed! = 0;
-          this.target!.enemyParams!.modifiedShockTimer = setTimeout(() => {
-            // clear timer
-            this.target!.enemyParams!.modifiedShockTimer = null;
-            clearTimeout(this.target?.enemyParams?.modifiedShockTimer!);
-            // restore enemy movement speed
-            this.target!.enemyParams!.speed =
-              this.target?.enemyParams?.initialSpeed;
-            // restore enemy isModified state to false
-            this.target!.enemyParams.isModified = false;
-          }, this.tower.projectileParams.attackModifierTimeout);
+          if (
+            this.tower.engine.waveGenerator?.waveParams?.waveType === "boss"
+          ) {
+            // can't stop teh boss
+          } else {
+            this.target!.enemyParams.isModified = true;
+            this.target!.enemyParams.attackModifier = "shock";
+            // but can stop any other wave type
+            this.target!.enemyParams!.speed! = 0;
+            this.target!.enemyParams!.modifiedShockTimer = setTimeout(() => {
+              // clear timer
+              this.target!.enemyParams!.modifiedShockTimer = null;
+              clearTimeout(this.target?.enemyParams?.modifiedShockTimer!);
+              // restore enemy movement speed
+              this.target!.enemyParams!.speed =
+                this.target?.enemyParams?.initialSpeed;
+              // restore enemy isModified state to false
+              this.target!.enemyParams.isModified = false;
+            }, this.tower.projectileParams.attackModifierTimeout);
+          }
         }
       }
     }

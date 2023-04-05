@@ -1,12 +1,36 @@
 import { Box, Typography } from "@mui/material";
 import { shallow } from "zustand/shallow";
 import { useGameStore } from "@/store";
-import { TDEngine } from "@/pages/Game/engine/TDEngine";
+import { ColorDict, TDEngine } from "@/pages/Game/engine/TDEngine";
 
 export interface IUiMessage {
   engine: TDEngine;
 }
 export const UiMessage = ({ engine }: IUiMessage) => {
+  const waveType = useGameStore((state) => state.waveType, shallow);
+  let waveTypeColor: string = ColorDict.fontColor;
+  switch (waveType) {
+    case "boss": {
+      waveTypeColor = "red";
+      break;
+    }
+    case "fast": {
+      waveTypeColor = "green";
+      break;
+    }
+    case "slow": {
+      waveTypeColor = "blue";
+      break;
+    }
+    case "strong": {
+      waveTypeColor = "white";
+      break;
+    }
+    default: {
+      waveTypeColor = ColorDict.fontColor;
+      break;
+    }
+  }
   const isGameOver = useGameStore((state) => state.isGameOver, shallow);
   const countdown = useGameStore((state) => state.countdown, shallow);
   const isGameMenuOpen = useGameStore((state) => state.isGameMenuOpen, shallow);
@@ -25,6 +49,7 @@ export const UiMessage = ({ engine }: IUiMessage) => {
         "& p": {
           display: "flex",
           flexGrow: 1,
+          flexDirection: "column",
           alignItems: "center",
           justifyContent: "center",
           color: "#262626",
@@ -39,9 +64,20 @@ export const UiMessage = ({ engine }: IUiMessage) => {
           {isGameOver ? (
             <Typography>GAME IS OVER!</Typography>
           ) : (
-            <Typography>
-              {Boolean(countdown) && `Next wave in ${countdown}`}
-            </Typography>
+            Boolean(countdown) && (
+              <Typography>
+                {`Next wave in ${countdown}`}
+                <br />
+                <span>
+                  Type:
+                  <span
+                    style={{
+                      color: waveTypeColor,
+                    }}
+                  >{`${waveType}`}</span>
+                </span>
+              </Typography>
+            )
           )}
         </>
       ) : (

@@ -3,8 +3,9 @@ import { Tower } from "../towers/Tower";
 import { IMap, Map } from "../maps/Map";
 import { Projectile } from "../projectiles/Projectile";
 import { Sound } from "@/pages/Game/sound/Sound";
-import { useGameStore } from "@/store";
+import { useGameStore as gameStore } from "@/store";
 import { ISpell, Spell } from "@/pages/Game/spells/Spell";
+import { WaveGenerator } from "@/pages/Game/waveGenerator/waveGenerator";
 
 // utilities declaration
 export type TPartialRecord<K extends keyof any, T> = {
@@ -119,268 +120,6 @@ interface IEnemySprite {
 export interface ITwoDCoordinates {
   x: number;
   y: number;
-}
-
-// zustand
-const gameStore = useGameStore;
-
-export interface IWaveGenerator {
-  waveParams: {
-    currentWave: number;
-    isWaveInProgress: boolean;
-    hpCoefficient: number;
-    speedCoefficient: number;
-    enemyBountyCoefficient: number;
-    enemyCountCoefficient: number;
-    endWave: number;
-    startWave: number;
-    enemyCount: number;
-  };
-  waveTimerBetweenWaves: NodeJS.Timer | null;
-  waveTimeoutBetweenWaves: number;
-  waveCountdownTimer: NodeJS.Timer | null;
-  waveCountdown: number;
-}
-
-class WaveGenerator {
-  constructor(
-    public engine: TDEngine,
-    public isInitialized: boolean = false,
-    public waveParams: IWaveGenerator["waveParams"] = {
-      currentWave: 1,
-      isWaveInProgress: false,
-      hpCoefficient: engine.initialGameParams.hpCoefficient,
-      speedCoefficient: engine.initialGameParams.speedCoefficient,
-      enemyBountyCoefficient: 1,
-      enemyCountCoefficient: 5,
-      endWave: engine.initialGameParams.endWave,
-      startWave: 1,
-      enemyCount: engine.initialGameParams.enemiesPerWave,
-    },
-    public waveTimerBetweenWaves: IWaveGenerator["waveTimerBetweenWaves"] = null,
-    public waveTimeoutBetweenWaves: IWaveGenerator["waveTimeoutBetweenWaves"] = 5000, // 5000
-    public waveCountdownTimer: IWaveGenerator["waveCountdownTimer"] = null,
-    public waveCountdown: IWaveGenerator["waveCountdown"] = 0,
-  ) {
-    this.waveCountdown = Math.floor(this.waveTimeoutBetweenWaves / 1000);
-  }
-
-  public repeatEnemy = (times: number) => {
-    let enemiesArray = [];
-    for (let iteration = 0; iteration < times; iteration++) {
-      // boss enemy
-      if (iteration % 6 === 0) {
-        enemiesArray.push(
-          new Enemy(this.engine, {
-            type: "firebug",
-            width: this.engine.map?.mapParams?.gridStep!,
-            height: this.engine.map?.mapParams?.gridStep!,
-            spaceBetweenEnemies: this.engine.map?.mapParams?.gridStep! * 1.5,
-            speed:
-              0.65 +
-              this.waveParams.speedCoefficient * this.waveParams.currentWave,
-            bounty:
-              1 +
-              this.waveParams.enemyBountyCoefficient *
-                this.waveParams.currentWave,
-            hp:
-              100 + this.waveParams.hpCoefficient * this.waveParams.currentWave,
-          }),
-        );
-      } else if (iteration % 5 === 0) {
-        enemiesArray.push(
-          new Enemy(this.engine, {
-            type: "scorpion",
-            width: this.engine.map?.mapParams?.gridStep!,
-            height: this.engine.map?.mapParams?.gridStep!,
-            spaceBetweenEnemies: this.engine.map?.mapParams?.gridStep! * 1.5,
-            speed:
-              0.65 +
-              this.waveParams.speedCoefficient * this.waveParams.currentWave,
-            bounty:
-              1 +
-              this.waveParams.enemyBountyCoefficient *
-                this.waveParams.currentWave,
-            hp:
-              100 + this.waveParams.hpCoefficient * this.waveParams.currentWave,
-          }),
-        );
-      } else if (iteration % 4 === 0) {
-        // slow enemy
-        enemiesArray.push(
-          new Enemy(this.engine, {
-            type: "leafbug",
-            width: this.engine.map?.mapParams?.gridStep!,
-            height: this.engine.map?.mapParams?.gridStep!,
-            spaceBetweenEnemies: this.engine.map?.mapParams?.gridStep! * 1.5,
-            speed:
-              0.65 +
-              this.waveParams.speedCoefficient * this.waveParams.currentWave,
-            bounty:
-              1 +
-              this.waveParams.enemyBountyCoefficient *
-                this.waveParams.currentWave,
-            hp:
-              100 + this.waveParams.hpCoefficient * this.waveParams.currentWave,
-          }),
-        );
-      } else if (iteration % 3 === 0) {
-        // slow enemy
-        enemiesArray.push(
-          new Enemy(this.engine, {
-            type: "clampbeetle",
-            width: this.engine.map?.mapParams?.gridStep!,
-            height: this.engine.map?.mapParams?.gridStep!,
-            spaceBetweenEnemies: this.engine.map?.mapParams?.gridStep! * 1.5,
-            speed:
-              0.65 +
-              this.waveParams.speedCoefficient * this.waveParams.currentWave,
-            bounty:
-              1 +
-              this.waveParams.enemyBountyCoefficient *
-                this.waveParams.currentWave,
-            hp:
-              100 + this.waveParams.hpCoefficient * this.waveParams.currentWave,
-          }),
-        );
-      } else if (iteration % 2 === 0) {
-        // fast enemy
-        enemiesArray.push(
-          new Enemy(this.engine, {
-            type: "firelocust",
-            width: this.engine.map?.mapParams?.gridStep!,
-            height: this.engine.map?.mapParams?.gridStep!,
-            spaceBetweenEnemies: this.engine.map?.mapParams?.gridStep! * 1.5,
-            speed:
-              0.65 +
-              this.waveParams.speedCoefficient * this.waveParams.currentWave,
-            bounty:
-              1 +
-              this.waveParams.enemyBountyCoefficient *
-                this.waveParams.currentWave,
-            hp:
-              100 + this.waveParams.hpCoefficient * this.waveParams.currentWave,
-          }),
-        );
-      } else {
-        // regular enemy
-        enemiesArray.push(
-          new Enemy(this.engine, {
-            type: "firebug",
-            width: this.engine.map?.mapParams?.gridStep!,
-            height: this.engine.map?.mapParams?.gridStep!,
-            spaceBetweenEnemies: this.engine.map?.mapParams?.gridStep! * 1.5,
-            speed:
-              0.65 +
-              this.waveParams.speedCoefficient * this.waveParams.currentWave,
-            bounty:
-              1 +
-              this.waveParams.enemyBountyCoefficient *
-                this.waveParams.currentWave,
-            hp:
-              100 + this.waveParams.hpCoefficient * this.waveParams.currentWave,
-          }),
-        );
-      }
-    }
-    gameStore.getState().updateEnemiesLeft(enemiesArray.length);
-    return enemiesArray;
-  };
-
-  public init() {
-    if (!this.isInitialized) {
-      this.waveParams.currentWave = 1;
-      // UI update
-      gameStore.getState().updateWaveNumber(this.waveParams.currentWave);
-      // fill enemies array
-      this.engine.enemies = this.repeatEnemy(this.waveParams.enemyCount);
-
-      // set enemies position
-      this.engine.enemies?.forEach((enemy: Enemy, index: number) => {
-        enemy.initialSetEnemy({
-          x:
-            -enemy.enemyParams.spaceBetweenEnemies! *
-              this.engine.enemies?.length! +
-            index * enemy.enemyParams.spaceBetweenEnemies!,
-          y: 0,
-        });
-      });
-      this.isInitialized = true;
-      this.waveParams.isWaveInProgress = true;
-      clearTimeout(this.waveTimerBetweenWaves!);
-      this.waveTimerBetweenWaves = null;
-    }
-  }
-
-  public spawnEnemies() {
-    // fill enemies array
-    if (this.waveParams.currentWave < this.waveParams.endWave) {
-      // increment wave
-      this.waveParams.currentWave += 1;
-      // UI update
-      gameStore.getState().updateWaveNumber(this.waveParams.currentWave);
-
-      // spawn into running wave
-      if (this.waveParams.isWaveInProgress) {
-        // create new Enemy class instances
-        const enemiesSpawned = this.repeatEnemy(
-          this.waveParams.enemyCount +
-            this.waveParams.enemyCountCoefficient * this.waveParams.currentWave,
-        );
-
-        // push spawned enemies into common enemies pool
-        if (this.engine.enemies?.length) {
-          this.engine.enemies = this.engine.enemies?.concat(enemiesSpawned);
-        }
-        // set spawned enemies coordinates
-        enemiesSpawned.forEach((enemy: Enemy, index: number) => {
-          enemy.initialSetEnemy({
-            x:
-              -enemy.enemyParams.spaceBetweenEnemies! *
-                this.engine.enemies?.length! +
-              index * enemy.enemyParams.spaceBetweenEnemies!,
-            y: 0,
-          });
-        });
-        // spawn between waves
-      } else {
-        // fill enemies array
-        this.engine.enemies = this.repeatEnemy(
-          this.waveParams.enemyCount +
-            this.waveParams.enemyCountCoefficient * this.waveParams.currentWave,
-        );
-        // draw enemies
-        this.engine.enemies?.forEach((enemy: Enemy, index: number) => {
-          enemy.initialSetEnemy({
-            x:
-              -enemy.enemyParams.spaceBetweenEnemies! *
-                this.engine.enemies?.length! +
-              index * enemy.enemyParams.spaceBetweenEnemies!,
-            y: 0,
-          });
-        });
-      }
-
-      clearTimeout(this.waveTimerBetweenWaves!);
-      this.waveTimerBetweenWaves = null;
-      this.waveParams.isWaveInProgress = true;
-    }
-  }
-
-  public countdown() {
-    if (!this.waveCountdownTimer) {
-      this.waveCountdownTimer = setInterval(() => {
-        if (this.waveCountdown > 0) {
-          this.waveCountdown -= 1;
-          // zustand store value update
-          gameStore.getState().updateCountdown(this.waveCountdown);
-        } else {
-          clearInterval(this.waveCountdownTimer!);
-          gameStore.getState().updateCountdown(0);
-        }
-      }, 1000);
-    }
-  }
 }
 
 export interface ITDEngine {
@@ -825,13 +564,13 @@ export class TDEngine {
           height: 64,
         },
         spellParams: {
-          attackRange: 60,
-          attackDamage: 25,
+          attackRange: 200,
+          attackDamage: 5,
           attackModifier: "slow",
           attackModifierTimeout: 10000,
-          attackModifierStrength: 0.15,
+          attackModifierStrength: 0.2,
           manaCost: 10,
-          movementSpeed: 1,
+          movementSpeed: 2,
           spellDirection: "down",
         },
       },
@@ -860,9 +599,9 @@ export class TDEngine {
     public predefinedTowerParams: ITDEngine["predefinedTowerParams"] = {
       one: {
         towerParams: {
-          attackRate: 2000,
-          attackDamage: 30,
-          attackRange: 300,
+          attackRate: 1500,
+          attackDamage: 20,
+          attackRange: 200,
           baseWidth: 64,
           baseHeight: 128,
           constructionWidth: 192,
@@ -893,12 +632,12 @@ export class TDEngine {
           isSelected: false,
           firingAngle: towerAngleOffset,
           fireFromCoords: { x: 0, y: 0 },
-          strokeStyle: "green",
+          strokeStyle: ColorDict.towerRangeColor,
           maxUpgradeLevel: 2,
           price: 25,
         },
         projectileParams: {
-          acceleration: 1.2,
+          acceleration: 1.5,
           projectileSpeed: 0.2,
           rectCenterX: 0,
           rectCenterY: 0,
@@ -928,8 +667,8 @@ export class TDEngine {
       },
       two: {
         towerParams: {
-          attackRate: 3000,
-          attackDamage: 20,
+          attackRate: 1500,
+          attackDamage: 8,
           attackRange: 300,
           baseWidth: 64,
           baseHeight: 128,
@@ -958,11 +697,11 @@ export class TDEngine {
             },
           ],
           cannonFrameLimit: 16,
-          strokeStyle: "green",
+          strokeStyle: ColorDict.towerRangeColor,
           firingAngle: towerAngleOffset,
           fireFromCoords: { x: 0, y: 0 },
           maxUpgradeLevel: 2,
-          price: 45,
+          price: 35,
         },
         projectileParams: {
           acceleration: 1.2,
@@ -992,13 +731,13 @@ export class TDEngine {
           projectileFrameLimit: 5,
           impactFrameLimit: 5,
           attackModifier: "shock",
-          attackModifierTimeout: 300,
+          attackModifierTimeout: 700,
         },
       },
       three: {
         towerParams: {
-          attackRate: 3000,
-          attackDamage: 8,
+          attackRate: 1000,
+          attackDamage: 5,
           attackRange: 250,
           baseWidth: 64,
           baseHeight: 128,
@@ -1027,7 +766,7 @@ export class TDEngine {
             },
           ],
           cannonFrameLimit: 8,
-          strokeStyle: "green",
+          strokeStyle: ColorDict.towerRangeColor,
           firingAngle: towerAngleOffset,
           fireFromCoords: { x: 0, y: 0 },
           maxUpgradeLevel: 2,
@@ -1064,8 +803,8 @@ export class TDEngine {
       },
       four: {
         towerParams: {
-          attackRate: 6000,
-          attackDamage: 45,
+          attackRate: 5000,
+          attackDamage: 65,
           attackRange: 240,
           baseWidth: 64,
           baseHeight: 128,
@@ -1094,7 +833,7 @@ export class TDEngine {
             },
           ],
           cannonFrameLimit: 16,
-          strokeStyle: "green",
+          strokeStyle: ColorDict.towerRangeColor,
           firingAngle: towerAngleOffset,
           fireFromCoords: { x: 0, y: 0 },
           maxUpgradeLevel: 2,
@@ -1132,18 +871,18 @@ export class TDEngine {
     },
     public initialGameParams: ITDEngine["initialGameParams"] = {
       maxMoney: 999,
-      money: 999,
+      money: 100,
       mana: 100,
       lives: 10,
       wave: 1,
-      enemiesPerWave: 50,
+      enemiesPerWave: 20,
       endWave: 10,
-      hpCoefficient: 50,
-      speedCoefficient: 0.3,
+      hpCoefficient: 30,
+      speedCoefficient: 0.5,
       strokeStyle: ColorDict.defauiltStrokeColor,
       framesPerSprite: 8,
       fps: 24,
-      cleanTilePrice: 50,
+      cleanTilePrice: 25,
     },
     public waveGenerator: ITDEngine["waveGenerator"] = null,
     public sound: ITDEngine["sound"] = new Sound(),
@@ -2564,15 +2303,25 @@ export class TDEngine {
     // decrement money
     this.money -= tower.towerParams.price! * (tower.upgradeLevel + 1);
     // update UI
-    useGameStore.getState().updateMoney(this.money);
-    useGameStore.getState().updateConstructionProgress(0);
+    gameStore.getState().updateMoney(this.money);
+    gameStore.getState().updateConstructionProgress(0);
     tower.isCanFire = false;
     // release tower target
     tower.target = null;
     clearInterval(tower.attackIntervalTimer!);
     tower.attackIntervalTimer = null;
-    // set render params
+    // upgrade tower params by level
     tower.upgradeLevel += 1;
+    tower.towerParams.attackDamage = Math.floor(
+      tower.towerParams.attackDamage * 1.25,
+    );
+    tower.towerParams.attackRange = Math.floor(
+      tower.towerParams.attackRange * 1.1,
+    );
+    tower.towerParams.attackRate = Math.floor(
+      tower.towerParams.attackRate * 0.9,
+    );
+    // set render params
     tower.renderParams.constructionTimeout = tower.upgradeLevel
       ? tower.renderParams.constructionTimeout * tower.upgradeLevel
       : tower.renderParams.constructionTimeout;
@@ -3017,6 +2766,7 @@ export class TDEngine {
             this.waveGenerator?.waveParams.isWaveInProgress
           ) {
             this.waveGenerator.waveParams.isWaveInProgress = false;
+            this.waveGenerator.setWaveType();
             this.waveGenerator!.waveCountdown! = Math.floor(
               this.waveGenerator!.waveTimeoutBetweenWaves / 1000,
             );

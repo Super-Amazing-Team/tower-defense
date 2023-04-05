@@ -121,6 +121,8 @@ export const GameMenu = ({ engine }: IGameMenu) => {
           </MenuItem>
           <MenuItem
             onClick={() => {
+              engine.isInitialized = false;
+              engine.isCanvasCreated = false;
               navigate(R.home);
             }}
           >
