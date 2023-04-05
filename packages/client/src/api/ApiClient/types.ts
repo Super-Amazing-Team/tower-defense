@@ -95,4 +95,8 @@ export interface IApiClient {
   createTopic(body: ICreateTopic): Promise<AxiosResponse<ITopic>>;
 
   createMessage(body: ICreateMessage): Promise<AxiosResponse<IMessages>>;
+
+  likeMessage(id: number, userId: string): Promise<AxiosResponse<IMessages>>;
+
+  dislikeMessage(id: number, userId: string): Promise<AxiosResponse<IMessages>>;
 }

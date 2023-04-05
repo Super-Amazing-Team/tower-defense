@@ -13,6 +13,8 @@ export interface ITopicStore {
   messages: IMessages[];
   getTopicById: (body: string) => Promise<void>;
   createMessage: (body: ICreateMessage) => Promise<void>;
+  likeMessage: (body: ILikeMessage) => Promise<void>;
+  dislikeMessage: (body: ILikeMessage) => Promise<void>;
 }
 
 export interface ICreateTopic {
@@ -25,6 +27,11 @@ export interface ICreateMessage {
   message: string;
   ownerId: string;
   topicId: string;
+}
+
+export interface ILikeMessage {
+  id: number;
+  userId: string;
 }
 
 const initialValueTopic: ITopic = {
@@ -70,5 +77,31 @@ export const useTopicStore = create<ITopicStore>()((set, get) => ({
   createMessage: async (body: ICreateMessage) => {
     const message = await ApiClient.createMessage(body);
     set({ messages: [...get().messages, message.data] });
+  },
+  likeMessage: async (body: ILikeMessage) => {
+    let message = await ApiClient.likeMessage(body.id, body.userId);
+    if (message.data.dislikes.includes(body.userId)) {
+      message = await ApiClient.dislikeMessage(body.id, body.userId);
+    }
+    const messages = get().messages.map((mes) => {
+      if (mes.id === body.id) {
+        return message.data;
+      }
+      return mes;
+    });
+    set({ messages: messages });
+  },
+  dislikeMessage: async (body: ILikeMessage) => {
+    let message = await ApiClient.dislikeMessage(body.id, body.userId);
+    if (message.data.likes.includes(body.userId)) {
+      message = await ApiClient.likeMessage(body.id, body.userId);
+    }
+    const messages = get().messages.map((mes) => {
+      if (mes.id === body.id) {
+        return message.data;
+      }
+      return mes;
+    });
+    set({ messages: messages });
   },
 }));
