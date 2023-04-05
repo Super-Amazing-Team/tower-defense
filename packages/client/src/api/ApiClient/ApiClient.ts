@@ -76,4 +76,10 @@ export const ApiClient: IApiClient = {
   async createMessage(body) {
     return ApiForumService.post(`/message`, body);
   },
+  async likeMessage(id: number, userId: string) {
+    return ApiForumService.post(`/message/like/${id}`, { userId: userId });
+  },
+  async dislikeMessage(id: number, userId: string) {
+    return ApiForumService.post(`/message/dislike/${id}`, { userId: userId });
+  },
 };
