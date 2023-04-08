@@ -95,6 +95,7 @@ export async function createServer(
         render = (await vite!.ssrLoadModule("../client/ssr.tsx")).render;
       } else {
         template = indexProd;
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         /* @ts-ignore */
         render = (await import("client/dist/server/ssr.js")).render;
       }
