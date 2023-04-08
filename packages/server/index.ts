@@ -6,20 +6,10 @@ import { fileURLToPath } from "node:url";
 import type { ViteDevServer } from "vite";
 import { sequelize } from "./src/db/database";
 import router from "./src/routes/routes";
-// import { limiter } from "./src/middlewares/limiter.ts";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const isTest = process.env.VITEST;
 await sequelize.sync({ force: false });
-// const sequelizeOptions: SequelizeOptions = {
-//   host: "localhost",
-//   port: 5432,
-//   username: "postgres",
-//   password: "rootroot",
-//   database: "tower",
-//   dialect: "postgres", // 'mysql', 'sqlite', 'mariadb', 'mssql'
-// };
-// export const sequelize = new Sequelize(sequelizeOptions);
 export async function createServer(
   root = process.cwd(),
   isProd = process.env.NODE_ENV === "production",
@@ -75,7 +65,6 @@ export async function createServer(
   }
 
   // middleware
-  //app.use(limiter);
   app.use(express.json());
 
 // routes
