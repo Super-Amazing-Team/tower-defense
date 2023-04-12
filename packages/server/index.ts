@@ -1,14 +1,15 @@
-import express from "express";
+import express from "express"
 import type { Request, Response, Express } from "express";
 import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import type { ViteDevServer } from "vite";
+import { sequelize } from "./src/db/database";
+import router from "./src/routes/routes";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-
 const isTest = process.env.VITEST;
-
+await sequelize.sync({ force: false });
 export async function createServer(
   root = process.cwd(),
   isProd = process.env.NODE_ENV === "production",
@@ -59,6 +60,15 @@ export async function createServer(
       ),
     );
   }
+  if (!isProd) {
+    app.use("/assets", express.static(resolve("../client/dist/client/assets")))
+  }
+
+  // middleware
+  app.use(express.json());
+
+// routes
+ app.use(router);
 
   // eslint-disable-next-line consistent-return
   app.use("*", async (req: Request, res: Response) => {
@@ -69,11 +79,12 @@ export async function createServer(
       let render;
       if (!isProd) {
         // always read fresh template in dev
-        template = fs.readFileSync(resolve("client/index.html"), "utf-8");
+        template = fs.readFileSync(resolve("../client/dist/client/index.html"), "utf-8");
         template = await vite!.transformIndexHtml(url, template);
-        render = (await vite!.ssrLoadModule("../../client/ssr.jsx")).render;
+        render = (await vite!.ssrLoadModule("../client/ssr.tsx")).render;
       } else {
         template = indexProd;
+        /* @ts-ignore */
         render = (await import("client/dist/server/ssr.js")).render;
       }
 
