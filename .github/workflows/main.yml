@@ -1,0 +1,48 @@
+name: Push To Yandex Cloud CR
+
+on:
+  # Позволяет запускать вручную из GitHub
+  workflow_dispatch:
+
+	# Позволяет запускать при push в main (и при commit и при merge) 
+	push:
+	    branches:
+	      - main
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+
+      # Авторизация в Яндекс.Облаке
+      - name: Yandex Cloud CR "Login" Action for GitHub Actions
+        uses: yc-actions/yc-cr-login@v0.1-alpha
+        with:
+          yc-sa-json-credentials: ${{ secrets.YC_SA_JSON_CREDENTIALS }}
+
+			# Построение образа и отправка его в Container Registry
+      - name: Build, tag, and push image to Yandex Cloud Container Registry
+        env:
+					# Здесь указываем идентификатор регистра (о нём позднее)
+          CR_REGISTRY: crpp5qmt2u1jr41cma29
+					# Название репозитория
+          CR_REPOSITORY: tower-defense
+					# Фформирует уникальное название для образа)
+          IMAGE_TAG: ${{ github.sha }}
+          CLIENT_PORT: 3000
+          SERVER_PORT: 3001
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: postgres
+          POSTGRES_PORT: 5432
+
+        run: |
+          docker compose build
+          docker tag prakticum-client-1:latest cr.yandex/$CR_REGISTRY/prakticum-client-1:latest
+          docker push cr.yandex/$CR_REGISTRY/prakticum-client-1:latest
+          docker tag prackicum-server-2:latest cr.yandex/$CR_REGISTRY/prackicum-server-2:latest
+          docker push cr.yandex/$CR_REGISTRY/prackicum-server-2:latest
+          docker tag postgres:14 cr.yandex/$CR_REGISTRY/postgres:14
+          docker push cr.yandex/$CR_REGISTRY/postgres:14
