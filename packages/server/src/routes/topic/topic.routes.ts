@@ -1,7 +1,7 @@
 import {Router} from "express";
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
-import { createTopic, getAllTopic, getTopicById } from "../../controllers/topic/topic.controller.ts"
+import { createTopic, getAllTopic, getTopicById } from "../../controllers/topic/topic.controller.js"
 
 
 export const topicRoutes = (router: Router) => {

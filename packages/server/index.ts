@@ -6,10 +6,10 @@ import { fileURLToPath } from "node:url";
 import type { ViteDevServer } from "vite";
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
-import { sequelize } from "./src/db/database.ts";
+import { sequelize } from "./src/db/database.js";
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
-import router from "./src/routes/routes.ts";
+import router from "./src/routes/routes.js";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const isTest = process.env.VITEST;

@@ -1,7 +1,7 @@
 import {DataTypes} from "sequelize";
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
-import {sequelize} from "../../db/database.ts";
+import {sequelize} from "../../db/database.js";
 
 export interface ICommentsModel {
   id: number;
