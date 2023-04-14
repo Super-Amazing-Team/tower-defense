@@ -4,7 +4,8 @@ on:
   workflow_dispatch:
   push:
     branches:
-      - sprint_9
+      - main
+      - dev
 
 jobs:
   build:
