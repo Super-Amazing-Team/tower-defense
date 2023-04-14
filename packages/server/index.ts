@@ -4,8 +4,12 @@ import fs from "node:fs";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import type { ViteDevServer } from "vite";
-import { sequelize } from "./src/db/database";
-import router from "./src/routes/routes";
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
+import { sequelize } from "./src/db/database.ts";
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
+import router from "./src/routes/routes.ts";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const isTest = process.env.VITEST;
