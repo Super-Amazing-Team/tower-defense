@@ -33,7 +33,7 @@ jobs:
 
         run: |
           docker compose build
-          docker tag prakticum-client-1:latest cr.yandex/$CR_REGISTRY/prakticum-client-1:latest
-          docker push cr.yandex/$CR_REGISTRY/prakticum-client-1:latest
-          docker tag prackicum-server-2:latest cr.yandex/$CR_REGISTRY/prackicum-server-2:latest
-          docker push cr.yandex/$CR_REGISTRY/prackicum-server-2:latest
+          docker tag practicum-client-1:latest cr.yandex/$CR_REGISTRY/practicum-client-1:latest
+          docker push cr.yandex/$CR_REGISTRY/practicum-client-1:latest
+          docker tag practicum-server-2:latest cr.yandex/$CR_REGISTRY/practicum-server-2:latest
+          docker push cr.yandex/$CR_REGISTRY/practicum-server-2:latest
