@@ -2,8 +2,10 @@ import { Box, Typography } from "@mui/material";
 import { shallow } from "zustand/shallow";
 import { memo } from "react";
 import spellIconsSprite from "../../../../../public/UI/spellIconsSprite.png";
+import cursorHand from "@/../public/UI/cursorHand.png";
 import { TDEngine, TSpellTypes } from "@/pages/Game/engine/TDEngine";
 import { useGameStore } from "@/store";
+import cursorNotAllowed from "@/../public/UI/cursorNotAllowed.png";
 
 export interface ISpellMenuItem {
   engine: TDEngine;
@@ -36,7 +38,7 @@ export const SpellMenuItem = memo(
 
           "&.state__disabled div:hover": {
             border: "2px solid #bd6a62",
-            cursor: "not-allowed",
+            cursor: `url("${cursorNotAllowed}"), auto`,
           },
         }}
         className={
@@ -62,7 +64,7 @@ export const SpellMenuItem = memo(
               textAlign: "right",
             },
             "&:hover": {
-              cursor: "pointer",
+              cursor: `url("${cursorHand}"), auto`,
               border: "2px solid white",
             },
             "&:hover p": {},

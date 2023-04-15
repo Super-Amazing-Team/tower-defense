@@ -1,4 +1,8 @@
-import { TDEngine, ITwoDCoordinates, ColorDict } from "../engine/TDEngine";
+import {
+  TDEngine,
+  ITwoDCoordinates,
+  ColorDict,
+} from "@/pages/Game/engine/TDEngine";
 
 export interface IStage {
   direction: "left" | "right" | "up" | "down" | "start" | "end";
@@ -9,12 +13,15 @@ export interface IMap {
   mapParams: {
     width: number;
     height: number;
+    widthTile: number;
+    heightTile: number;
     gridStep: number;
     backgroundColor: string;
     gridColor: string;
     mapTilesArr: ITwoDCoordinates[];
     towerTilesArr: ITwoDCoordinates[];
     obstacleTilesArr: ITwoDCoordinates[];
+    mouseOverTilesArr: ITwoDCoordinates[];
     tileCenter: number;
     closestTile: ITwoDCoordinates;
   };
@@ -47,12 +54,15 @@ export class Map {
     public mapParams: IMap["mapParams"] = {
       width: 960,
       height: 960,
+      widthTile: 0,
+      heightTile: 0,
       gridStep: 64,
       backgroundColor: ColorDict.sandColor,
       gridColor: "#000000",
       mapTilesArr: [],
       towerTilesArr: [],
       obstacleTilesArr: [],
+      mouseOverTilesArr: [],
       tileCenter: 0,
       closestTile: { x: 0, y: 0 },
     },
@@ -106,6 +116,234 @@ export class Map {
     public randomTileSpriteFrequency: IMap["randomTileSpriteFrequency"] = 1.15,
     public turnOffset: IMap["turnOffset"] = 24,
   ) {
+    // set map size by viewport dimensions
+    this.mapParams.widthTile = Math.floor(
+      this.numberToTile(document.body.clientWidth),
+    );
+    this.mapParams.heightTile = Math.floor(
+      this.numberToTile(document.body.clientHeight),
+    );
+
+    // widescreen
+    if (this.mapParams.heightTile > 12 && this.mapParams.widthTile > 16) {
+      this.mapParams.width = 28 * this.mapParams.gridStep;
+      this.mapParams.height = 15 * this.mapParams.gridStep;
+
+      // set map stage stack
+      this.stageArrStack = [
+        [
+          { direction: "start", limit: { x: 0, y: this.tileToNumber(1) } },
+          {
+            direction: "right",
+            limit: {
+              x: this.tileToNumber(this.mapParams.widthTile - 1),
+              y: this.tileToNumber(1),
+            },
+          },
+          {
+            direction: "down",
+            limit: {
+              x: this.tileToNumber(this.mapParams.widthTile - 1),
+              y: this.tileToNumber(4),
+            },
+          },
+          {
+            direction: "left",
+            limit: { x: this.tileToNumber(1), y: this.tileToNumber(4) },
+          },
+          {
+            direction: "down",
+            limit: { x: this.tileToNumber(1), y: this.tileToNumber(6) },
+          },
+          {
+            direction: "right",
+            limit: {
+              x: this.tileToNumber(this.mapParams.widthTile - 1),
+              y: this.tileToNumber(6),
+            },
+          },
+          {
+            direction: "down",
+            limit: {
+              x: this.tileToNumber(this.mapParams.widthTile - 1),
+              y: this.tileToNumber(9),
+            },
+          },
+          {
+            direction: "left",
+            limit: { x: this.tileToNumber(1), y: this.tileToNumber(9) },
+          },
+          {
+            direction: "down",
+            limit: { x: this.tileToNumber(1), y: this.tileToNumber(14) },
+          },
+          {
+            direction: "right",
+            limit: { x: this.tileToNumber(5), y: this.tileToNumber(14) },
+          },
+          {
+            direction: "up",
+            limit: { x: this.tileToNumber(5), y: this.tileToNumber(11) },
+          },
+          {
+            direction: "right",
+            limit: { x: this.tileToNumber(8), y: this.tileToNumber(11) },
+          },
+          {
+            direction: "down",
+            limit: { x: this.tileToNumber(8), y: this.tileToNumber(14) },
+          },
+          {
+            direction: "right",
+            limit: { x: this.tileToNumber(10), y: this.tileToNumber(14) },
+          },
+          {
+            direction: "up",
+            limit: { x: this.tileToNumber(10), y: this.tileToNumber(11) },
+          },
+          {
+            direction: "right",
+            limit: { x: this.tileToNumber(12), y: this.tileToNumber(11) },
+          },
+          {
+            direction: "down",
+            limit: { x: this.tileToNumber(12), y: this.tileToNumber(14) },
+          },
+          {
+            direction: "right",
+            limit: { x: this.tileToNumber(14), y: this.tileToNumber(14) },
+          },
+          {
+            direction: "up",
+            limit: { x: this.tileToNumber(14), y: this.tileToNumber(12) },
+          },
+          {
+            direction: "right",
+            limit: {
+              x: this.tileToNumber(this.mapParams.widthTile),
+              y: this.tileToNumber(12),
+            },
+          },
+          {
+            direction: "end",
+            limit: {
+              x: this.tileToNumber(this.mapParams.widthTile + 1),
+              y: this.tileToNumber(12),
+            },
+          },
+        ],
+      ];
+    } else {
+      // tablet
+      this.mapParams.width = 16 * this.mapParams.gridStep;
+      this.mapParams.height = 12 * this.mapParams.gridStep;
+
+      // set map stage stack
+      this.stageArrStack = [
+        [
+          { direction: "start", limit: { x: 0, y: this.tileToNumber(1) } },
+          {
+            direction: "right",
+            limit: {
+              x: this.tileToNumber(this.mapParams.widthTile - 1),
+              y: this.tileToNumber(1),
+            },
+          },
+          {
+            direction: "down",
+            limit: {
+              x: this.tileToNumber(this.mapParams.widthTile - 1),
+              y: this.tileToNumber(4),
+            },
+          },
+          {
+            direction: "left",
+            limit: { x: this.tileToNumber(1), y: this.tileToNumber(4) },
+          },
+          {
+            direction: "down",
+            limit: { x: this.tileToNumber(1), y: this.tileToNumber(6) },
+          },
+          {
+            direction: "right",
+            limit: {
+              x: this.tileToNumber(this.mapParams.widthTile - 1),
+              y: this.tileToNumber(6),
+            },
+          },
+          {
+            direction: "down",
+            limit: {
+              x: this.tileToNumber(this.mapParams.widthTile - 1),
+              y: this.tileToNumber(8),
+            },
+          },
+          {
+            direction: "left",
+            limit: { x: this.tileToNumber(1), y: this.tileToNumber(8) },
+          },
+          {
+            direction: "down",
+            limit: { x: this.tileToNumber(1), y: this.tileToNumber(12) },
+          },
+          {
+            direction: "right",
+            limit: { x: this.tileToNumber(5), y: this.tileToNumber(12) },
+          },
+          {
+            direction: "up",
+            limit: { x: this.tileToNumber(5), y: this.tileToNumber(10) },
+          },
+          {
+            direction: "right",
+            limit: { x: this.tileToNumber(8), y: this.tileToNumber(10) },
+          },
+          {
+            direction: "down",
+            limit: { x: this.tileToNumber(8), y: this.tileToNumber(12) },
+          },
+          {
+            direction: "right",
+            limit: { x: this.tileToNumber(10), y: this.tileToNumber(12) },
+          },
+          {
+            direction: "up",
+            limit: { x: this.tileToNumber(10), y: this.tileToNumber(10) },
+          },
+          {
+            direction: "right",
+            limit: { x: this.tileToNumber(12), y: this.tileToNumber(10) },
+          },
+          {
+            direction: "down",
+            limit: { x: this.tileToNumber(12), y: this.tileToNumber(12) },
+          },
+          {
+            direction: "right",
+            limit: { x: this.tileToNumber(14), y: this.tileToNumber(12) },
+          },
+          {
+            direction: "up",
+            limit: { x: this.tileToNumber(14), y: this.tileToNumber(10) },
+          },
+          {
+            direction: "right",
+            limit: {
+              x: this.tileToNumber(this.mapParams.widthTile),
+              y: this.tileToNumber(10),
+            },
+          },
+          {
+            direction: "end",
+            limit: {
+              x: this.tileToNumber(this.mapParams.widthTile + 1),
+              y: this.tileToNumber(10),
+            },
+          },
+        ],
+      ];
+    }
+
     // sprite shortcuts
     this.mapRoadDirections = {
       right: { x: 0, y: 0 },
@@ -138,204 +376,6 @@ export class Map {
     };
     // set tile center
     this.mapParams.tileCenter = this.mapParams.gridStep / 2;
-
-    // set map stage stack
-    this.stageArrStack = [
-      [
-        { direction: "start", limit: { x: 0, y: this.tileToNumber(1) } },
-        {
-          direction: "right",
-          limit: { x: this.tileToNumber(14), y: this.tileToNumber(1) },
-        },
-        {
-          direction: "down",
-          limit: { x: this.tileToNumber(14), y: this.tileToNumber(14) },
-        },
-        {
-          direction: "left",
-          limit: { x: this.tileToNumber(1), y: this.tileToNumber(14) },
-        },
-        {
-          direction: "up",
-          limit: { x: this.tileToNumber(1), y: this.tileToNumber(4) },
-        },
-        {
-          direction: "right",
-          limit: { x: this.tileToNumber(12), y: this.tileToNumber(4) },
-        },
-        {
-          direction: "down",
-          limit: { x: this.tileToNumber(12), y: this.tileToNumber(12) },
-        },
-        {
-          direction: "left",
-          limit: { x: this.tileToNumber(3), y: this.tileToNumber(12) },
-        },
-        {
-          direction: "up",
-          limit: { x: this.tileToNumber(3), y: this.tileToNumber(6) },
-        },
-        {
-          direction: "right",
-          limit: { x: this.tileToNumber(10), y: this.tileToNumber(6) },
-        },
-        {
-          direction: "down",
-          limit: { x: this.tileToNumber(10), y: this.tileToNumber(10) },
-        },
-        {
-          direction: "left",
-          limit: { x: this.tileToNumber(5), y: this.tileToNumber(10) },
-        },
-        {
-          direction: "up",
-          limit: { x: this.tileToNumber(5), y: this.tileToNumber(8) },
-        },
-        {
-          direction: "right",
-          limit: { x: this.tileToNumber(15), y: this.tileToNumber(8) },
-        },
-        {
-          direction: "end",
-          limit: { x: this.tileToNumber(16), y: this.tileToNumber(8) },
-        },
-      ],
-      [
-        { direction: "start", limit: { x: 0, y: this.tileToNumber(1) } },
-        {
-          direction: "right",
-          limit: { x: this.tileToNumber(14), y: this.tileToNumber(1) },
-        },
-        {
-          direction: "down",
-          limit: { x: this.tileToNumber(14), y: this.tileToNumber(4) },
-        },
-        {
-          direction: "left",
-          limit: { x: this.tileToNumber(1), y: this.tileToNumber(4) },
-        },
-        {
-          direction: "down",
-          limit: { x: this.tileToNumber(1), y: this.tileToNumber(6) },
-        },
-        {
-          direction: "right",
-          limit: { x: this.tileToNumber(14), y: this.tileToNumber(6) },
-        },
-        {
-          direction: "down",
-          limit: { x: this.tileToNumber(14), y: this.tileToNumber(9) },
-        },
-        {
-          direction: "left",
-          limit: { x: this.tileToNumber(1), y: this.tileToNumber(9) },
-        },
-        {
-          direction: "down",
-          limit: { x: this.tileToNumber(1), y: this.tileToNumber(14) },
-        },
-        {
-          direction: "right",
-          limit: { x: this.tileToNumber(5), y: this.tileToNumber(14) },
-        },
-        {
-          direction: "up",
-          limit: { x: this.tileToNumber(5), y: this.tileToNumber(11) },
-        },
-        {
-          direction: "right",
-          limit: { x: this.tileToNumber(8), y: this.tileToNumber(11) },
-        },
-        {
-          direction: "down",
-          limit: { x: this.tileToNumber(8), y: this.tileToNumber(14) },
-        },
-        {
-          direction: "right",
-          limit: { x: this.tileToNumber(10), y: this.tileToNumber(14) },
-        },
-        {
-          direction: "up",
-          limit: { x: this.tileToNumber(10), y: this.tileToNumber(11) },
-        },
-        {
-          direction: "right",
-          limit: { x: this.tileToNumber(12), y: this.tileToNumber(11) },
-        },
-        {
-          direction: "down",
-          limit: { x: this.tileToNumber(12), y: this.tileToNumber(14) },
-        },
-
-        {
-          direction: "right",
-          limit: { x: this.tileToNumber(14), y: this.tileToNumber(14) },
-        },
-        {
-          direction: "up",
-          limit: { x: this.tileToNumber(14), y: this.tileToNumber(12) },
-        },
-        {
-          direction: "right",
-          limit: { x: this.tileToNumber(15), y: this.tileToNumber(12) },
-        },
-        {
-          direction: "end",
-          limit: { x: this.tileToNumber(16), y: this.tileToNumber(12) },
-        },
-      ],
-      [
-        { direction: "start", limit: { x: 0, y: this.tileToNumber(1) } },
-        {
-          direction: "right",
-          limit: { x: this.tileToNumber(2), y: this.tileToNumber(1) },
-        },
-        {
-          direction: "down",
-          limit: { x: this.tileToNumber(2), y: this.tileToNumber(14) },
-        },
-        {
-          direction: "right",
-          limit: { x: this.tileToNumber(14), y: this.tileToNumber(14) },
-        },
-        {
-          direction: "up",
-          limit: { x: this.tileToNumber(14), y: this.tileToNumber(2) },
-        },
-        {
-          direction: "left",
-          limit: { x: this.tileToNumber(3), y: this.tileToNumber(2) },
-        },
-        {
-          direction: "down",
-          limit: { x: this.tileToNumber(3), y: this.tileToNumber(12) },
-        },
-        {
-          direction: "right",
-          limit: { x: this.tileToNumber(12), y: this.tileToNumber(12) },
-        },
-        {
-          direction: "up",
-          limit: { x: this.tileToNumber(12), y: this.tileToNumber(4) },
-        },
-        {
-          direction: "left",
-          limit: { x: this.tileToNumber(5), y: this.tileToNumber(4) },
-        },
-        {
-          direction: "down",
-          limit: { x: this.tileToNumber(5), y: this.tileToNumber(10) },
-        },
-        {
-          direction: "right",
-          limit: { x: this.tileToNumber(15), y: this.tileToNumber(10) },
-        },
-        {
-          direction: "end",
-          limit: { x: this.tileToNumber(16), y: this.tileToNumber(10) },
-        },
-      ],
-    ];
 
     // get random stage arr
     // this.stageArr = this.stageArrStack[2];
@@ -734,7 +774,9 @@ export class Map {
         y <= this.mapParams.height;
         y += this.mapParams.gridStep
       ) {
-        this.mapParams.mapTilesArr.push({ x: x, y: y });
+        const tile = { x: x, y: y };
+        this.mapParams.mapTilesArr.push(tile);
+        this.mapParams.mouseOverTilesArr.push(tile);
       }
     }
   }
@@ -814,10 +856,21 @@ export class Map {
                       },
                       this.mapRoadDirections.right,
                     );
-                  } else {
+                  } else if (stageTileLengthX < 4) {
                     this.drawRoad(
                       {
                         x: x + this.turnOffset + this.mapParams.gridStep,
+                        y:
+                          this.numberToTile(prevStage.limit.y) === 1
+                            ? stage.limit.y
+                            : stage.limit.y - this.mapParams.gridStep,
+                      },
+                      this.mapRoadDirections.right,
+                    );
+                  } else {
+                    this.drawRoad(
+                      {
+                        x: x + this.turnOffset, // + this.mapParams.gridStep,
                         y:
                           this.numberToTile(prevStage.limit.y) === 1
                             ? stage.limit.y
@@ -1229,5 +1282,3 @@ export class Map {
     }
   }
 }
-
-export default Map;

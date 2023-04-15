@@ -3,6 +3,8 @@ import { shallow } from "zustand/shallow";
 import gameUIIcons from "@/../public/UI/gameUIIcons.png";
 import { TDEngine } from "@/pages/Game/engine/TDEngine";
 import { useGameStore } from "@/store";
+import cursorHand from "@/../public/UI/cursorHand.png";
+import cursorNotAllowed from "@/../public/UI/cursorNotAllowed.png";
 
 interface IGameUI {
   engine: TDEngine;
@@ -18,7 +20,6 @@ export const GameUi = ({ engine }: IGameUI) => {
     (state) => state.updateIsGameMenuOpen,
     shallow,
   );
-  const isGameStarted = useGameStore((state) => state.isGameStarted, shallow);
   const isBuildMenuOpen = useGameStore(
     (state) => state.isBuildMenuOpen,
     shallow,
@@ -54,23 +55,23 @@ export const GameUi = ({ engine }: IGameUI) => {
             "& .icon": {
               height: "32px",
             },
+            "& > .menu-icon": {
+              cursor: `url("${cursorHand}"), auto`,
+            },
             "& > .game-menu-icon": {
-              cursor: "pointer",
               background: `url(${gameUIIcons}) 0 0 no-repeat`,
               marginBottom: "16px",
             },
             "& > .game-build-icon": {
-              cursor: "pointer",
               background: `url(${gameUIIcons}) 0 -32px no-repeat`,
               marginBottom: "16px",
             },
             "& > .game-showel-icon": {
-              cursor: "pointer",
               background: `url(${gameUIIcons}) 0 -256px no-repeat`,
               marginBottom: "16px",
             },
             "& .icon.state__disabled": {
-              cursor: "not-allowed",
+              cursor: `url("${cursorNotAllowed}"), auto`,
               opacity: 0.4,
             },
           }}
@@ -81,7 +82,7 @@ export const GameUi = ({ engine }: IGameUI) => {
               // toggle game menu
               setIsGameMenuOpen(!isGameMenuOpen);
             }}
-            className="game-menu-icon icon"
+            className="game-menu-icon icon menu-icon"
           />
           <Box
             onClick={() => {
@@ -90,11 +91,9 @@ export const GameUi = ({ engine }: IGameUI) => {
                 setIsBuildMenuOpen(!isBuildMenuOpen);
               }
             }}
-            className={
-              !isGameMenuOpen
-                ? "game-build-icon icon"
-                : "game-build-icon icon state__disabled"
-            }
+            className={`game-build-icon icon menu-icon ${
+              isGameMenuOpen ? "state__disabled" : ""
+            }`}
           />
           <Box
             onClick={() => {
@@ -106,12 +105,12 @@ export const GameUi = ({ engine }: IGameUI) => {
                 engine.cleanTile();
               }
             }}
-            className={
-              !isGameMenuOpen &&
-              engine.isEnoughMoney(engine.initialGameParams.cleanTilePrice)
-                ? "game-showel-icon icon"
-                : "game-showel-icon icon state__disabled"
-            }
+            className={`game-showel-icon icon menu-icon ${
+              isGameMenuOpen &&
+              !engine.isEnoughMoney(engine.initialGameParams.cleanTilePrice)
+                ? "state__disabled"
+                : ""
+            }`}
           />
           {/* UI Game status */}
           <Box
@@ -124,6 +123,7 @@ export const GameUi = ({ engine }: IGameUI) => {
               },
 
               "& .status-icon p": {
+                minWidth: "22px",
                 color: "#262626",
                 textAlign: "center",
               },

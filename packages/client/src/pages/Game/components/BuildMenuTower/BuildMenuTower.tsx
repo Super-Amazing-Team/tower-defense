@@ -1,7 +1,7 @@
 import { Box, Typography } from "@mui/material";
-import { shallow } from "zustand/shallow";
-import { TDEngine, TTowerTypes } from "@/pages/Game/engine/TDEngine";
-
+import { ColorDict, TDEngine, TTowerTypes } from "@/pages/Game/engine/TDEngine";
+import cursorNotAllowed from "@/../public/UI/cursorNotAllowed.png";
+import cursorHand from "@/../public/UI/cursorHand.png";
 interface IBuildMenuTower {
   engine: TDEngine;
   towerType: TTowerTypes;
@@ -12,16 +12,10 @@ export const BuildMenuTower = ({
   towerType,
   isDisabled,
 }: IBuildMenuTower) => {
-  /*
-  const [isBuildMenuOpen, setIsBuildMenuOpen] = useGameStore(
-    (state) => [state.isBuildMenuOpen, state.updateIsBuildMenuOpen],
-    shallow,
-  );
-   */
   return (
     <Box
       sx={{
-        cursor: `${isDisabled ? "not-allowed" : "pointer"}`,
+        cursor: `url("${isDisabled ? cursorNotAllowed : cursorHand}"), auto`,
         border: "2px solid #bd6a62",
         margin: "16px",
         padding: "16px 16px 0",
@@ -152,13 +146,13 @@ export const BuildMenuTower = ({
           <Typography
             sx={{
               "& .b-attack-modifier-slow": {
-                color: "#3B46DB",
+                color: ColorDict.specialAttackslowColor,
               },
               "& .b-attack-modifier-shock": {
-                color: "#402d19",
+                color: ColorDict.specialAttackshockColor,
               },
               "& .b-attack-modifier-splash": {
-                color: "#155800",
+                color: ColorDict.specialAttacksplashColor,
               },
             }}
           >

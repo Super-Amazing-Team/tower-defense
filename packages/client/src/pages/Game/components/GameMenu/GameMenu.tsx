@@ -6,6 +6,7 @@ import { useGameStore } from "@/store";
 import { TDEngine } from "@/pages/Game/engine/TDEngine";
 import wispAnimation from "@/../public/UI/wispAnimation.gif";
 import { TRoutes as R } from "@/types";
+import cursorHand from "@/../public/UI/cursorHand.png";
 
 interface IGameMenu {
   engine: TDEngine;
@@ -64,6 +65,7 @@ export const GameMenu = ({ engine }: IGameMenu) => {
             },
             "& > li:hover": {
               background: `url("${wispAnimation}") 0 0 no-repeat`,
+              cursor: `url("${cursorHand}"), auto`,
             },
           }}
         >

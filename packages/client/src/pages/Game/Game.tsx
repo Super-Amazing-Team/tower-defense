@@ -3,6 +3,7 @@ import { CircularProgress, Box, createTheme, Grid } from "@mui/material";
 import { shallow } from "zustand/shallow";
 import { ThemeProvider } from "@mui/material/styles";
 import { ColorDict, TDEngine } from "./engine/TDEngine";
+import cursorPointer from "@/../public/UI/cursorPointer.png";
 import { GameUi } from "@/pages/Game/components/GameUI/GameUI";
 import { useGameStore } from "@/store";
 import { SideMenu } from "@/pages/Game/components/SideMenu/SideMenu";
@@ -121,6 +122,7 @@ export const Game = ({ engine = new TDEngine() }: IGameProps) => {
         justifyContent="center"
         alignItems="center"
         sx={{
+          cursor: `url("${cursorPointer}"), auto`,
           position: "relative",
           "& .b-game-window": {
             position: "absolute",

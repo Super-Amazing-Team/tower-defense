@@ -1,6 +1,7 @@
 import React from "react";
 import { Box, Button, Typography } from "@mui/material";
 import { shallow } from "zustand/shallow";
+import cursorHand from "../../../../../public/UI/cursorHand.png";
 import sidePanelBg from "@/../public/UI/sidePanelBg.png";
 import { ColorDict, TDEngine } from "@/pages/Game/engine/TDEngine";
 import { useGameStore } from "@/store";
@@ -30,7 +31,7 @@ export const SideMenu = ({ engine }: ISideMenu) => {
         sx={{
           position: "absolute",
           right: isSideMenuOpen ? "0px" : `-${engine.map?.tileToNumber(4)}px`,
-          zIndex: 100,
+          zIndex: engine.canvasZIndex.build + 1,
           width: `${engine.map?.tileToNumber(4)}px`,
           height: "100%",
           transition: "all 500ms ease",
@@ -58,7 +59,7 @@ export const SideMenu = ({ engine }: ISideMenu) => {
                 top: "16px",
                 right: "16px",
                 fontSize: "1.5em",
-                cursor: "pointer",
+                cursor: `url("${cursorHand}"), auto`,
               }}
             >
               <Typography
@@ -115,6 +116,9 @@ export const SideMenu = ({ engine }: ISideMenu) => {
                   <Box
                     sx={{
                       mt: 3,
+                      "& > p > span": {
+                        float: "right",
+                      },
                     }}
                   >
                     <Typography>
@@ -133,9 +137,74 @@ export const SideMenu = ({ engine }: ISideMenu) => {
                       Attack range:{" "}
                       <Box component="span">{`${selectedTower?.towerParams?.attackRange}`}</Box>
                     </Typography>
+                    {selectedTower?.projectileParams?.attackModifier && (
+                      <>
+                        <Typography>
+                          Special:
+                          <Box
+                            component="span"
+                            sx={{
+                              color:
+                                ColorDict[
+                                  `specialAttack${selectedTower?.projectileParams?.attackModifier}Color`
+                                ] + " !important",
+                            }}
+                          >
+                            {selectedTower?.projectileParams?.attackModifier}
+                          </Box>
+                        </Typography>
+                        {selectedTower?.projectileParams
+                          ?.attackModifierTimeout && (
+                          <Typography>
+                            Duration:
+                            <Box
+                              component="span"
+                              sx={{
+                                color:
+                                  ColorDict[
+                                    `specialAttack${selectedTower?.projectileParams?.attackModifier}Color`
+                                  ] + " !important",
+                              }}
+                            >
+                              {
+                                selectedTower?.projectileParams
+                                  ?.attackModifierTimeout
+                              }
+                            </Box>
+                          </Typography>
+                        )}
+                        {selectedTower?.projectileParams
+                          ?.attackModifierRange && (
+                          <Typography>
+                            Range:
+                            <Box
+                              component="span"
+                              sx={{
+                                color:
+                                  ColorDict[
+                                    `specialAttack${selectedTower?.projectileParams?.attackModifier}Color`
+                                  ] + " !important",
+                              }}
+                            >
+                              {
+                                selectedTower?.projectileParams
+                                  ?.attackModifierRange
+                              }
+                            </Box>
+                          </Typography>
+                        )}
+                      </>
+                    )}
                   </Box>
                   <Box
-                    sx={{ display: "flex", flexDirection: "column", mt: "2em" }}
+                    sx={{
+                      display: "flex",
+                      flexDirection: "column",
+                      mt: "2em",
+                      "& button": {
+                        cursor: `url("${cursorHand}"), auto`,
+                      },
+                    }}
                   >
                     <Button
                       disabled={

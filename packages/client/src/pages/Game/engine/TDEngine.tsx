@@ -24,6 +24,7 @@ export type TEngineCanvas =
   | "game"
   | "cannon"
   | "tower"
+  | "towerRange"
   | "enemy"
   | "deadEnemy"
   | "map"
@@ -72,6 +73,11 @@ export const ColorDict = {
   sandColor: "#ffae70",
   fontColor: "#262626",
   towerRangeColor: "green",
+  spellRangeColor: "blue",
+  specialAttackslowColor: "#3B46DB",
+  specialAttackshockColor: "#975b1c",
+  specialAttacksplashColor: "#155800",
+  specialAttackfreezeColor: "blue",
 } as const;
 
 /**
@@ -243,6 +249,7 @@ export class TDEngine {
       game: 60,
       cannon: 50,
       tower: 40,
+      towerRange: 31,
       enemy: 30,
       deadEnemy: 20,
       mapDecorations: 13,
@@ -542,11 +549,11 @@ export class TDEngine {
           height: 64,
         },
         spellParams: {
-          attackRange: 40,
+          attackRange: 140,
           attackDamage: 10,
           attackModifier: "slow",
-          attackModifierTimeout: 5000,
-          attackModifierStrength: 0.4,
+          attackModifierTimeout: 3000,
+          attackModifierStrength: 0.8,
           manaCost: 15,
           movementSpeed: 2,
           spellDirection: "left",
@@ -599,9 +606,9 @@ export class TDEngine {
     public predefinedTowerParams: ITDEngine["predefinedTowerParams"] = {
       one: {
         towerParams: {
-          attackRate: 1500,
-          attackDamage: 20,
-          attackRange: 200,
+          attackRate: 900,
+          attackDamage: 16,
+          attackRange: 220,
           baseWidth: 64,
           baseHeight: 128,
           constructionWidth: 192,
@@ -871,14 +878,14 @@ export class TDEngine {
     },
     public initialGameParams: ITDEngine["initialGameParams"] = {
       maxMoney: 999,
-      money: 100,
-      mana: 100,
+      money: 130,
+      mana: 999,
       lives: 10,
       wave: 1,
       enemiesPerWave: 20,
       endWave: 10,
-      hpCoefficient: 30,
-      speedCoefficient: 0.5,
+      hpCoefficient: 50,
+      speedCoefficient: 1,
       strokeStyle: ColorDict.defauiltStrokeColor,
       framesPerSprite: 8,
       fps: 24,
@@ -932,6 +939,10 @@ export class TDEngine {
     return new Promise((resolve, reject) => {
       if (this.isInitialized) reject();
       this.gameWindow = gameContainer;
+      // debug
+      console.log(`this.gameWindow`);
+      console.log(this.gameWindow);
+      //
       // set map
       this.map = new Map(this);
       /* LOAD SPRITES */
@@ -996,9 +1007,8 @@ export class TDEngine {
           newCanvas.style.opacity = "0.4";
           newCanvas.style.outline = "none";
           newCanvas.tabIndex = 2;
-        } else if (canvasId === "spellDraft") {
+        } else if (canvasId === "spellDraft" || canvasId === "towerRange") {
           newCanvas.style.opacity = "0.4";
-          newCanvas.tabIndex = -1;
         } else if (canvasId === "map") {
           /* newCanvas.style.background = `url("${this.map?.grassBackrgroundCanvas?.toDataURL()}") repeat`; */
         }
@@ -2184,12 +2194,14 @@ export class TDEngine {
         structuredClone(this.predefinedTowerParams[type]?.towerParams!),
         structuredClone(this.predefinedTowerParams[type]?.projectileParams!),
       );
+    } else {
+      this.isCanBuild = false;
     }
   };
 
   public findClosestBuildTile(
     coordinates: ITwoDCoordinates,
-    tilesArr: ITwoDCoordinates[] = this.map?.mapParams.mapTilesArr!,
+    tilesArr: ITwoDCoordinates[] = this.map?.mapParams?.mouseOverTilesArr!,
   ) {
     let minDistance = this.map?.mapParams.width;
     tilesArr.forEach((tile) => {
@@ -2266,10 +2278,17 @@ export class TDEngine {
   }
 
   public canvasMouseMoveCallback = (e: MouseEvent) => {
+    if (this.isCanBuild || this.isCanCast || this.isCanClean) {
+      this.gameWindow!.style.cursor = "none";
+    } else {
+      this.gameWindow!.style.cursor = "inherit";
+    }
+
     this.cursorPosition = {
       x: e.offsetX,
       y: e.offsetY,
     };
+
     if (this.isCanBuild) {
       this.draftShowTower();
     } else if (this.draftSpell) {
@@ -2321,11 +2340,15 @@ export class TDEngine {
     tower.towerParams.attackRate = Math.floor(
       tower.towerParams.attackRate * 0.9,
     );
+    // clear and redraw towerRange
+    // this.clearContext(this.context?.towerRange!);
     // set render params
     tower.renderParams.constructionTimeout = tower.upgradeLevel
       ? tower.renderParams.constructionTimeout * tower.upgradeLevel
       : tower.renderParams.constructionTimeout;
     tower.renderParams.isConstructing = true;
+
+    tower.drawTowerRange(this.context?.towerRange!);
   }
 
   public sellTower(tower: Tower) {
@@ -2359,6 +2382,7 @@ export class TDEngine {
     gameStore.getState().updateIsSideMenuOpen(false);
     //
     this.clearContext(context);
+    this.clearContext(this.context?.towerRange!);
     this.selectedTower = null;
     if (tower) {
       tower.towerParams.isSelected = false;
@@ -2387,6 +2411,8 @@ export class TDEngine {
           gameStore.getState().updateIsSideMenuOpen(true);
           this.selectedTower.towerParams.isSelected = true;
           this.clearContext(this.context?.selection!);
+          this.clearContext(this.context?.towerRange!);
+          this.selectedTower.drawTowerRange(this.context?.towerRange!);
           this.selectedTower.drawSelection();
           return;
         }
@@ -2414,6 +2440,9 @@ export class TDEngine {
         } else if (this.selectedTower) {
           // clear selected tower
           this.clearTowerSelection();
+        } else if (gameStore.getState().isBuildMenuOpen) {
+          // close build menu
+          gameStore.getState().updateIsBuildMenuOpen(false);
         } else {
           // toggle game menu
           gameStore
@@ -2426,13 +2455,7 @@ export class TDEngine {
         }
       } else {
         // toggle game menu
-        gameStore
-          .getState()
-          .updateIsGameMenuOpen(!gameStore.getState().isGameMenuOpen);
-        // toggle build menu
-        gameStore
-          .getState()
-          .updateIsBuildMenuOpen(!gameStore.getState().isBuildMenuOpen);
+        gameStore.getState().updateIsGameMenuOpen(true);
       }
     }
 
@@ -2460,15 +2483,12 @@ export class TDEngine {
         this.buildTower("one", 0);
       }
       if (e.key === "2") {
-        this.draftTower = null;
         this.buildTower("two", 0);
       }
       if (e.key === "3") {
-        this.draftTower = null;
         this.buildTower("three", 0);
       }
       if (e.key === "4") {
-        this.draftTower = null;
         this.buildTower("four", 0);
       }
       // game menu
@@ -2608,8 +2628,6 @@ export class TDEngine {
           this.money -= this.draftTower?.towerParams.price!;
           gameStore.getState().updateMoney(this.money);
           this.draftTower = null;
-          // clear build context
-          this.clearContext(this.context!.build!);
         }
       } else {
         this.isNotEnoughMoney = true;
@@ -2629,22 +2647,18 @@ export class TDEngine {
   public clearCanvas() {
     // clear game canvas
     this.clearContext(this.context!.game!);
-    this.clearContext(this.context!.cannon!);
     this.clearContext(this.context!.constructing!);
-    this.clearContext(this.context!.hpBar!);
     this.clearContext(this.context!.projectile!);
     this.clearContext(this.context!.build!);
     this.clearContext(this.context!.spell!);
     this.clearContext(this.context!.spellDraft!);
     if (this.enemies?.length) {
       this.clearContext(this.context!.enemy!);
+      this.clearContext(this.context!.hpBar!);
     }
-    // this.clearContext(this.context!.deadEnemy!);
-    // this.clearContext(this.context.tower!);
-  }
-
-  public pushProjectile(projectile: Projectile) {
-    this.projectiles?.push(projectile);
+    if (this.towers?.length) {
+      this.clearContext(this.context!.cannon!);
+    }
   }
 
   public gameLoop = () => {
@@ -2723,10 +2737,6 @@ export class TDEngine {
               spell.draw();
             });
           }
-
-          // highlight the closest map tile to the cursor
-          // this.highlightTile(this.map!.mapParams.closestTile);
-          //
         } else {
           // GAME IS OVER!
         }
@@ -2810,6 +2820,7 @@ export class TDEngine {
                 tower.findTarget();
               }
             } else {
+              if (!tower.isCanFire) return;
               tower.findTarget();
             }
           });
@@ -2846,7 +2857,12 @@ export class TDEngine {
         ) {
           if (!this.manaIncrementTimer) {
             this.manaIncrementTimer = setInterval(() => {
-              this.mana += this.manaIncrementQuantity;
+              this.mana =
+                this.mana + this.manaIncrementQuantity <
+                this.initialGameParams.mana
+                  ? this.mana + this.manaIncrementQuantity
+                  : this.initialGameParams.mana;
+              // UI
               gameStore.getState().updateMana(this.mana);
             }, this.manaIncrementTimeout);
           }

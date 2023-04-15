@@ -41,7 +41,7 @@ export const UiMessage = ({ engine }: IUiMessage) => {
       sx={{
         position: "absolute",
         left: 0,
-        zIndex: 50,
+        zIndex: engine.canvasZIndex.spellDraft,
         width: "100%",
         height: "100%",
         display: "flex",

@@ -5,6 +5,7 @@ import { TDEngine, TTowerTypes } from "@/pages/Game/engine/TDEngine";
 import { BuildMenuTower } from "@/pages/Game/components/BuildMenuTower/BuildMenuTower";
 import { useGameStore } from "@/store";
 import { SpellMenu } from "@/pages/Game/components/SpellMenu/SpellMenu";
+import cursorHand from "@/../public/UI/cursorHand.png";
 
 interface IBuildMenu {
   engine: TDEngine;
@@ -79,7 +80,7 @@ export const BuildMenu = ({ engine }: IBuildMenu) => {
           right: "16px",
           zIndex: 101,
           "& > p": {
-            cursor: "pointer",
+            cursor: `url("${cursorHand}"), auto`,
             width: "32px",
             height: "32px",
             textAlign: "center",

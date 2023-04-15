@@ -219,6 +219,10 @@ export class WaveGenerator {
         this.waveParams.waveType = "fast";
         break;
       }
+      case 4: {
+        this.waveParams.waveType = "strong";
+        break;
+      }
       case 5: {
         this.waveParams.waveType = "boss";
         break;

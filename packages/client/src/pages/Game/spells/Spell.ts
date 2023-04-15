@@ -1,4 +1,5 @@
 import {
+  ColorDict,
   ITwoDCoordinates,
   TDEngine,
   TSpellTypes,
@@ -171,7 +172,7 @@ export class Spell {
     context.beginPath();
     context.lineWidth = 1;
     // context.setLineDash([10, 15]);
-    context.fillStyle = "blue";
+    context.fillStyle = ColorDict.spellRangeColor;
     // draw tower range
     context.arc(
       this.engine.cursorPosition.x,
@@ -193,10 +194,7 @@ export class Spell {
       this.spellParams.currentPosition!.y +
       this.engine.predefinedSpellParams[this.spellType].spell.height! / 2 -
       (enemy.currentPosition.y + enemy.enemyParams.height! / 2);
-    if (Math.hypot(xDistance, yDistance) < this.spellParams.attackRange) {
-      return true;
-    }
-    return false;
+    return Math.hypot(xDistance, yDistance) < this.spellParams.attackRange;
   }
 
   public collision() {
