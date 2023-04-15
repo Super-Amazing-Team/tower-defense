@@ -1,14 +1,14 @@
 import type {SequelizeOptions} from "sequelize-typescript";
 import { Sequelize } from "sequelize"
 
-const { POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_DB, POSTGRES_PORT } =
+const { POSTGRES_HOST, POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_DB, POSTGRES_PORT } =
   process.env;
 
 export const sequelizeOptions: SequelizeOptions = {
-    host: "localhost",
+    host: `${POSTGRES_HOST}`,
     port: Number(POSTGRES_PORT),
     username: POSTGRES_USER,
-    password: String(POSTGRES_PASSWORD),
+    password: `${POSTGRES_PASSWORD}`,
     database: POSTGRES_DB,
     dialect: "postgres", // 'mysql', 'sqlite', 'mariadb', 'mssql'
 };
