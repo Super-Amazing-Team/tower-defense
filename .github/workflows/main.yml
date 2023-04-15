@@ -37,5 +37,3 @@ jobs:
           docker push cr.yandex/$CR_REGISTRY/practicum-client-1:latest
           docker tag practicum-server-2:latest cr.yandex/$CR_REGISTRY/practicum-server-2:latest
           docker push cr.yandex/$CR_REGISTRY/practicum-server-2:latest
-          docker tag postgres:14 cr.yandex/$CR_REGISTRY/postgres:14
-          docker push cr.yandex/$CR_REGISTRY/postgres:14
