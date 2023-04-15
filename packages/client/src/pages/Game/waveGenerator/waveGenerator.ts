@@ -72,10 +72,10 @@ export class WaveGenerator {
       }
     }
     const speed =
-      0.55 +
-      this.waveParams.speedCoefficient *
-        (this.waveParams.currentWave * 0.5) *
-        speedCoefficient;
+      this.engine.initialGameParams.speedCoefficient *
+        this.waveParams.currentWave *
+        0.25 +
+      this.waveParams.speedCoefficient * speedCoefficient;
     const hp =
       this.waveParams.hpCoefficient *
       this.waveParams.currentWave *

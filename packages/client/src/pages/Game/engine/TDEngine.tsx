@@ -138,7 +138,6 @@ export interface ITDEngine {
   map?: Map;
   currentMapVariant: IMap["stageArr"];
   animationFrameId: number;
-  requestIdleCallbackId: number;
   twoDCoordinates: ITwoDCoordinates;
   lives: number;
   score: number;
@@ -229,7 +228,6 @@ export class TDEngine {
     public context: ITDEngine["context"] = {},
     public gameWindow: ITDEngine["gameWindow"] = null,
     public animationFrameId: ITDEngine["animationFrameId"] = 0,
-    public requestIdleCallbackId: ITDEngine["requestIdleCallbackId"] = 0,
     public UIGameIsOver?: ITDEngine["UIDispatchBoolean"],
     public lives: ITDEngine["lives"] = 0,
     public score: ITDEngine["score"] = 0,
@@ -533,7 +531,7 @@ export class TDEngine {
           attackRange: 80,
           attackDamage: 100,
           manaCost: 20,
-          movementSpeed: 4,
+          movementSpeed: 8,
           spellDirection: "left",
         },
       },
@@ -555,7 +553,7 @@ export class TDEngine {
           attackModifierTimeout: 3000,
           attackModifierStrength: 0.8,
           manaCost: 15,
-          movementSpeed: 2,
+          movementSpeed: 4,
           spellDirection: "left",
         },
       },
@@ -577,7 +575,7 @@ export class TDEngine {
           attackModifierTimeout: 10000,
           attackModifierStrength: 0.2,
           manaCost: 10,
-          movementSpeed: 2,
+          movementSpeed: 4,
           spellDirection: "down",
         },
       },
@@ -598,7 +596,7 @@ export class TDEngine {
           attackModifier: "shock",
           attackModifierTimeout: 3000,
           manaCost: 25,
-          movementSpeed: 2,
+          movementSpeed: 4,
           spellDirection: "down",
         },
       },
@@ -645,7 +643,7 @@ export class TDEngine {
         },
         projectileParams: {
           acceleration: 1.5,
-          projectileSpeed: 0.2,
+          projectileSpeed: 2,
           rectCenterX: 0,
           rectCenterY: 0,
           dimensions: [
@@ -712,7 +710,7 @@ export class TDEngine {
         },
         projectileParams: {
           acceleration: 1.2,
-          projectileSpeed: 0.4,
+          projectileSpeed: 4,
           rectCenterX: 0,
           rectCenterY: 0,
           dimensions: [
@@ -781,7 +779,7 @@ export class TDEngine {
         },
         projectileParams: {
           acceleration: 1.2,
-          projectileSpeed: 0.4,
+          projectileSpeed: 3,
           dimensions: [
             {
               projectileWidth: 10,
@@ -848,7 +846,7 @@ export class TDEngine {
         },
         projectileParams: {
           acceleration: 1.2,
-          projectileSpeed: 0.4,
+          projectileSpeed: 4,
           dimensions: [
             {
               projectileWidth: 8,
@@ -879,13 +877,13 @@ export class TDEngine {
     public initialGameParams: ITDEngine["initialGameParams"] = {
       maxMoney: 999,
       money: 130,
-      mana: 999,
+      mana: 100,
       lives: 10,
       wave: 1,
       enemiesPerWave: 20,
       endWave: 10,
       hpCoefficient: 50,
-      speedCoefficient: 1,
+      speedCoefficient: 2,
       strokeStyle: ColorDict.defauiltStrokeColor,
       framesPerSprite: 8,
       fps: 24,
@@ -894,35 +892,6 @@ export class TDEngine {
     public waveGenerator: ITDEngine["waveGenerator"] = null,
     public sound: ITDEngine["sound"] = new Sound(),
   ) {
-    // safari polyfill
-    if (!window.requestIdleCallback) {
-      // @ts-ignore
-      window.requestIdleCallback = function (
-        callback: IdleRequestCallback,
-        options: Record<string, string | number> = {},
-      ): NodeJS.Timeout {
-        let relaxation = 1000 / 48;
-        let timeout = options?.timeout || relaxation;
-        let start = performance.now();
-        return setTimeout(function () {
-          callback({
-            get didTimeout() {
-              return options.timeout
-                ? false
-                : performance.now() - start - relaxation > timeout;
-            },
-            timeRemaining: function () {
-              return Math.max(0, relaxation + (performance.now() - start));
-            },
-          });
-        }, relaxation);
-      };
-    }
-    if (!window.cancelIdleCallback) {
-      window.cancelIdleCallback = function (id) {
-        clearTimeout(id);
-      };
-    }
     // set waveGenerator
     this.waveGenerator = new WaveGenerator(this);
     this.money = this.initialGameParams.money;
@@ -939,10 +908,6 @@ export class TDEngine {
     return new Promise((resolve, reject) => {
       if (this.isInitialized) reject();
       this.gameWindow = gameContainer;
-      // debug
-      console.log(`this.gameWindow`);
-      console.log(this.gameWindow);
-      //
       // set map
       this.map = new Map(this);
       /* LOAD SPRITES */
@@ -1128,7 +1093,6 @@ export class TDEngine {
       gameStore.getState().updateIsGameStarted(true);
     } else {
       this.gameLoop();
-      this.gameLoopLogic();
       // add event listeners
       this.addEventListeners();
       // game start play sound
@@ -1147,7 +1111,6 @@ export class TDEngine {
       gameStore.getState().updateIsGameStarted(false);
     } else {
       cancelAnimationFrame(this.animationFrameId);
-      cancelIdleCallback(this.requestIdleCallbackId);
       // remove event listeners
       this.removeEventListeners();
 
@@ -2737,8 +2700,130 @@ export class TDEngine {
               spell.draw();
             });
           }
+
+          // gameLoopLogic
+          // enemy init || move
+          if (!this.waveGenerator?.isInitialized) {
+            if (!this.waveGenerator?.waveTimerBetweenWaves) {
+              // UI countdown between waves
+              gameStore
+                .getState()
+                .updateCountdown(
+                  Math.floor(
+                    this.waveGenerator!.waveTimeoutBetweenWaves / 1000,
+                  ),
+                );
+              this.waveGenerator?.countdown();
+              this.waveGenerator!.waveTimerBetweenWaves = setTimeout(() => {
+                this.waveGenerator?.init();
+              }, this.waveGenerator?.waveTimeoutBetweenWaves);
+            }
+          } else {
+            // isWaveInProgress?
+            if (
+              this.enemies?.length === 0 &&
+              this.waveGenerator?.waveParams.isWaveInProgress
+            ) {
+              this.waveGenerator.waveParams.isWaveInProgress = false;
+              this.waveGenerator.setWaveType();
+              this.waveGenerator!.waveCountdown! = Math.floor(
+                this.waveGenerator!.waveTimeoutBetweenWaves / 1000,
+              );
+              gameStore
+                .getState()
+                .updateCountdown(this.waveGenerator!.waveCountdown);
+              if (!this.waveGenerator.waveTimerBetweenWaves) {
+                // UI countdown between waves
+                this.waveGenerator.waveCountdownTimer = setInterval(() => {
+                  if (this.waveGenerator!.waveCountdown > 0) {
+                    this.waveGenerator!.waveCountdown -= 1;
+                    gameStore
+                      .getState()
+                      .updateCountdown(this.waveGenerator!.waveCountdown);
+                  } else {
+                    clearInterval(this.waveGenerator?.waveCountdownTimer!);
+                    gameStore.getState().updateCountdown(0);
+                  }
+                }, 1000);
+                this.waveGenerator!.waveTimerBetweenWaves = setTimeout(() => {
+                  this.clearMemory();
+                  this.waveGenerator?.spawnEnemies();
+                }, this.waveGenerator.waveTimeoutBetweenWaves);
+              }
+            }
+          }
+
+          // search n destroy
+          if (this.enemies?.length && this.towers?.length) {
+            this.towers?.forEach((tower: Tower) => {
+              if (
+                tower.renderParams.isConstructing ||
+                tower.renderParams.isSelling
+              )
+                return;
+              if (tower.target) {
+                if (tower.isEnemyInRange(tower.target)) {
+                  tower.findTargetAngle();
+                  tower.fire();
+                } else {
+                  tower.findTarget();
+                }
+              } else {
+                if (!tower.isCanFire) return;
+                tower.findTarget();
+              }
+            });
+          }
+
+          // move enemies
+          if (this.enemies?.length) {
+            this.enemies?.forEach((enemy: Enemy) => {
+              enemy.move();
+            });
+          }
+
+          // move projectiles
+          if (this.projectiles?.length) {
+            this.projectiles?.forEach((projectile: Projectile) => {
+              projectile.move();
+            });
+          }
+
+          // move spells
+          if (this.spells?.length) {
+            this.spells?.forEach((spell: Spell) => {
+              if (spell.renderParams.isMoving) {
+                spell.move();
+              }
+            });
+          }
+
+          // increment mana parameter
+          if (
+            !this.isGameOver &&
+            this.mana < this.initialGameParams.mana &&
+            this.mana >= 0
+          ) {
+            if (!this.manaIncrementTimer) {
+              this.manaIncrementTimer = setInterval(() => {
+                this.mana =
+                  this.mana + this.manaIncrementQuantity <
+                  this.initialGameParams.mana
+                    ? this.mana + this.manaIncrementQuantity
+                    : this.initialGameParams.mana;
+                // UI
+                gameStore.getState().updateMana(this.mana);
+              }, this.manaIncrementTimeout);
+            }
+          } else {
+            clearInterval(this.manaIncrementTimer!);
+            this.manaIncrementTimer = null;
+          }
         } else {
-          // GAME IS OVER!
+          // game is over!
+          gameStore.getState().updateIsGameStarted(false);
+          gameStore.getState().updateIsGameOver(true);
+          this.isGameOver = true;
         }
 
         // request animation frame
@@ -2750,140 +2835,5 @@ export class TDEngine {
       // clear timeout
       clearTimeout(timeout);
     }, 1000 / this.initialGameParams.fps);
-  };
-
-  public gameLoopLogic = () => {
-    if (this.lives > 0) {
-      if (gameStore.getState().isGameStarted) {
-        // enemy init || move
-        if (!this.waveGenerator?.isInitialized) {
-          if (!this.waveGenerator?.waveTimerBetweenWaves) {
-            // UI countdown between waves
-            gameStore
-              .getState()
-              .updateCountdown(
-                Math.floor(this.waveGenerator!.waveTimeoutBetweenWaves / 1000),
-              );
-            this.waveGenerator?.countdown();
-            this.waveGenerator!.waveTimerBetweenWaves = setTimeout(() => {
-              this.waveGenerator?.init();
-            }, this.waveGenerator?.waveTimeoutBetweenWaves);
-          }
-        } else {
-          // isWaveInProgress?
-          if (
-            this.enemies?.length === 0 &&
-            this.waveGenerator?.waveParams.isWaveInProgress
-          ) {
-            this.waveGenerator.waveParams.isWaveInProgress = false;
-            this.waveGenerator.setWaveType();
-            this.waveGenerator!.waveCountdown! = Math.floor(
-              this.waveGenerator!.waveTimeoutBetweenWaves / 1000,
-            );
-            gameStore
-              .getState()
-              .updateCountdown(this.waveGenerator!.waveCountdown);
-            if (!this.waveGenerator.waveTimerBetweenWaves) {
-              // UI countdown between waves
-              this.waveGenerator.waveCountdownTimer = setInterval(() => {
-                if (this.waveGenerator!.waveCountdown > 0) {
-                  this.waveGenerator!.waveCountdown -= 1;
-                  gameStore
-                    .getState()
-                    .updateCountdown(this.waveGenerator!.waveCountdown);
-                } else {
-                  clearInterval(this.waveGenerator?.waveCountdownTimer!);
-                  gameStore.getState().updateCountdown(0);
-                }
-              }, 1000);
-              this.waveGenerator!.waveTimerBetweenWaves = setTimeout(() => {
-                this.clearMemory();
-                this.waveGenerator?.spawnEnemies();
-              }, this.waveGenerator.waveTimeoutBetweenWaves);
-            }
-          }
-        }
-
-        // search n destroy
-        if (this.enemies?.length && this.towers?.length) {
-          this.towers?.forEach((tower: Tower) => {
-            if (
-              tower.renderParams.isConstructing ||
-              tower.renderParams.isSelling
-            )
-              return;
-            if (tower.target) {
-              if (tower.isEnemyInRange(tower.target)) {
-                tower.findTargetAngle();
-                tower.fire();
-              } else {
-                tower.findTarget();
-              }
-            } else {
-              if (!tower.isCanFire) return;
-              tower.findTarget();
-            }
-          });
-        }
-
-        // move enemies
-        if (this.enemies?.length) {
-          this.enemies?.forEach((enemy: Enemy) => {
-            enemy.move();
-          });
-        }
-
-        // move projectiles
-        if (this.projectiles?.length) {
-          this.projectiles?.forEach((projectile: Projectile) => {
-            projectile.move();
-          });
-        }
-
-        // move spells
-        if (this.spells?.length) {
-          this.spells?.forEach((spell: Spell) => {
-            if (spell.renderParams.isMoving) {
-              spell.move();
-            }
-          });
-        }
-
-        // increment mana parameter
-        if (
-          !this.isGameOver &&
-          this.mana < this.initialGameParams.mana &&
-          this.mana >= 0
-        ) {
-          if (!this.manaIncrementTimer) {
-            this.manaIncrementTimer = setInterval(() => {
-              this.mana =
-                this.mana + this.manaIncrementQuantity <
-                this.initialGameParams.mana
-                  ? this.mana + this.manaIncrementQuantity
-                  : this.initialGameParams.mana;
-              // UI
-              gameStore.getState().updateMana(this.mana);
-            }, this.manaIncrementTimeout);
-          }
-        } else {
-          clearInterval(this.manaIncrementTimer!);
-          this.manaIncrementTimer = null;
-        }
-
-        // request callback when browser is idling
-        this.requestIdleCallbackId = requestIdleCallback(this.gameLoopLogic, {
-          timeout: 1000 / this.initialGameParams.fps,
-          // timeout: this.idleTimeout,
-        });
-      } else {
-        cancelIdleCallback(this.requestIdleCallbackId);
-      }
-    } else {
-      // game is over!
-      gameStore.getState().updateIsGameStarted(false);
-      gameStore.getState().updateIsGameOver(true);
-      this.isGameOver = true;
-    }
   };
 }

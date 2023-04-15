@@ -108,9 +108,6 @@ export const Game = ({ engine = new TDEngine() }: IGameProps) => {
         }
         // remove event listeners
         // engine.removeDocumentEventListeners();
-        // set engine init flag to false
-        // engine.isInitialized = false;
-        // engine.isCanvasCreated = false;
       }
     };
   }, [isGameStarted]);

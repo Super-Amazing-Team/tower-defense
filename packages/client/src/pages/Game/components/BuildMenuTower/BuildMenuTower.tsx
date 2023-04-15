@@ -1,4 +1,5 @@
 import { Box, Typography } from "@mui/material";
+import { useMemo } from "react";
 import { ColorDict, TDEngine, TTowerTypes } from "@/pages/Game/engine/TDEngine";
 import cursorNotAllowed from "@/../public/UI/cursorNotAllowed.png";
 import cursorHand from "@/../public/UI/cursorHand.png";
@@ -12,6 +13,10 @@ export const BuildMenuTower = ({
   towerType,
   isDisabled,
 }: IBuildMenuTower) => {
+  const grassBackrgroundCanvas = useMemo(
+    () => engine.map?.grassBackrgroundCanvas?.toDataURL(),
+    [],
+  );
   return (
     <Box
       sx={{
@@ -25,7 +30,7 @@ export const BuildMenuTower = ({
         transition: "all 300ms ease",
         "&:hover": {
           border: "2px solid #262626",
-          background: `url(${engine.map?.grassBackrgroundCanvas?.toDataURL()}) 0 0 repeat`,
+          background: `url(${grassBackrgroundCanvas}) 0 0 repeat`,
         },
         "&.state__disabled": {
           opacity: ".7",
