@@ -13,8 +13,8 @@ services:
     ports:
       - "${CLIENT_PORT}:80"
     environment:
-      - CLIENT_PORT=${CLIENT_PORT}
-      - SERVER_PORT=${SERVER_PORT}
+      CLIENT_PORT: ${CLIENT_PORT}
+      SERVER_PORT: ${SERVER_PORT}
 
     networks:
       - internal
