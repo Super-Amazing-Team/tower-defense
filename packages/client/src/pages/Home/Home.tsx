@@ -23,6 +23,7 @@ import { gameDetails } from "@/utils/gameDetails";
 export function Home() {
   const isAuth = useUserStore((store) => store.user.isAuth);
   const isMatches = useMediaQuery("(max-width: 1440px)");
+  console.log("check GH Action for Cloud");
 
   const theme = createTheme({
     typography: {
