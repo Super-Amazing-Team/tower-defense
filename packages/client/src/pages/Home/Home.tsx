@@ -28,7 +28,7 @@ export interface IHome {
 }
 
 export function Home({ engine }: IHome) {
-  const gameWindow = useRef<HTMLDivElement>(null);
+  const gameWindow = useRef<HTMLDivElement | null>(null);
   const [isLoading, setIsLoading] = useState<boolean>(true);
   const isAuth = useUserStore((store) => store.user.isAuth);
 
@@ -50,8 +50,6 @@ export function Home({ engine }: IHome) {
     if (!engine.isInitialized) {
       // set engine params
       engine.isDemo = true;
-      engine.waveGenerator!.waveParams!.endWave = 100;
-      engine.waveGenerator!.waveTimeoutBetweenWaves = 0;
       // init teh engine
       engine
         .init(gameWindow.current!)
@@ -125,6 +123,13 @@ export function Home({ engine }: IHome) {
             borderRadius: "8px",
             background: ColorDict.sandColor,
             padding: "32px",
+          },
+          "& .b-tower-image-wrapper": {
+            position: "relative",
+            top: "32px",
+          },
+          "& h2, & h3, & h4, & a": {
+            textShadow: `4px 4px ${ColorDict.fontColor}`,
           },
           "& h4": {
             color: ColorDict.sandColor,
@@ -294,7 +299,6 @@ export function Home({ engine }: IHome) {
                       display: "flex",
                       justifyContent: "center",
                       alignItems: "center",
-                      marginBottom: "100px",
                     }}
                   >
                     <TowerImage
