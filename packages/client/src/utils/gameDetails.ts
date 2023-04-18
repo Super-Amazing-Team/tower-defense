@@ -1,20 +1,12 @@
 export const gameDetails = {
   towers: [
+    {},
+    {},
     {
-      image: "../../../public/images/towerFourBase.png",
-      text: "медленные, но с большим уроном башни со стрелами. средний радиус атаки",
+      text: "",
     },
     {
-      image: "../../../public/images/towerOneBase.png",
-      text: "быстрые, но наносящие мало урона башни с молнией. сеньше среднего радиус атаки",
-    },
-    {
-      image: "../../../public/images/towerThreeBase.png",
-      text: "средние по скорости атаки, но отравляющие врагов башни с рогаткой. большой радиус атаки",
-    },
-    {
-      image: "../../../public/images/towerTwoBase-1.png",
-      text: "очень медленные, но атакующие сплешем (несколько врагов сразу) башни с молотом. маленький радиус атаки",
+      text: "",
     },
   ],
   enemies: [

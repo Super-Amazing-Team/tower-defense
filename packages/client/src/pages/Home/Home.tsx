@@ -1,318 +1,420 @@
 import {
-  Container,
   Typography,
   Link,
   Box,
-  createTheme,
   ThemeProvider,
-  useMediaQuery,
+  Grid,
+  CircularProgress,
 } from "@mui/material";
 import { Link as RouterLink } from "react-router-dom";
-import PressStart2P from "../../../public/fonts/PressStart2P-Regular.ttf";
-import backgroundImg from "../../../public/images/background.png";
-import mainPic from "../../../public/images/main-pic.png";
-import waterTiles from "../../../public/images/water-tiles.gif";
-import towerBase1 from "../../../public/images/towerTwoBase-1.png";
-import towerBase2 from "../../../public/images/towerTwoBase-2.png";
-import towerBase3 from "../../../public/images/towerTwoBase-3.png";
-import { ItemComponent } from "./ItemComponent";
+import { useEffect, useRef, useState } from "react";
+import cursorPointer from "@/../public/UI/cursorPointer.png";
+import cursorHand from "@/../public/UI/cursorHand.png";
 import { TRoutes as R } from "@/types";
 import { useUserStore } from "@/store";
-import { gameDetails } from "@/utils/gameDetails";
+import {
+  ColorDict,
+  TDEngine,
+  TEnemyType,
+  TTowerTypes,
+} from "@/pages/Game/engine/TDEngine";
+import { gameTheme } from "@/pages/Game/Game";
+import grassBg from "@/../public/sprites/map/grassBg.png";
+import { TowerImage } from "@/pages/Game/components/TowerImage/TowerImage";
+import { EnemyImage } from "@/pages/Game/components/EnemyImage/EnemyImage";
 
-export function Home() {
+export interface IHome {
+  engine: TDEngine;
+}
+
+export function Home({ engine }: IHome) {
+  const gameWindow = useRef<HTMLDivElement>(null);
+  const [isLoading, setIsLoading] = useState<boolean>(true);
   const isAuth = useUserStore((store) => store.user.isAuth);
-  const isMatches = useMediaQuery("(max-width: 1440px)");
-
-  const theme = createTheme({
-    typography: {
-      fontFamily: "'Press Start 2P', cursive",
-    },
-    components: {
-      MuiTypography: {
-        styleOverrides: {
-          root: {
-            color: "#262626",
-          },
-        },
-      },
-      MuiCssBaseline: {
-        styleOverrides: `
-          @font-face {
-            font-family: "Press Start 2P";
-            font-style: normal;
-            font-display: swap;
-            font-weight: 400;
-            src: local("Press Start 2P"), url(${PressStart2P}) format("ttf");
-            unicodeRange: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF;
-          }
-        `,
-      },
-    },
-  });
 
   const scrollToElement = (id: string) => {
     const element = document.getElementById(id);
     element?.scrollIntoView({ behavior: "smooth" });
   };
 
+  useEffect(() => {
+    if (engine.towers?.length) {
+      engine.towers.forEach((tower) => {
+        tower.drawBase();
+      });
+    }
+  });
+
+  useEffect(() => {
+    // engine init
+    if (!engine.isInitialized) {
+      // set engine params
+      engine.isDemo = true;
+      engine.waveGenerator!.waveParams!.endWave = 100;
+      engine.waveGenerator!.waveTimeoutBetweenWaves = 0;
+      // init teh engine
+      engine
+        .init(gameWindow.current!)
+        .then(() => {
+          engine.map?.drawMap();
+          engine.map?.drawMapDecorations();
+
+          // set engine init flag to true
+          engine.isInitialized = true;
+          setIsLoading(false);
+
+          // start demo stage
+          engine.startDemo();
+          // debug
+          console.log(`engine`);
+          console.log(engine);
+          //
+        })
+        .catch((error) => {
+          throw new Error(
+            `Can't initialize teh engine, reason: ${error.reason ?? error}`,
+          );
+        });
+    }
+    // componentWillUnmount
+    return () => {
+      // reload teh engine
+      engine.gameStop();
+      cancelAnimationFrame(engine.animationFrameId);
+      engine.reload();
+    };
+  }, []);
+
   return (
-    <ThemeProvider theme={theme}>
-      <Container maxWidth={false} disableGutters={true}>
-        <Box
-          sx={{
-            backgroundImage: `url(${backgroundImg})`,
-            backgroundSize: "320px 320px",
-          }}
-        >
+    <ThemeProvider theme={gameTheme}>
+      <Grid
+        container
+        justifyContent="center"
+        alignItems="center"
+        sx={{
+          cursor: `url("${cursorPointer}"), auto`,
+          position: "relative",
+          background: `url("${!isLoading ? grassBg : ""}") 0 0 repeat`,
+          "& .b-game-window": {
+            position: "absolute",
+            top: 0,
+            left: 0,
+            justifyContent: "center",
+            width: "100%",
+            height: "100%",
+            zIndex: 1,
+            display: !isLoading ? "flex" : "none",
+          },
+          "& .b-home-page-wrapper": {
+            position: "relative",
+            zIndex: 10,
+          },
+          "& .b-loader-wrapper": {
+            position: "fixed",
+            display: "flex",
+            width: "100%",
+            height: "100%",
+            zIndex: 100,
+            left: 0,
+            top: 0,
+            background: "#444444",
+            opacity: 0.2,
+          },
+        }}
+      >
+        <>
+          <Box className="b-game-window" id="gameWindow" ref={gameWindow} />
+          {isLoading && (
+            <Grid
+              className="b-loader-wrapper"
+              justifyContent="center"
+              alignItems="center"
+            >
+              <CircularProgress />
+            </Grid>
+          )}
           <Box
+            className="b-home-page-wrapper"
             sx={{
-              display: "flex",
-              flexDirection: "column",
-              justifyContent: "flex-start",
-              position: "relative",
-              backgroundImage: `url(${mainPic})`,
-              backgroundRepeat: "no-repeat",
-              backgroundSize: "cover",
-              backgroundPosition: "center",
-              minHeight: "1152px",
-              maxWidth: "1920px",
-              margin: "0 auto",
+              "& a:hover": {
+                cursor: `url("${cursorHand}"), auto`,
+              },
             }}
           >
-            <Typography
-              variant="h2"
-              sx={{
-                textAlign: "center",
-                fontSize: "5rem",
-                margin: "160px 0 180px",
-                color: "#DFE0E7",
-              }}
-            >
-              Tower Defense
-            </Typography>
-            <Link
-              variant="h4"
-              component={RouterLink}
-              to={isAuth ? R.game : R.login}
-              sx={{
-                textAlign: "center",
-                marginBottom: "60px",
-                cursor: "pointer",
-                color: "#FFC08B",
-                textDecorationColor: "rgba(255, 192, 139, 0.4)",
-              }}
-            >
-              {isAuth ? "Играть" : "Войти"}
-            </Link>
-            <Link
-              variant="h4"
-              href="#about"
-              color="#FFC08B"
-              sx={{
-                textAlign: "center",
-                marginBottom: "60px",
-                cursor: "pointer",
-                color: "#FFC08B",
-              }}
-              onClick={() => scrollToElement("about")}
-            >
-              Об игре
-            </Link>
-            <Link
-              variant="h4"
-              component={RouterLink}
-              to={R.leaderboard}
-              color="#FFC08B"
-              sx={{
-                textAlign: "center",
-                marginBottom: "60px",
-                cursor: "pointer",
-                color: "#FFC08B",
-              }}
-            >
-              Лидерборд
-            </Link>
-            <Box
-              mt={5}
-              sx={{
-                backgroundImage: `url(${waterTiles})`,
-                backgroundRepeat: "no-repeat",
-                backgroundSize: "cover",
-                width: "256px",
-                height: "256px",
-                position: "absolute",
-                top: "220px",
-                right: isMatches ? "300px" : "460px",
-              }}
-            />
-          </Box>
-          <Box
-            sx={{
-              padding: "152px 300px 100px",
-              maxWidth: "1920px",
-              margin: "0 auto",
-              display: "flex",
-              flexDirection: "column",
-              justifyContent: "center",
-            }}
-            id="about"
-          >
-            <Typography
-              variant="h3"
-              sx={{
-                padding: "0 0 100px",
-                color: "#FFC08B",
-                textAlign: "center",
-              }}
-            >
-              Об игре
-            </Typography>
-            <Typography
-              variant="h5"
-              sx={{
-                padding: "0 0 60px",
-                textAlign: "left",
-              }}
-            >
-              Классический тавер дефенс. Цель игры - остановить монстров от
-              прохода через карту, путем постройки башен. Башни строятся за
-              деньги, которые игрок зарабатывает убийством монстров.
-            </Typography>
-            <Typography
-              variant="h4"
-              sx={{
-                padding: "0 0 60px 128px",
-                textAlign: "left",
-              }}
-            >
-              Есть несколько типов башен:
-            </Typography>
-            {gameDetails.towers.map((tower) => (
-              <ItemComponent
-                key={tower.image}
-                image={tower.image}
-                text={tower.text}
-                smallImage={false}
-              />
-            ))}
-            <Typography
-              variant="h5"
-              sx={{
-                padding: "0 0 60px",
-                textAlign: "left",
-              }}
-            >
-              У каждой башни есть три уровня улучшения. Время улучшения башни
-              зависит от текущего уровня башни. Более продвинутые башни
-              улучшаются дольше. Во время улучшения башня не может атаковать.
-            </Typography>
             <Box
               sx={{
                 display: "flex",
-                justifyContent: "center",
-                alignItems: "center",
-                marginBottom: "100px",
+                flexDirection: "column",
+                justifyContent: "flex-start",
+                position: "relative",
+                minHeight: "1152px",
+                maxWidth: "1920px",
+                margin: "0 auto",
+
+                "& > a": {
+                  color: ColorDict.sandColor,
+                  textAlign: "center",
+                  marginBottom: "60px",
+                },
               }}
             >
-              <img src={towerBase1} alt="Tower" />
               <Typography
-                variant="h5"
+                variant="h2"
                 sx={{
-                  margin: "0 80px",
+                  textAlign: "center",
+                  fontSize: "5rem",
+                  margin: "160px 0 180px",
+                  color: "#DFE0E7",
                 }}
               >
-                -&gt;
+                Tower Defense
               </Typography>
-              <img src={towerBase2} alt="Tower" />
-              <Typography
-                variant="h5"
-                sx={{
-                  margin: "0 80px",
-                }}
+              <Link
+                variant="h4"
+                color={ColorDict.sandColor}
+                component={RouterLink}
+                to={isAuth ? R.game : R.login}
               >
-                -&gt;
-              </Typography>
-              <img src={towerBase3} alt="Tower" />
+                {isAuth ? "Играть" : "Войти"}
+              </Link>
+              <Link
+                variant="h4"
+                href="#about"
+                color={ColorDict.sandColor}
+                onClick={() => scrollToElement("about")}
+              >
+                Об игре
+              </Link>
+              <Link
+                variant="h4"
+                color={ColorDict.sandColor}
+                component={RouterLink}
+                to={R.leaderboard}
+              >
+                Лидерборд
+              </Link>
             </Box>
-            <Typography
-              variant="h4"
+            <Box
               sx={{
-                padding: "0 0 60px 128px",
-                textAlign: "left",
+                padding: "152px 300px 100px",
+                maxWidth: "1920px",
+                margin: "0 auto",
+                display: "flex",
+                flexDirection: "column",
+                justifyContent: "center",
               }}
+              id="about"
             >
-              Несколько типов врагов:
-            </Typography>
-            {gameDetails.enemies.map((enemy) => (
-              <ItemComponent
-                key={enemy.image}
-                image={enemy.image}
-                text={enemy.text}
-                smallImage={true}
-              />
-            ))}
-            <Typography
-              variant="h4"
-              sx={{
-                textAlign: "left",
-                margin: "40px 0 60px 128px",
-              }}
-            >
-              Как играть:
-            </Typography>
-            <Typography
-              variant="h5"
-              sx={{
-                padding: "0 0 40px",
-                textAlign: "left",
-              }}
-            >
-              После старта игры через некоторое время по карте начнут идти
-              враги. Нужно строить башни, которые будут атаковать врагов и
-              мешать им дойти до конца карты.
-            </Typography>
-            <Typography
-              variant="h5"
-              sx={{
-                padding: "0 0 40px",
-                textAlign: "left",
-              }}
-            >
-              Игра состоит из нескольких волн или раундов. После убийства всех
-              врагов в текущей волне, после небольшой паузы, начинается
-              следующий раунд, в котором больше врагов, у них больше здоровья и
-              они быстрее перемещаются по карте.
-            </Typography>
-            <Typography
-              variant="h5"
-              sx={{
-                pb: 10,
-                textAlign: "left",
-              }}
-            >
-              С каждым новым раундом игрок так же получает больше золота за
-              убийство врагов. Когда враг доходит до конца дороги, у игрока
-              отнимается одна жизнь. Как только все жизни заканчиваются - игрок
-              проиграл.
-            </Typography>
-            <Link
-              variant="h4"
-              component={RouterLink}
-              to={isAuth ? R.game : R.login}
-              sx={{
-                textAlign: "center",
-                mt: 3,
-                cursor: "pointer",
-                color: "#FFC08B",
-                textDecorationColor: "rgba(255, 192, 139, 0.4)",
-              }}
-            >
-              {isAuth ? "Играть" : "Войти"}
-            </Link>
+              <>
+                <Typography
+                  variant="h3"
+                  sx={{
+                    padding: "0 0 100px",
+                    color: "#FFC08B",
+                    textAlign: "center",
+                  }}
+                >
+                  Об игре
+                </Typography>
+                <Typography
+                  variant="h5"
+                  sx={{
+                    padding: "0 0 60px",
+                    textAlign: "left",
+                  }}
+                >
+                  Классический тавер дефенс. Цель игры - остановить монстров от
+                  прохода через карту, путем постройки башен. Башни строятся за
+                  деньги, которые игрок зарабатывает убийством монстров.
+                </Typography>
+                <Typography
+                  variant="h4"
+                  sx={{
+                    padding: "0 0 60px 128px",
+                    textAlign: "left",
+                  }}
+                >
+                  Есть несколько типов башен:
+                </Typography>
+                {Object.entries(engine.predefinedTowerParams).map((tower) => {
+                  const towerType = tower[0] as TTowerTypes;
+                  return (
+                    <Box
+                      key={`b-tower-${towerType}-image-wrapper`}
+                      sx={{
+                        display: "flex",
+                        alignItems: "center",
+                        margin: "0 0 60px",
+                      }}
+                    >
+                      <TowerImage
+                        key={`b-enemy-${towerType}-image`}
+                        engine={engine}
+                        towerType={towerType}
+                      />
+                      <Typography
+                        key={`b-tower-${towerType}-description`}
+                        variant="h5"
+                        sx={{
+                          margin: "26px 0 0 60px",
+                          textAlign: "left",
+                        }}
+                      >
+                        {`${tower[1].towerParams?.description}`}
+                      </Typography>
+                    </Box>
+                  );
+                })}
+                <Typography
+                  variant="h5"
+                  sx={{
+                    padding: "0 0 60px",
+                    textAlign: "left",
+                  }}
+                >
+                  У каждой башни есть три уровня улучшения. Время улучшения
+                  башни зависит от текущего уровня башни. Более продвинутые
+                  башни улучшаются дольше. Во время улучшения башня не может
+                  атаковать.
+                </Typography>
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "center",
+                    alignItems: "center",
+                    marginBottom: "100px",
+                  }}
+                >
+                  <TowerImage
+                    engine={engine}
+                    towerType="three"
+                    upgradeLevel={0}
+                  />
+                  <Typography
+                    variant="h5"
+                    sx={{
+                      margin: "0 80px",
+                    }}
+                  >
+                    -&gt;
+                  </Typography>
+                  <TowerImage
+                    engine={engine}
+                    towerType="three"
+                    upgradeLevel={1}
+                  />
+                  <Typography
+                    variant="h5"
+                    sx={{
+                      margin: "0 80px",
+                    }}
+                  >
+                    -&gt;
+                  </Typography>
+                  <TowerImage
+                    engine={engine}
+                    towerType="three"
+                    upgradeLevel={2}
+                  />
+                </Box>
+                <Typography
+                  variant="h4"
+                  sx={{
+                    padding: "0 0 60px 128px",
+                    textAlign: "left",
+                  }}
+                >
+                  Несколько типов врагов:
+                </Typography>
+                {Object.entries(engine.enemySprites).map((enemy) => {
+                  const enemyType = enemy[0] as TEnemyType;
+                  return (
+                    <Box
+                      sx={{ display: "flex" }}
+                      key={`b-enemy-${enemyType}-image-wrapper`}
+                    >
+                      <EnemyImage
+                        key={`b-enemy-${enemyType}-image`}
+                        engine={engine}
+                        enemyType={enemyType}
+                      />
+                      <Typography
+                        key={`b-enemy-${enemyType}-description`}
+                        variant="h5"
+                        sx={{
+                          margin: "26px 0 0 60px",
+                          textAlign: "left",
+                          fontFamily: "'Press Start 2P', cursive",
+                        }}
+                      >
+                        {`${engine.enemySprites[enemyType]?.description}`}
+                      </Typography>
+                    </Box>
+                  );
+                })}
+                <Typography
+                  variant="h4"
+                  sx={{
+                    textAlign: "left",
+                    margin: "40px 0 60px 128px",
+                  }}
+                >
+                  Как играть:
+                </Typography>
+                <Typography
+                  variant="h5"
+                  sx={{
+                    padding: "0 0 40px",
+                    textAlign: "left",
+                  }}
+                >
+                  После старта игры через некоторое время по карте начнут идти
+                  враги. Нужно строить башни, которые будут атаковать врагов и
+                  мешать им дойти до конца карты.
+                </Typography>
+                <Typography
+                  variant="h5"
+                  sx={{
+                    padding: "0 0 40px",
+                    textAlign: "left",
+                  }}
+                >
+                  Игра состоит из нескольких волн или раундов. После убийства
+                  всех врагов в текущей волне, после небольшой паузы, начинается
+                  следующий раунд, в котором больше врагов, у них больше
+                  здоровья и они быстрее перемещаются по карте.
+                </Typography>
+                <Typography
+                  variant="h5"
+                  sx={{
+                    pb: 10,
+                    textAlign: "left",
+                  }}
+                >
+                  С каждым новым раундом игрок так же получает больше золота за
+                  убийство врагов. Когда враг доходит до конца дороги, у игрока
+                  отнимается одна жизнь. Как только все жизни заканчиваются -
+                  игрок проиграл.
+                </Typography>
+                <Link
+                  variant="h4"
+                  component={RouterLink}
+                  to={isAuth ? R.game : R.login}
+                  sx={{
+                    textAlign: "center",
+                    mt: 3,
+                    cursor: "pointer",
+                    color: "#FFC08B",
+                    textDecorationColor: "rgba(255, 192, 139, 0.4)",
+                  }}
+                >
+                  {isAuth ? "Играть" : "Войти"}
+                </Link>
+              </>
+            </Box>
           </Box>
-        </Box>
-      </Container>
+        </>
+      </Grid>
     </ThemeProvider>
   );
 }

@@ -1,7 +1,7 @@
 import { Box, Typography } from "@mui/material";
 import { shallow } from "zustand/shallow";
 import sidePanelBg from "@/../public/UI/sidePanelBg.png";
-import { TDEngine, TTowerTypes } from "@/pages/Game/engine/TDEngine";
+import { ColorDict, TDEngine, TTowerTypes } from "@/pages/Game/engine/TDEngine";
 import { BuildMenuTower } from "@/pages/Game/components/BuildMenuTower/BuildMenuTower";
 import { useGameStore } from "@/store";
 import { SpellMenu } from "@/pages/Game/components/SpellMenu/SpellMenu";
@@ -23,7 +23,7 @@ export const BuildMenu = ({ engine }: IBuildMenu) => {
     <Box
       sx={{
         display: isGameStarted ? "flex" : "none",
-        zIndex: 100,
+        zIndex: 101,
         position: "absolute",
         width: "100%",
         height: `${engine.map?.tileToNumber(4)}px`,
@@ -85,7 +85,7 @@ export const BuildMenu = ({ engine }: IBuildMenu) => {
             height: "32px",
             textAlign: "center",
             fontSize: "1.5em",
-            color: "#262626",
+            color: ColorDict.fontColor,
           },
         }}
       >

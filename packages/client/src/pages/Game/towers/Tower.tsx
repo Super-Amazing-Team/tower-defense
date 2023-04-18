@@ -47,6 +47,7 @@ export interface ITower {
     fireFromCoords?: ITwoDCoordinates;
     price?: number;
     maxUpgradeLevel?: number;
+    description: string;
   };
   projectileParams: {
     acceleration: number;
@@ -131,6 +132,7 @@ export class Tower {
       fireFromCoords: { x: 0, y: 0 },
       maxUpgradeLevel: 2,
       price: 15,
+      description: "",
     },
     public projectileParams: ITower["projectileParams"] = {
       acceleration: 1.2,

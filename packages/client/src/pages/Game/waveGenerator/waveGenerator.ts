@@ -50,7 +50,7 @@ export class WaveGenerator {
     const isBossWave = this.waveParams.waveType === "boss";
     let enemiesArray: Enemy[] = [];
     let speedCoefficient = 1;
-    let hpCoefficient = 1;
+    let hpCoefficient = this.engine.isDemo ? 5 : 1;
     let bounty = Math.floor(
       1 + this.waveParams.enemyBountyCoefficient * this.waveParams.currentWave,
     );

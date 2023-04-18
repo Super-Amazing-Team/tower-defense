@@ -7,6 +7,7 @@ import { TDEngine } from "@/pages/Game/engine/TDEngine";
 import wispAnimation from "@/../public/UI/wispAnimation.gif";
 import { TRoutes as R } from "@/types";
 import cursorHand from "@/../public/UI/cursorHand.png";
+import grassBg from "@/../public/sprites/map/grassBg.png";
 
 interface IGameMenu {
   engine: TDEngine;
@@ -42,7 +43,7 @@ export const GameMenu = ({ engine }: IGameMenu) => {
         top: 0,
         width: "100%",
         height: "100%",
-        background: `url("${engine.map?.grassBackrgroundCanvas?.toDataURL()}") repeat`,
+        background: `url("${grassBg}") repeat`,
         justifyContent: "center",
       }}
     >

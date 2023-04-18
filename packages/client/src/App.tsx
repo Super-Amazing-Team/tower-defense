@@ -68,8 +68,7 @@ const App = () => {
                   <Route path={R.topic} element={<Topic />} />
                 </Route>
               </Route>
-
-              <Route path={R.home} element={<Home />} />
+              <Route path={R.home} element={<Home engine={engine} />} />
               <Route path={R.page500} element={<Page500 />} />
               <Route path="*" element={<Page404 />} />
             </Routes>

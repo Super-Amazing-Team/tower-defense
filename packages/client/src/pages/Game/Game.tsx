@@ -10,9 +10,10 @@ import { SideMenu } from "@/pages/Game/components/SideMenu/SideMenu";
 import { BuildMenu } from "@/pages/Game/components/BuildMenu/BuildMenu";
 import { GameMenu } from "@/pages/Game/components/GameMenu/GameMenu";
 import { UiMessage } from "@/pages/Game/components/UIMessage/UIMessage";
+import grassBg from "@/../public/sprites/map/grassBg.png";
 
 // mui theme
-const theme = createTheme({
+export const gameTheme = createTheme({
   components: {
     MuiMenuItem: {
       styleOverrides: {
@@ -27,7 +28,6 @@ const theme = createTheme({
         root: {
           color: ColorDict.fontColor,
           fontFamily: "'Press Start 2P', cursive",
-          fontSize: "0.7em",
         },
       },
     },
@@ -36,7 +36,6 @@ const theme = createTheme({
         root: {
           color: ColorDict.fontColor,
           fontFamily: "'Press Start 2P', cursive",
-          fontSize: "0.75em",
         },
       },
     },
@@ -83,10 +82,24 @@ export const Game = ({ engine = new TDEngine() }: IGameProps) => {
           );
         });
     }
+    // componentWillUnmount
+    return () => {
+      // remove event listeners
+      engine.removeDocumentEventListeners();
+      engine.gameStop();
+      cancelAnimationFrame(engine.animationFrameId);
+      // reload the engine
+      engine.reload();
+    };
   }, []);
 
   useEffect(() => {
     if (engine.isInitialized) {
+      if (engine.towers?.length) {
+        engine.towers.forEach((tower) => {
+          tower.drawBase();
+        });
+      }
       // game start
       if (isGameStarted) {
         engine.gameStart();
@@ -98,22 +111,10 @@ export const Game = ({ engine = new TDEngine() }: IGameProps) => {
       // add hotkey listeners
       engine.addDocumentEventListeners();
     }
-
-    // componentWillUnmount
-    return () => {
-      if (engine.isInitialized) {
-        if (isGameStarted) {
-          // pause teh game
-          engine.gameStop();
-        }
-        // remove event listeners
-        // engine.removeDocumentEventListeners();
-      }
-    };
   }, [isGameStarted]);
 
   return (
-    <ThemeProvider theme={theme}>
+    <ThemeProvider theme={gameTheme}>
       <Grid
         container
         justifyContent="center"
@@ -121,13 +122,19 @@ export const Game = ({ engine = new TDEngine() }: IGameProps) => {
         sx={{
           cursor: `url("${cursorPointer}"), auto`,
           position: "relative",
+          background: `url("${!isLoading ? grassBg : ""}") 0 0 repeat`,
           "& .b-game-window": {
+            top: 0,
+            left: 0,
             position: "absolute",
             display: !isLoading ? "flex" : "none",
           },
-          background: `url("${
-            !isLoading ? engine.map?.grassBackrgroundCanvas?.toDataURL() : 0
-          }") 0 0 repeat`,
+          "& p": {
+            fontSize: "0.7em",
+          },
+          "& button": {
+            fontSize: "0.75em",
+          },
         }}
       >
         {!isLoading && <GameUi engine={engine} />}
@@ -138,8 +145,8 @@ export const Game = ({ engine = new TDEngine() }: IGameProps) => {
           <Box
             sx={{
               position: "relative",
-              width: `${engine.map?.mapParams?.width}px`,
-              height: `${engine.map?.mapParams?.height}px`,
+              width: `100%`,
+              height: `100%`,
               overflow: "hidden",
             }}
           >

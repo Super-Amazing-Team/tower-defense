@@ -121,6 +121,7 @@ interface IEnemySprite {
   spriteLeftRow: number;
   spriteUpRow: number;
   spriteDownRow: number;
+  description?: string;
 }
 
 export interface ITwoDCoordinates {
@@ -135,8 +136,7 @@ export interface ITDEngine {
   towers?: Tower[];
   projectiles?: Projectile[];
   spells?: Spell[];
-  map?: Map;
-  currentMapVariant: IMap["stageArr"];
+  map?: Map | null;
   animationFrameId: number;
   twoDCoordinates: ITwoDCoordinates;
   lives: number;
@@ -163,6 +163,8 @@ export interface ITDEngine {
   isNotEnoughMana: boolean;
   isGameMenuOpen: boolean;
   isSoundEnabled: boolean;
+  isDemo: boolean;
+  demoTimeoutArr: NodeJS.Timer[];
   canvasMouseMoveEvent: EventListener | null;
   draftSpell: Spell | null;
   draftTower: Tower | null;
@@ -228,7 +230,6 @@ export class TDEngine {
     public context: ITDEngine["context"] = {},
     public gameWindow: ITDEngine["gameWindow"] = null,
     public animationFrameId: ITDEngine["animationFrameId"] = 0,
-    public UIGameIsOver?: ITDEngine["UIDispatchBoolean"],
     public lives: ITDEngine["lives"] = 0,
     public score: ITDEngine["score"] = 0,
     public money: ITDEngine["money"] = 0,
@@ -254,7 +255,8 @@ export class TDEngine {
       mapBackground: 12,
       map: 11,
     } as const,
-    public currentMapVariant: ITDEngine["currentMapVariant"] = [],
+    public isDemo: ITDEngine["isDemo"] = false,
+    public demoTimeoutArr: ITDEngine["demoTimeoutArr"] = [],
     public isInitialized: ITDEngine["isInitialized"] = false,
     public promiseArr: ITDEngine["promiseArr"] = [],
     public isCanvasCreated: ITDEngine["isCanvasCreated"] = false,
@@ -453,6 +455,7 @@ export class TDEngine {
         spriteDownRow: 3,
         framesPerSprite: 8,
         deathFramesPerSprite: 11,
+        description: "обычный враг, жук. все параметры средние",
       },
       leafbug: {
         spriteSourcePath: "leafbugSprite.png",
@@ -465,6 +468,7 @@ export class TDEngine {
         spriteDownRow: 4,
         framesPerSprite: 8,
         deathFramesPerSprite: 8,
+        description: "медленный враг, гусеница. больше хп, меньше скорость",
       },
       clampbeetle: {
         spriteSourcePath: "clampbeetleSprite.png",
@@ -477,6 +481,8 @@ export class TDEngine {
         spriteRightRow: 6,
         framesPerSprite: 8,
         deathFramesPerSprite: 13,
+        description:
+          "толстый враг, летающий жук. больше хп, все остальные параметры средние",
       },
       scorpion: {
         spriteSourcePath: "scorpionSprite.png",
@@ -489,6 +495,7 @@ export class TDEngine {
         spriteRightRow: 6,
         framesPerSprite: 8,
         deathFramesPerSprite: 8,
+        description: "обычный враг, скорпион. все параметры средние",
       },
       firelocust: {
         spriteSourcePath: "firelocustSprite.png",
@@ -501,6 +508,8 @@ export class TDEngine {
         spriteDownRow: 4,
         framesPerSprite: 12,
         deathFramesPerSprite: 14,
+        description:
+          "быстрый враг, летающая бабочка. больше скорость перемещения, меньше хп",
       },
       firewasp: {
         spriteSourcePath: "firewaspSprite.png",
@@ -513,6 +522,7 @@ export class TDEngine {
         spriteDownRow: 7,
         framesPerSprite: 8,
         deathFramesPerSprite: 11,
+        description: "босс. много здоровья, сопротивление магическим эффектам",
       },
     },
     public predefinedSpellParams: ITDEngine["predefinedSpellParams"] = {
@@ -640,6 +650,8 @@ export class TDEngine {
           strokeStyle: ColorDict.towerRangeColor,
           maxUpgradeLevel: 2,
           price: 25,
+          description:
+            "Средняя скорость атаки, но с средний урон башни со стрелами. Средний радиус атаки.",
         },
         projectileParams: {
           acceleration: 1.5,
@@ -707,6 +719,8 @@ export class TDEngine {
           fireFromCoords: { x: 0, y: 0 },
           maxUpgradeLevel: 2,
           price: 35,
+          description:
+            "Быстрые, но наносящие мало урона башни с молнией. Оглушают врага на короткий промежуток времени. Радиус атаки меньше среднего.",
         },
         projectileParams: {
           acceleration: 1.2,
@@ -776,6 +790,8 @@ export class TDEngine {
           fireFromCoords: { x: 0, y: 0 },
           maxUpgradeLevel: 2,
           price: 45,
+          description:
+            "Cредние по скорости атаки, но отравляющие врагов башни с рогаткой. Радиус атаки больше среднего.",
         },
         projectileParams: {
           acceleration: 1.2,
@@ -843,6 +859,8 @@ export class TDEngine {
           fireFromCoords: { x: 0, y: 0 },
           maxUpgradeLevel: 2,
           price: 45,
+          description:
+            "Медленные, но атакующие сплешем (всех врагов в небольшом радиусе) башни с молотом. Маленький радиус атаки.",
         },
         projectileParams: {
           acceleration: 1.2,
@@ -1024,6 +1042,212 @@ export class TDEngine {
     this.gameWindow?.removeEventListener("click", this.canvasClickCallback);
   };
 
+  public startDemo() {
+    gameStore.getState().updateIsGameStarted(true);
+    // set game params
+    this.lives = 10000;
+    this.money = 10000;
+    this.mana = 10000;
+    // set demo stage timeouts
+    const demoStageTimeout = {
+      enemiesSpawn: 1000,
+      buildTowers: 3000,
+      updateTower: 20000,
+      spellCast: 5000,
+    };
+    // slice tiles to build in demo mode
+    let demoBuildTilesArr = this.map?.mapParams?.mapTilesArr.filter(
+      (tile) =>
+        tile.y <= this.map?.tileToNumber(4)! &&
+        tile.y > this.map?.tileToNumber(2)!,
+    );
+    // make tower types arr
+    const towerTypesArr: TTowerTypes[] = ["one", "two", "three", "four"];
+    const spellTypesArr: TSpellTypes[] = [
+      "fireball",
+      "tornado",
+      "water",
+      "rock",
+    ];
+    const getRandomTile = (arr: ITwoDCoordinates[]) => {
+      const tile = arr!
+        .sort(() => Math.random() - Math.random())
+        .slice(0, arr!.length)[0];
+      // pop this tile
+      demoBuildTilesArr = demoBuildTilesArr?.filter(
+        (tileParam) => tileParam.x !== tile.x || tileParam.y !== tile.y,
+      );
+      return {
+        x: tile.x + this.map?.mapParams?.gridStep!,
+        y: tile.y + this.map?.mapParams?.gridStep!,
+      };
+    };
+
+    const castRandomSpell = () => {
+      if (
+        this.enemies?.length &&
+        this.waveGenerator?.waveParams?.isWaveInProgress
+      ) {
+        const spellType: TSpellTypes =
+          spellTypesArr[Math.floor(Math.random() * spellTypesArr.length)];
+        const visibleEnemies = this.enemies.filter(
+          (enemy) =>
+            enemy.currentPosition.x > this.map?.tileToNumber(1)! &&
+            enemy.currentPosition.x <
+              this.map?.tileToNumber(this.map?.mapParams?.widthTile - 1)!,
+        );
+        const spellPosition =
+          visibleEnemies[Math.floor(Math.random() * visibleEnemies.length)]
+            .currentPosition;
+        const collisionPoint = {
+          x:
+            spellPosition.x! -
+            this.predefinedSpellParams[spellType].spell.width / 2,
+          y:
+            spellPosition.y! -
+            this.predefinedSpellParams[spellType].spell.height / 2,
+        };
+        const currentPosition = {
+          x:
+            this.predefinedSpellParams[spellType].spellParams.spellDirection ===
+            "left"
+              ? spellPosition.x! - this.map?.mapParams?.gridStep! * 4
+              : collisionPoint.x!,
+          y: spellPosition.y! - this.map?.mapParams?.gridStep! * 4,
+        };
+        // create spell draft
+        this.draftSpell = new Spell(this, spellType, {
+          attackDamage:
+            this.predefinedSpellParams[spellType].spellParams.attackDamage,
+          attackRange:
+            this.predefinedSpellParams[spellType].spellParams.attackRange,
+          movementSpeed:
+            this.predefinedSpellParams[spellType].spellParams.movementSpeed,
+          manaCost: this.predefinedSpellParams[spellType].spellParams.manaCost,
+          spellDirection:
+            this.predefinedSpellParams[spellType].spellParams.spellDirection,
+        });
+        this.draftSpell.spellParams = structuredClone(
+          this.predefinedSpellParams[spellType].spellParams,
+        );
+        this.draftSpell.spellParams.currentPosition = currentPosition;
+        this.draftSpell.spellParams.collisionPoint = collisionPoint;
+        // cast a spell
+        this.spells?.push(this.draftSpell);
+        this.draftSpell = null;
+      }
+    };
+
+    const buildRandomTower = () => {
+      const buildTile = getRandomTile(demoBuildTilesArr!);
+      const towerType: TTowerTypes =
+        towerTypesArr[Math.floor(Math.random() * towerTypesArr.length)];
+      // make new tower
+      this.draftTower = new Tower(
+        this,
+        towerType,
+        0,
+        buildTile,
+        structuredClone(this.predefinedTowerParams[towerType]?.towerParams!),
+        structuredClone(
+          this.predefinedTowerParams[towerType]?.projectileParams!,
+        ),
+      );
+      // and build it
+      this.draftTower!.renderParams.isConstructing = true;
+      this.towers?.push(this.draftTower);
+      // clear draft tower
+      this.draftTower = null;
+    };
+
+    const buildRandomTowers = () => {
+      buildRandomTower();
+      this.demoTimeoutArr.push(
+        setTimeout(buildRandomTower, Math.floor(Math.random() * 10000)),
+      );
+      this.demoTimeoutArr.push(
+        setTimeout(buildRandomTower, Math.floor(Math.random() * 20000)),
+      );
+      this.demoTimeoutArr.push(
+        setTimeout(buildRandomTower, Math.floor(Math.random() * 30000)),
+      );
+      this.demoTimeoutArr.push(
+        setTimeout(buildRandomTower, Math.floor(Math.random() * 40000)),
+      );
+    };
+
+    // emulate user game actions by random timeouts
+    // start game and spawn enemies
+    this.demoTimeoutArr.push(
+      setTimeout(() => {
+        this.waveGenerator = new WaveGenerator(this);
+        this.waveGenerator.init();
+        this.gameStart();
+      }, demoStageTimeout.enemiesSpawn),
+    );
+    // build random towers
+    this.demoTimeoutArr.push(
+      setTimeout(() => {
+        buildRandomTowers();
+      }, demoStageTimeout.buildTowers),
+    );
+    // update random tower
+    this.demoTimeoutArr.push(
+      setInterval(() => {
+        const readyForUpgradeTowerArray = this.towers?.filter(
+          (tower) =>
+            tower.renderParams.isConstructing !== true ||
+            tower.renderParams.isConstructionEnd !== true,
+        );
+        const tower =
+          readyForUpgradeTowerArray![
+            Math.floor(Math.random() * this.towers?.length!)
+          ];
+        this.upgradeTower(tower);
+        this.clearContext(this.context!.towerRange!);
+      }, demoStageTimeout.updateTower),
+    );
+    // cast random spell
+    this.demoTimeoutArr.push(
+      setInterval(() => {
+        castRandomSpell();
+      }, demoStageTimeout.spellCast),
+    );
+  }
+
+  public reload() {
+    const { updateIsGameStarted, updateIsGameMenuOpen } = gameStore.getState();
+    // disable music
+    this.sound?.soundArr?.gameStart?.pause();
+    updateIsGameMenuOpen(true);
+    updateIsGameStarted(false);
+    cancelAnimationFrame(this.animationFrameId);
+    this.animationFrameId = 0;
+    this.lives = this.initialGameParams.lives;
+    this.money = this.initialGameParams.money;
+    this.mana = this.initialGameParams.mana;
+    this.isDemo = false;
+    this.map = null;
+    this.isCanvasCreated = false;
+    this.isDemo = false;
+    this.isInitialized = false;
+    this.gameWindow = null;
+    this.enemies = [];
+    this.deadEnemies = [];
+    this.towers = [];
+    this.projectiles = [];
+    this.spells = [];
+    this.waveGenerator = new WaveGenerator(this);
+    this.isGameStarted = false;
+    this.demoTimeoutArr.forEach((timer) => clearTimeout(timer));
+    this.demoTimeoutArr = [];
+    this.draftSpell = null;
+    this.draftTower = null;
+    // debug
+    console.log(`engine reload!`);
+    //
+  }
+
   public gameRestart() {
     // clear memory
     this.enemies = [];
@@ -1092,11 +1316,13 @@ export class TDEngine {
     if (!gameStore.getState().isGameStarted) {
       gameStore.getState().updateIsGameStarted(true);
     } else {
-      this.gameLoop();
+      if (!this.animationFrameId) {
+        this.gameLoop();
+      }
       // add event listeners
       this.addEventListeners();
       // game start play sound
-      if (this.isSoundEnabled) {
+      if (this.isSoundEnabled && !this.isDemo) {
         this.sound?.soundArr?.gameStart?.play();
       }
       // close game menu if opened
@@ -1111,6 +1337,7 @@ export class TDEngine {
       gameStore.getState().updateIsGameStarted(false);
     } else {
       cancelAnimationFrame(this.animationFrameId);
+      this.animationFrameId = 0;
       // remove event listeners
       this.removeEventListeners();
 
@@ -1119,7 +1346,7 @@ export class TDEngine {
         this.sound?.soundArr?.gameStart?.pause();
       }
       // close game menu if opened
-      if (gameStore.getState().isGameMenuOpen) {
+      if (gameStore.getState().isGameMenuOpen && !this.isDemo) {
         gameStore.getState().updateIsGameMenuOpen(false);
       }
     }
@@ -2013,7 +2240,9 @@ export class TDEngine {
     };
     this.spells?.push(this.draftSpell!);
     this.mana -= this.draftSpell?.spellParams?.manaCost!;
-    gameStore.getState().updateMana(this.mana);
+    if (!this.isDemo) {
+      gameStore.getState().updateMana(this.mana);
+    }
     this.isCanCast = false;
     this.draftSpell = null;
     /*
