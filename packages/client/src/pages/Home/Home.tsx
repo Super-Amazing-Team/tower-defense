@@ -120,6 +120,15 @@ export function Home({ engine }: IHome) {
             background: "#444444",
             opacity: 0.2,
           },
+          "& .b-text-background": {
+            border: `4px solid ${ColorDict.borderColor}`,
+            borderRadius: "8px",
+            background: ColorDict.sandColor,
+            padding: "32px",
+          },
+          "& h4": {
+            color: ColorDict.sandColor,
+          },
         }}
       >
         <>
@@ -216,186 +225,194 @@ export function Home({ engine }: IHome) {
                 >
                   Об игре
                 </Typography>
-                <Typography
-                  variant="h5"
-                  sx={{
-                    padding: "0 0 60px",
-                    textAlign: "left",
-                  }}
-                >
-                  Классический тавер дефенс. Цель игры - остановить монстров от
-                  прохода через карту, путем постройки башен. Башни строятся за
-                  деньги, которые игрок зарабатывает убийством монстров.
-                </Typography>
+                <Box className="b-text-background">
+                  <Typography
+                    variant="h5"
+                    sx={{
+                      textAlign: "left",
+                    }}
+                  >
+                    Классический тавер дефенс. Цель игры - остановить монстров
+                    от прохода через карту, путем постройки башен. Башни
+                    строятся за деньги, которые игрок зарабатывает убийством
+                    монстров.
+                  </Typography>
+                </Box>
                 <Typography
                   variant="h4"
                   sx={{
-                    padding: "0 0 60px 128px",
+                    padding: "60px 0 60px 128px",
                     textAlign: "left",
                   }}
                 >
                   Есть несколько типов башен:
                 </Typography>
-                {Object.entries(engine.predefinedTowerParams).map((tower) => {
-                  const towerType = tower[0] as TTowerTypes;
-                  return (
-                    <Box
-                      key={`b-tower-${towerType}-image-wrapper`}
-                      sx={{
-                        display: "flex",
-                        alignItems: "center",
-                        margin: "0 0 60px",
-                      }}
-                    >
-                      <TowerImage
-                        key={`b-enemy-${towerType}-image`}
-                        engine={engine}
-                        towerType={towerType}
-                      />
-                      <Typography
-                        key={`b-tower-${towerType}-description`}
-                        variant="h5"
+                <Box className="b-text-background">
+                  {Object.entries(engine.predefinedTowerParams).map((tower) => {
+                    const towerType = tower[0] as TTowerTypes;
+                    return (
+                      <Box
+                        key={`b-tower-${towerType}-image-wrapper`}
                         sx={{
-                          margin: "26px 0 0 60px",
-                          textAlign: "left",
+                          display: "flex",
+                          alignItems: "center",
+                          margin: "0 0 60px",
                         }}
                       >
-                        {`${tower[1].towerParams?.description}`}
-                      </Typography>
-                    </Box>
-                  );
-                })}
-                <Typography
-                  variant="h5"
-                  sx={{
-                    padding: "0 0 60px",
-                    textAlign: "left",
-                  }}
-                >
-                  У каждой башни есть три уровня улучшения. Время улучшения
-                  башни зависит от текущего уровня башни. Более продвинутые
-                  башни улучшаются дольше. Во время улучшения башня не может
-                  атаковать.
-                </Typography>
-                <Box
-                  sx={{
-                    display: "flex",
-                    justifyContent: "center",
-                    alignItems: "center",
-                    marginBottom: "100px",
-                  }}
-                >
-                  <TowerImage
-                    engine={engine}
-                    towerType="three"
-                    upgradeLevel={0}
-                  />
+                        <TowerImage
+                          key={`b-enemy-${towerType}-image`}
+                          engine={engine}
+                          towerType={towerType}
+                        />
+                        <Typography
+                          key={`b-tower-${towerType}-description`}
+                          variant="h5"
+                          sx={{
+                            margin: "26px 0 0 60px",
+                            textAlign: "left",
+                          }}
+                        >
+                          {`${tower[1].towerParams?.description}`}
+                        </Typography>
+                      </Box>
+                    );
+                  })}
                   <Typography
                     variant="h5"
                     sx={{
-                      margin: "0 80px",
+                      padding: "0 0 60px",
+                      textAlign: "left",
                     }}
                   >
-                    -&gt;
+                    У каждой башни есть три уровня улучшения. Время улучшения
+                    башни зависит от текущего уровня башни. Более продвинутые
+                    башни улучшаются дольше. Во время улучшения башня не может
+                    атаковать.
                   </Typography>
-                  <TowerImage
-                    engine={engine}
-                    towerType="three"
-                    upgradeLevel={1}
-                  />
-                  <Typography
-                    variant="h5"
+                  <Box
                     sx={{
-                      margin: "0 80px",
+                      display: "flex",
+                      justifyContent: "center",
+                      alignItems: "center",
+                      marginBottom: "100px",
                     }}
                   >
-                    -&gt;
-                  </Typography>
-                  <TowerImage
-                    engine={engine}
-                    towerType="three"
-                    upgradeLevel={2}
-                  />
+                    <TowerImage
+                      engine={engine}
+                      towerType="three"
+                      upgradeLevel={0}
+                    />
+                    <Typography
+                      variant="h5"
+                      sx={{
+                        margin: "0 80px",
+                      }}
+                    >
+                      -&gt;
+                    </Typography>
+                    <TowerImage
+                      engine={engine}
+                      towerType="three"
+                      upgradeLevel={1}
+                    />
+                    <Typography
+                      variant="h5"
+                      sx={{
+                        margin: "0 80px",
+                      }}
+                    >
+                      -&gt;
+                    </Typography>
+                    <TowerImage
+                      engine={engine}
+                      towerType="three"
+                      upgradeLevel={2}
+                    />
+                  </Box>
                 </Box>
                 <Typography
                   variant="h4"
                   sx={{
-                    padding: "0 0 60px 128px",
+                    padding: "60px 0 60px 128px",
                     textAlign: "left",
                   }}
                 >
                   Несколько типов врагов:
                 </Typography>
-                {Object.entries(engine.enemySprites).map((enemy) => {
-                  const enemyType = enemy[0] as TEnemyType;
-                  return (
-                    <Box
-                      sx={{ display: "flex" }}
-                      key={`b-enemy-${enemyType}-image-wrapper`}
-                    >
-                      <EnemyImage
-                        key={`b-enemy-${enemyType}-image`}
-                        engine={engine}
-                        enemyType={enemyType}
-                      />
-                      <Typography
-                        key={`b-enemy-${enemyType}-description`}
-                        variant="h5"
-                        sx={{
-                          margin: "26px 0 0 60px",
-                          textAlign: "left",
-                          fontFamily: "'Press Start 2P', cursive",
-                        }}
+                <Box className="b-text-background">
+                  {Object.entries(engine.enemySprites).map((enemy) => {
+                    const enemyType = enemy[0] as TEnemyType;
+                    return (
+                      <Box
+                        sx={{ display: "flex" }}
+                        key={`b-enemy-${enemyType}-image-wrapper`}
                       >
-                        {`${engine.enemySprites[enemyType]?.description}`}
-                      </Typography>
-                    </Box>
-                  );
-                })}
+                        <EnemyImage
+                          key={`b-enemy-${enemyType}-image`}
+                          engine={engine}
+                          enemyType={enemyType}
+                        />
+                        <Typography
+                          key={`b-enemy-${enemyType}-description`}
+                          variant="h5"
+                          sx={{
+                            margin: "26px 0 0 60px",
+                            textAlign: "left",
+                            fontFamily: "'Press Start 2P', cursive",
+                          }}
+                        >
+                          {`${engine.enemySprites[enemyType]?.description}`}
+                        </Typography>
+                      </Box>
+                    );
+                  })}
+                </Box>
                 <Typography
                   variant="h4"
                   sx={{
                     textAlign: "left",
-                    margin: "40px 0 60px 128px",
+                    margin: "60px 0 60px 128px",
                   }}
                 >
                   Как играть:
                 </Typography>
-                <Typography
-                  variant="h5"
-                  sx={{
-                    padding: "0 0 40px",
-                    textAlign: "left",
-                  }}
-                >
-                  После старта игры через некоторое время по карте начнут идти
-                  враги. Нужно строить башни, которые будут атаковать врагов и
-                  мешать им дойти до конца карты.
-                </Typography>
-                <Typography
-                  variant="h5"
-                  sx={{
-                    padding: "0 0 40px",
-                    textAlign: "left",
-                  }}
-                >
-                  Игра состоит из нескольких волн или раундов. После убийства
-                  всех врагов в текущей волне, после небольшой паузы, начинается
-                  следующий раунд, в котором больше врагов, у них больше
-                  здоровья и они быстрее перемещаются по карте.
-                </Typography>
-                <Typography
-                  variant="h5"
-                  sx={{
-                    pb: 10,
-                    textAlign: "left",
-                  }}
-                >
-                  С каждым новым раундом игрок так же получает больше золота за
-                  убийство врагов. Когда враг доходит до конца дороги, у игрока
-                  отнимается одна жизнь. Как только все жизни заканчиваются -
-                  игрок проиграл.
-                </Typography>
+                <Box className="b-text-background">
+                  <Typography
+                    variant="h5"
+                    sx={{
+                      padding: "0 0 40px",
+                      textAlign: "left",
+                    }}
+                  >
+                    После старта игры через некоторое время по карте начнут идти
+                    враги. Нужно строить башни, которые будут атаковать врагов и
+                    мешать им дойти до конца карты.
+                  </Typography>
+                  <Typography
+                    variant="h5"
+                    sx={{
+                      padding: "0 0 40px",
+                      textAlign: "left",
+                    }}
+                  >
+                    Игра состоит из нескольких волн или раундов. После убийства
+                    всех врагов в текущей волне, после небольшой паузы,
+                    начинается следующий раунд, в котором больше врагов, у них
+                    больше здоровья и они быстрее перемещаются по карте.
+                  </Typography>
+                  <Typography
+                    variant="h5"
+                    sx={{
+                      pb: 10,
+                      textAlign: "left",
+                    }}
+                  >
+                    С каждым новым раундом игрок так же получает больше золота
+                    за убийство врагов. Когда враг доходит до конца дороги, у
+                    игрока отнимается одна жизнь. Как только все жизни
+                    заканчиваются - игрок проиграл.
+                  </Typography>
+                </Box>
                 <Link
                   variant="h4"
                   component={RouterLink}
@@ -403,8 +420,7 @@ export function Home({ engine }: IHome) {
                   sx={{
                     textAlign: "center",
                     mt: 3,
-                    cursor: "pointer",
-                    color: "#FFC08B",
+                    color: ColorDict.sandColor,
                     textDecorationColor: "rgba(255, 192, 139, 0.4)",
                   }}
                 >
