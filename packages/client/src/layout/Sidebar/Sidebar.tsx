@@ -33,7 +33,7 @@ const authMenu = [
 ];
 
 const notAuthMenu = [
-  { text: "main", icon: <SportsEsportsIcon />, path: R.home },
+  { text: "home", icon: <HomeIcon />, path: R.home },
   { text: "login", icon: <LoginIcon />, path: R.login },
   { text: "register", icon: <HowToRegIcon />, path: R.register },
   { text: "leaderboard", icon: <LeaderboardIcon />, path: R.leaderboard },
@@ -92,3 +92,4 @@ export function Sidebar() {
     </Drawer>
   );
 }
+
