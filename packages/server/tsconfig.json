@@ -4,7 +4,7 @@
     "composite": true,
     "target": "esnext",
     "module": "esnext",
-    "moduleResolution": "Node",
+    "moduleResolution": "node",
     "esModuleInterop": true,
     "sourceMap": true,
     "declaration": true,
@@ -18,12 +18,12 @@
     "noUnusedParameters": true,
     "noUnusedLocals": true,
     "forceConsistentCasingInFileNames": true,
-    "importsNotUsedAsValues": "error",
     "lib": ["DOM", "es2021", "esnext.asynciterable"],
     "types": ["node", "jest"],
     "baseUrl": ".",
     "paths": {
-      "*": ["types/*"]
+      "@/*": ["../client/src/*"],
+      "@/utils": ["../client/src/utils"]
     },
     "outDir": "dist"
   }

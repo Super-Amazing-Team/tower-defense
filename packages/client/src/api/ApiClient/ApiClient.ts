@@ -1,5 +1,6 @@
 import { z } from "zod";
 import APIService from "../baseService";
+import ApiForumService from "../baseService/forum";
 import { IApiClient } from "./types";
 import { registerSchema, userSchema } from "./schema";
 import { checkOnLine } from "@/utils";
@@ -61,5 +62,24 @@ export const ApiClient: IApiClient = {
   },
   async signInWithYandex(body) {
     return APIService.post("/oauth/yandex", body);
+  },
+
+  async getAllTopics() {
+    return ApiForumService.get("/topic");
+  },
+  async getTopicById(body) {
+    return ApiForumService.get(`/topic/${body}`);
+  },
+  async createTopic(body) {
+    return ApiForumService.post(`/topic`, body);
+  },
+  async createMessage(body) {
+    return ApiForumService.post(`/message`, body);
+  },
+  async likeMessage(id: number, userId: string) {
+    return ApiForumService.post(`/message/like/${id}`, { userId: userId });
+  },
+  async dislikeMessage(id: number, userId: string) {
+    return ApiForumService.post(`/message/dislike/${id}`, { userId: userId });
   },
 };

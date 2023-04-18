@@ -1,21 +1,25 @@
 import { Box, Button, Container, List, Typography } from "@mui/material";
 import React from "react";
 import { useForumStore } from "@/store";
-import { IForumInfo } from "@/pages/Forum/const";
 import { AddNewThemeModal } from "@/pages/Forum/AddNewThemeModal";
 import { TopicSheet } from "@/pages/Forum/TopicSheet";
+import { ITopic } from "@/api/ApiClient/types";
 
 export function Forum() {
-  const fiveForums = useForumStore((store) => store.fiveForums);
-  const allForums = useForumStore((store) => store.allForums);
+  const allForums = useForumStore((store) => store.allTopics);
+  const getAllTopics = useForumStore((store) => store.allForums);
   const [isShowMore, setIsShowMore] = React.useState<boolean>(false);
   const [isShowAddNewThemeModal, setShowAddNewThemeModal] =
     React.useState<boolean>(false);
-  const [forums, setForums] = React.useState<IForumInfo[]>([]);
+  const [forums, setForums] = React.useState<ITopic[]>([]);
 
   React.useEffect(() => {
-    setForums(fiveForums);
-  }, []);
+    getAllTopics();
+  }, [getAllTopics]);
+
+  React.useEffect(() => {
+    setForums(allForums.slice(0, 4));
+  }, [allForums]);
 
   function handleShowMoreButton() {
     setIsShowMore(true);
@@ -81,8 +85,13 @@ export function Forum() {
                 overflow: "auto",
               }}
             >
-              {forums.map((item: IForumInfo) => (
-                <TopicSheet key={item.id} title={item.title} id={item.id} />
+              {forums.map((item: ITopic) => (
+                <TopicSheet
+                  key={item.id}
+                  title={item.title}
+                  id={item.id}
+                  description={item.description}
+                />
               ))}
             </List>
             {!isShowMore && (
