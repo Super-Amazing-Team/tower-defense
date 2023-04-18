@@ -370,7 +370,7 @@ export function Home({ engine }: IHome) {
                 <Typography
                   variant="h4"
                   sx={{
-                    textAlign: "left",
+                    textAlign: "center",
                     margin: "60px 0 60px 128px",
                   }}
                 >
