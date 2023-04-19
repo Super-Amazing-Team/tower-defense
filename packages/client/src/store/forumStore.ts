@@ -1,6 +1,8 @@
 import { create } from "zustand";
 import { ApiClient } from "@/api";
 import { ITopic } from "@/api/ApiClient/types";
+import { addToast } from "@/store/snackbarStore";
+import { IEError } from "@/types";
 export interface IForumStore {
   allTopics: ITopic[];
   isShowMoreForums: boolean;
@@ -79,29 +81,37 @@ export const useTopicStore = create<ITopicStore>()((set, get) => ({
     set({ messages: [...get().messages, message.data] });
   },
   likeMessage: async (body: ILikeMessage) => {
-    let message = await ApiClient.likeMessage(body.id, body.userId);
-    if (message.data.dislikes.includes(body.userId)) {
-      message = await ApiClient.dislikeMessage(body.id, body.userId);
-    }
-    const messages = get().messages.map((mes) => {
-      if (mes.id === body.id) {
-        return message.data;
+    try {
+      let message = await ApiClient.likeMessage(body.id, body.userId);
+      if (message.data.dislikes.includes(body.userId)) {
+        message = await ApiClient.dislikeMessage(body.id, body.userId);
       }
-      return mes;
-    });
-    set({ messages: messages });
+      const messages = get().messages.map((mes) => {
+        if (mes.id === body.id) {
+          return message.data;
+        }
+        return mes;
+      });
+      set({ messages: messages });
+    } catch (error: unknown) {
+      addToast((error as IEError).response.data.reason);
+    }
   },
   dislikeMessage: async (body: ILikeMessage) => {
-    let message = await ApiClient.dislikeMessage(body.id, body.userId);
-    if (message.data.likes.includes(body.userId)) {
-      message = await ApiClient.likeMessage(body.id, body.userId);
-    }
-    const messages = get().messages.map((mes) => {
-      if (mes.id === body.id) {
-        return message.data;
+    try {
+      let message = await ApiClient.dislikeMessage(body.id, body.userId);
+      if (message.data.likes.includes(body.userId)) {
+        message = await ApiClient.likeMessage(body.id, body.userId);
       }
-      return mes;
-    });
-    set({ messages: messages });
+      const messages = get().messages.map((mes) => {
+        if (mes.id === body.id) {
+          return message.data;
+        }
+        return mes;
+      });
+      set({ messages: messages });
+    } catch (error: unknown) {
+      addToast((error as IEError).response.data.reason);
+    }
   },
 }));

@@ -5,7 +5,7 @@ import {
   getMyTheme
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
-} from "../../controllers/theme/theme.controller.ts";
+} from "../../controllers/theme/theme.controller.js";
 
 
 export const themesRoutes = (router: Router) => {

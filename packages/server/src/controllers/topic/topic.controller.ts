@@ -1,10 +1,10 @@
 import type {Request, Response} from "express";
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
-import {TopicModel} from "../../models/forum/topic.model.ts";
+import {TopicModel} from "../../models/forum/topic.model.js";
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
 // @ts-ignore
-import { CommentsModel } from "../../models/forum/comments.model.ts"
+import { CommentsModel } from "../../models/forum/comments.model.js"
 
 export const createTopic = async (req: Request, res: Response) => {
   const { title, description, ownerId } = req.body;
