@@ -1,10 +1,11 @@
 import { Enemy } from "../enemies/Enemy";
 import { Tower } from "../towers/Tower";
-import { Map } from "../maps/Map";
+import { IMap, Map } from "../maps/Map";
 import { Projectile } from "../projectiles/Projectile";
 import { Sound } from "@/pages/Game/sound/Sound";
-import { useGameStore } from "@/store";
+import { useGameStore as gameStore } from "@/store";
 import { ISpell, Spell } from "@/pages/Game/spells/Spell";
+import { WaveGenerator } from "@/pages/Game/waveGenerator/waveGenerator";
 
 // utilities declaration
 export type TPartialRecord<K extends keyof any, T> = {
@@ -23,13 +24,14 @@ export type TEngineCanvas =
   | "game"
   | "cannon"
   | "tower"
+  | "towerRange"
   | "enemy"
   | "deadEnemy"
   | "map"
   | "mapDecorations"
   | "mapBackground";
 export type TTowerTypes = "one" | "two" | "three" | "four";
-export type TSpellTypes = "fireball" | "tornado";
+export type TSpellTypes = "fireball" | "tornado" | "water" | "rock";
 export type TEnemyType =
   | "firebug"
   | "leafbug"
@@ -63,6 +65,20 @@ export type TEnemySpriteDirection =
   | "upDead"
   | "downDead";
 type TImageSprite = CanvasImageSource;
+
+export const ColorDict = {
+  tileSelectionColor: "#01FFE9",
+  defauiltStrokeColor: "#000000",
+  borderColor: "#bd6a62",
+  sandColor: "#ffae70",
+  fontColor: "#262626",
+  towerRangeColor: "green",
+  spellRangeColor: "blue",
+  specialAttackslowColor: "#3B46DB",
+  specialAttackshockColor: "#975b1c",
+  specialAttacksplashColor: "#155800",
+  specialAttackfreezeColor: "blue",
+} as const;
 
 /**
  * interfaces declaration
@@ -105,272 +121,12 @@ interface IEnemySprite {
   spriteLeftRow: number;
   spriteUpRow: number;
   spriteDownRow: number;
+  description?: string;
 }
 
 export interface ITwoDCoordinates {
   x: number;
   y: number;
-}
-
-// zustand
-const gameStore = useGameStore;
-
-export interface IWaveGenerator {
-  waveParams: {
-    currentWave: number;
-    isWaveInProgress: boolean;
-    hpCoefficient: number;
-    speedCoefficient: number;
-    enemyBountyCoefficient: number;
-    enemyCountCoefficient: number;
-    endWave: number;
-    startWave: number;
-    enemyCount: number;
-  };
-  waveTimerBetweenWaves: NodeJS.Timer | null;
-  waveTimeoutBetweenWaves: number;
-  waveCountdownTimer: NodeJS.Timer | null;
-  waveCountdown: number;
-}
-
-class WaveGenerator {
-  constructor(
-    public engine: TDEngine,
-    public isInitialized: boolean = false,
-    public waveParams: IWaveGenerator["waveParams"] = {
-      currentWave: 1,
-      isWaveInProgress: false,
-      hpCoefficient: engine.initialGameParams.hpCoefficient,
-      speedCoefficient: engine.initialGameParams.speedCoefficient,
-      enemyBountyCoefficient: 1,
-      enemyCountCoefficient: 5,
-      endWave: engine.initialGameParams.endWave,
-      startWave: 1,
-      enemyCount: engine.initialGameParams.enemiesPerWave,
-    },
-    public waveTimerBetweenWaves: IWaveGenerator["waveTimerBetweenWaves"] = null,
-    public waveTimeoutBetweenWaves: IWaveGenerator["waveTimeoutBetweenWaves"] = 5000, // 5000
-    public waveCountdownTimer: IWaveGenerator["waveCountdownTimer"] = null,
-    public waveCountdown: IWaveGenerator["waveCountdown"] = 0,
-  ) {
-    this.waveCountdown = Math.floor(this.waveTimeoutBetweenWaves / 1000);
-  }
-
-  public repeatEnemy = (times: number) => {
-    let enemiesArray = [];
-    for (let iteration = 0; iteration < times; iteration++) {
-      // boss enemy
-      if (iteration % 6 === 0) {
-        enemiesArray.push(
-          new Enemy(this.engine, {
-            type: "firebug",
-            width: this.engine.map?.mapParams?.gridStep!,
-            height: this.engine.map?.mapParams?.gridStep!,
-            spaceBetweenEnemies: this.engine.map?.mapParams?.gridStep! * 1.5,
-            speed:
-              0.65 +
-              this.waveParams.speedCoefficient * this.waveParams.currentWave,
-            bounty:
-              1 +
-              this.waveParams.enemyBountyCoefficient *
-                this.waveParams.currentWave,
-            hp:
-              100 + this.waveParams.hpCoefficient * this.waveParams.currentWave,
-          }),
-        );
-      } else if (iteration % 5 === 0) {
-        enemiesArray.push(
-          new Enemy(this.engine, {
-            type: "scorpion",
-            width: this.engine.map?.mapParams?.gridStep!,
-            height: this.engine.map?.mapParams?.gridStep!,
-            spaceBetweenEnemies: this.engine.map?.mapParams?.gridStep! * 1.5,
-            speed:
-              0.65 +
-              this.waveParams.speedCoefficient * this.waveParams.currentWave,
-            bounty:
-              1 +
-              this.waveParams.enemyBountyCoefficient *
-                this.waveParams.currentWave,
-            hp:
-              100 + this.waveParams.hpCoefficient * this.waveParams.currentWave,
-          }),
-        );
-      } else if (iteration % 4 === 0) {
-        // slow enemy
-        enemiesArray.push(
-          new Enemy(this.engine, {
-            type: "leafbug",
-            width: this.engine.map?.mapParams?.gridStep!,
-            height: this.engine.map?.mapParams?.gridStep!,
-            spaceBetweenEnemies: this.engine.map?.mapParams?.gridStep! * 1.5,
-            speed:
-              0.65 +
-              this.waveParams.speedCoefficient * this.waveParams.currentWave,
-            bounty:
-              1 +
-              this.waveParams.enemyBountyCoefficient *
-                this.waveParams.currentWave,
-            hp:
-              100 + this.waveParams.hpCoefficient * this.waveParams.currentWave,
-          }),
-        );
-      } else if (iteration % 3 === 0) {
-        // slow enemy
-        enemiesArray.push(
-          new Enemy(this.engine, {
-            type: "clampbeetle",
-            width: this.engine.map?.mapParams?.gridStep!,
-            height: this.engine.map?.mapParams?.gridStep!,
-            spaceBetweenEnemies: this.engine.map?.mapParams?.gridStep! * 1.5,
-            speed:
-              0.65 +
-              this.waveParams.speedCoefficient * this.waveParams.currentWave,
-            bounty:
-              1 +
-              this.waveParams.enemyBountyCoefficient *
-                this.waveParams.currentWave,
-            hp:
-              100 + this.waveParams.hpCoefficient * this.waveParams.currentWave,
-          }),
-        );
-      } else if (iteration % 2 === 0) {
-        // fast enemy
-        enemiesArray.push(
-          new Enemy(this.engine, {
-            type: "firelocust",
-            width: this.engine.map?.mapParams?.gridStep!,
-            height: this.engine.map?.mapParams?.gridStep!,
-            spaceBetweenEnemies: this.engine.map?.mapParams?.gridStep! * 1.5,
-            speed:
-              0.65 +
-              this.waveParams.speedCoefficient * this.waveParams.currentWave,
-            bounty:
-              1 +
-              this.waveParams.enemyBountyCoefficient *
-                this.waveParams.currentWave,
-            hp:
-              100 + this.waveParams.hpCoefficient * this.waveParams.currentWave,
-          }),
-        );
-      } else {
-        // regular enemy
-        enemiesArray.push(
-          new Enemy(this.engine, {
-            type: "firebug",
-            width: this.engine.map?.mapParams?.gridStep!,
-            height: this.engine.map?.mapParams?.gridStep!,
-            spaceBetweenEnemies: this.engine.map?.mapParams?.gridStep! * 1.5,
-            speed:
-              0.65 +
-              this.waveParams.speedCoefficient * this.waveParams.currentWave,
-            bounty:
-              1 +
-              this.waveParams.enemyBountyCoefficient *
-                this.waveParams.currentWave,
-            hp:
-              100 + this.waveParams.hpCoefficient * this.waveParams.currentWave,
-          }),
-        );
-      }
-    }
-    return enemiesArray;
-  };
-
-  public init() {
-    if (!this.isInitialized) {
-      this.waveParams.currentWave = 1;
-      // UI update
-      gameStore.getState().updateWaveNumber(this.waveParams.currentWave);
-      // fill enemies array
-      this.engine.enemies = this.repeatEnemy(this.waveParams.enemyCount);
-
-      // set enemies position
-      this.engine.enemies?.forEach((enemy: Enemy, index: number) => {
-        enemy.initialSetEnemy({
-          x:
-            -enemy.enemyParams.spaceBetweenEnemies! *
-              this.engine.enemies?.length! +
-            index * enemy.enemyParams.spaceBetweenEnemies!,
-          y: 0,
-        });
-      });
-      this.isInitialized = true;
-      this.waveParams.isWaveInProgress = true;
-      clearTimeout(this.waveTimerBetweenWaves!);
-      this.waveTimerBetweenWaves = null;
-    }
-  }
-
-  public spawnEnemies() {
-    // fill enemies array
-    if (this.waveParams.currentWave < this.waveParams.endWave) {
-      // increment wave
-      this.waveParams.currentWave += 1;
-      // UI update
-      gameStore.getState().updateWaveNumber(this.waveParams.currentWave);
-
-      // spawn into running wave
-      if (this.waveParams.isWaveInProgress) {
-        // create new Enemy class instances
-        const enemiesSpawned = this.repeatEnemy(
-          this.waveParams.enemyCount +
-            this.waveParams.enemyCountCoefficient * this.waveParams.currentWave,
-        );
-
-        // push spawned enemies into common enemies pool
-        if (this.engine.enemies?.length) {
-          this.engine.enemies = this.engine.enemies?.concat(enemiesSpawned);
-        }
-        // set spawned enemies coordinates
-        enemiesSpawned.forEach((enemy: Enemy, index: number) => {
-          enemy.initialSetEnemy({
-            x:
-              -enemy.enemyParams.spaceBetweenEnemies! *
-                this.engine.enemies?.length! +
-              index * enemy.enemyParams.spaceBetweenEnemies!,
-            y: 0,
-          });
-        });
-        // spawn between waves
-      } else {
-        // fill enemies array
-        this.engine.enemies = this.repeatEnemy(
-          this.waveParams.enemyCount +
-            this.waveParams.enemyCountCoefficient * this.waveParams.currentWave,
-        );
-        // draw enemies
-        this.engine.enemies?.forEach((enemy: Enemy, index: number) => {
-          enemy.initialSetEnemy({
-            x:
-              -enemy.enemyParams.spaceBetweenEnemies! *
-                this.engine.enemies?.length! +
-              index * enemy.enemyParams.spaceBetweenEnemies!,
-            y: 0,
-          });
-        });
-      }
-
-      clearTimeout(this.waveTimerBetweenWaves!);
-      this.waveTimerBetweenWaves = null;
-      this.waveParams.isWaveInProgress = true;
-    }
-  }
-
-  public countdown() {
-    if (!this.waveCountdownTimer) {
-      this.waveCountdownTimer = setInterval(() => {
-        if (this.waveCountdown > 0) {
-          this.waveCountdown -= 1;
-          // zustand store value update
-          gameStore.getState().updateCountdown(this.waveCountdown);
-        } else {
-          clearInterval(this.waveCountdownTimer!);
-          gameStore.getState().updateCountdown(0);
-        }
-      }, 1000);
-    }
-  }
 }
 
 export interface ITDEngine {
@@ -380,9 +136,8 @@ export interface ITDEngine {
   towers?: Tower[];
   projectiles?: Projectile[];
   spells?: Spell[];
-  map?: Map;
+  map?: Map | null;
   animationFrameId: number;
-  requestIdleCallback: number;
   twoDCoordinates: ITwoDCoordinates;
   lives: number;
   score: number;
@@ -398,6 +153,7 @@ export interface ITDEngine {
   isCanvasCreated: boolean;
   isCanBuild: boolean;
   isCanCast: boolean;
+  isCanClean: boolean;
   isGameStarted: boolean;
   isSideMenuOpen: boolean;
   isBuildMenuOpen: boolean;
@@ -407,6 +163,8 @@ export interface ITDEngine {
   isNotEnoughMana: boolean;
   isGameMenuOpen: boolean;
   isSoundEnabled: boolean;
+  isDemo: boolean;
+  demoTimeoutArr: NodeJS.Timer[];
   canvasMouseMoveEvent: EventListener | null;
   draftSpell: Spell | null;
   draftTower: Tower | null;
@@ -437,6 +195,7 @@ export interface ITDEngine {
     }
   >;
   initialGameParams: {
+    maxMoney: number;
     money: number;
     lives: number;
     mana: number;
@@ -448,6 +207,7 @@ export interface ITDEngine {
     strokeStyle: string;
     framesPerSprite: number;
     fps: number;
+    cleanTilePrice: number;
   };
   waveGenerator: WaveGenerator | null;
   sound: Sound | null;
@@ -470,15 +230,13 @@ export class TDEngine {
     public context: ITDEngine["context"] = {},
     public gameWindow: ITDEngine["gameWindow"] = null,
     public animationFrameId: ITDEngine["animationFrameId"] = 0,
-    public requestIdleCallback: ITDEngine["requestIdleCallback"] = 0,
-    public UIGameIsOver?: ITDEngine["UIDispatchBoolean"],
     public lives: ITDEngine["lives"] = 0,
     public score: ITDEngine["score"] = 0,
     public money: ITDEngine["money"] = 0,
     public mana: ITDEngine["mana"] = 100,
-    public manaIncrementQuantity: ITDEngine["manaIncrementQuantity"] = 4,
+    public manaIncrementQuantity: ITDEngine["manaIncrementQuantity"] = 2,
     public manaIncrementTimer: ITDEngine["manaIncrementTimer"] = null,
-    public manaIncrementTimeout: ITDEngine["manaIncrementTimeout"] = 4500,
+    public manaIncrementTimeout: ITDEngine["manaIncrementTimeout"] = 2200,
     public canvasZIndex: Record<TEngineCanvas, number> = {
       build: 80,
       spell: 75,
@@ -490,17 +248,21 @@ export class TDEngine {
       game: 60,
       cannon: 50,
       tower: 40,
+      towerRange: 31,
       enemy: 30,
       deadEnemy: 20,
       mapDecorations: 13,
       mapBackground: 12,
       map: 11,
     } as const,
+    public isDemo: ITDEngine["isDemo"] = false,
+    public demoTimeoutArr: ITDEngine["demoTimeoutArr"] = [],
     public isInitialized: ITDEngine["isInitialized"] = false,
     public promiseArr: ITDEngine["promiseArr"] = [],
     public isCanvasCreated: ITDEngine["isCanvasCreated"] = false,
     public isCanBuild: ITDEngine["isCanBuild"] = false,
     public isCanCast: ITDEngine["isCanCast"] = false,
+    public isCanClean: ITDEngine["isCanClean"] = false,
     public isGameStarted: ITDEngine["isGameStarted"] = false,
     public isGameOver: ITDEngine["isGameOver"] = false,
     public isShowGrid: ITDEngine["isShowGrid"] = false,
@@ -522,6 +284,18 @@ export class TDEngine {
       },
       tornado: {
         spriteSourcePath: "tornadoSprite.png",
+        spriteSource: null,
+        canvasArr: null,
+        canvasContextArr: null,
+      },
+      water: {
+        spriteSourcePath: "waterSprite.png",
+        spriteSource: null,
+        canvasArr: null,
+        canvasContextArr: null,
+      },
+      rock: {
+        spriteSourcePath: "rockSprite.png",
         spriteSource: null,
         canvasArr: null,
         canvasContextArr: null,
@@ -681,6 +455,7 @@ export class TDEngine {
         spriteDownRow: 3,
         framesPerSprite: 8,
         deathFramesPerSprite: 11,
+        description: "обычный враг, жук. все параметры средние",
       },
       leafbug: {
         spriteSourcePath: "leafbugSprite.png",
@@ -693,6 +468,7 @@ export class TDEngine {
         spriteDownRow: 4,
         framesPerSprite: 8,
         deathFramesPerSprite: 8,
+        description: "медленный враг, гусеница. больше хп, меньше скорость",
       },
       clampbeetle: {
         spriteSourcePath: "clampbeetleSprite.png",
@@ -705,6 +481,8 @@ export class TDEngine {
         spriteRightRow: 6,
         framesPerSprite: 8,
         deathFramesPerSprite: 13,
+        description:
+          "толстый враг, летающий жук. больше хп, все остальные параметры средние",
       },
       scorpion: {
         spriteSourcePath: "scorpionSprite.png",
@@ -717,6 +495,7 @@ export class TDEngine {
         spriteRightRow: 6,
         framesPerSprite: 8,
         deathFramesPerSprite: 8,
+        description: "обычный враг, скорпион. все параметры средние",
       },
       firelocust: {
         spriteSourcePath: "firelocustSprite.png",
@@ -729,6 +508,8 @@ export class TDEngine {
         spriteDownRow: 4,
         framesPerSprite: 12,
         deathFramesPerSprite: 14,
+        description:
+          "быстрый враг, летающая бабочка. больше скорость перемещения, меньше хп",
       },
       firewasp: {
         spriteSourcePath: "firewaspSprite.png",
@@ -741,6 +522,7 @@ export class TDEngine {
         spriteDownRow: 7,
         framesPerSprite: 8,
         deathFramesPerSprite: 11,
+        description: "босс. много здоровья, сопротивление магическим эффектам",
       },
     },
     public predefinedSpellParams: ITDEngine["predefinedSpellParams"] = {
@@ -759,7 +541,8 @@ export class TDEngine {
           attackRange: 80,
           attackDamage: 100,
           manaCost: 20,
-          movementSpeed: 4,
+          movementSpeed: 8,
+          spellDirection: "left",
         },
       },
       tornado: {
@@ -774,21 +557,66 @@ export class TDEngine {
           height: 64,
         },
         spellParams: {
-          attackRange: 40,
+          attackRange: 140,
           attackDamage: 10,
           attackModifier: "slow",
-          attackModifierTimeout: 5000,
+          attackModifierTimeout: 3000,
+          attackModifierStrength: 0.8,
           manaCost: 15,
-          movementSpeed: 2,
+          movementSpeed: 4,
+          spellDirection: "left",
+        },
+      },
+      water: {
+        spell: {
+          framesPerSprite: 10,
+          width: 64,
+          height: 64,
+        },
+        impact: {
+          framesPerSprite: 5,
+          width: 64,
+          height: 64,
+        },
+        spellParams: {
+          attackRange: 200,
+          attackDamage: 5,
+          attackModifier: "slow",
+          attackModifierTimeout: 10000,
+          attackModifierStrength: 0.2,
+          manaCost: 10,
+          movementSpeed: 4,
+          spellDirection: "down",
+        },
+      },
+      rock: {
+        spell: {
+          framesPerSprite: 10,
+          width: 64,
+          height: 64,
+        },
+        impact: {
+          framesPerSprite: 5,
+          width: 64,
+          height: 64,
+        },
+        spellParams: {
+          attackRange: 50,
+          attackDamage: 10,
+          attackModifier: "shock",
+          attackModifierTimeout: 3000,
+          manaCost: 25,
+          movementSpeed: 4,
+          spellDirection: "down",
         },
       },
     },
     public predefinedTowerParams: ITDEngine["predefinedTowerParams"] = {
       one: {
         towerParams: {
-          attackRate: 2000,
-          attackDamage: 30,
-          attackRange: 300,
+          attackRate: 900,
+          attackDamage: 16,
+          attackRange: 220,
           baseWidth: 64,
           baseHeight: 128,
           constructionWidth: 192,
@@ -819,13 +647,15 @@ export class TDEngine {
           isSelected: false,
           firingAngle: towerAngleOffset,
           fireFromCoords: { x: 0, y: 0 },
-          strokeStyle: "green",
+          strokeStyle: ColorDict.towerRangeColor,
           maxUpgradeLevel: 2,
           price: 25,
+          description:
+            "Средняя скорость атаки, но с средний урон башни со стрелами. Средний радиус атаки.",
         },
         projectileParams: {
-          acceleration: 1.2,
-          projectileSpeed: 0.2,
+          acceleration: 1.5,
+          projectileSpeed: 2,
           rectCenterX: 0,
           rectCenterY: 0,
           dimensions: [
@@ -854,8 +684,8 @@ export class TDEngine {
       },
       two: {
         towerParams: {
-          attackRate: 3000,
-          attackDamage: 20,
+          attackRate: 1500,
+          attackDamage: 8,
           attackRange: 300,
           baseWidth: 64,
           baseHeight: 128,
@@ -884,15 +714,17 @@ export class TDEngine {
             },
           ],
           cannonFrameLimit: 16,
-          strokeStyle: "green",
+          strokeStyle: ColorDict.towerRangeColor,
           firingAngle: towerAngleOffset,
           fireFromCoords: { x: 0, y: 0 },
           maxUpgradeLevel: 2,
-          price: 45,
+          price: 35,
+          description:
+            "Быстрые, но наносящие мало урона башни с молнией. Оглушают врага на короткий промежуток времени. Радиус атаки меньше среднего.",
         },
         projectileParams: {
           acceleration: 1.2,
-          projectileSpeed: 0.4,
+          projectileSpeed: 4,
           rectCenterX: 0,
           rectCenterY: 0,
           dimensions: [
@@ -918,13 +750,13 @@ export class TDEngine {
           projectileFrameLimit: 5,
           impactFrameLimit: 5,
           attackModifier: "shock",
-          attackModifierTimeout: 300,
+          attackModifierTimeout: 700,
         },
       },
       three: {
         towerParams: {
-          attackRate: 3000,
-          attackDamage: 8,
+          attackRate: 1000,
+          attackDamage: 5,
           attackRange: 250,
           baseWidth: 64,
           baseHeight: 128,
@@ -953,15 +785,17 @@ export class TDEngine {
             },
           ],
           cannonFrameLimit: 8,
-          strokeStyle: "green",
+          strokeStyle: ColorDict.towerRangeColor,
           firingAngle: towerAngleOffset,
           fireFromCoords: { x: 0, y: 0 },
           maxUpgradeLevel: 2,
           price: 45,
+          description:
+            "Cредние по скорости атаки, но отравляющие врагов башни с рогаткой. Радиус атаки больше среднего.",
         },
         projectileParams: {
           acceleration: 1.2,
-          projectileSpeed: 0.4,
+          projectileSpeed: 3,
           dimensions: [
             {
               projectileWidth: 10,
@@ -990,8 +824,8 @@ export class TDEngine {
       },
       four: {
         towerParams: {
-          attackRate: 6000,
-          attackDamage: 45,
+          attackRate: 5000,
+          attackDamage: 65,
           attackRange: 240,
           baseWidth: 64,
           baseHeight: 128,
@@ -1020,15 +854,17 @@ export class TDEngine {
             },
           ],
           cannonFrameLimit: 16,
-          strokeStyle: "green",
+          strokeStyle: ColorDict.towerRangeColor,
           firingAngle: towerAngleOffset,
           fireFromCoords: { x: 0, y: 0 },
           maxUpgradeLevel: 2,
           price: 45,
+          description:
+            "Медленные, но атакующие сплешем (всех врагов в небольшом радиусе) башни с молотом. Маленький радиус атаки.",
         },
         projectileParams: {
           acceleration: 1.2,
-          projectileSpeed: 0.4,
+          projectileSpeed: 4,
           dimensions: [
             {
               projectileWidth: 8,
@@ -1057,50 +893,23 @@ export class TDEngine {
       },
     },
     public initialGameParams: ITDEngine["initialGameParams"] = {
-      money: 100,
+      maxMoney: 999,
+      money: 130,
       mana: 100,
       lives: 10,
       wave: 1,
       enemiesPerWave: 20,
       endWave: 10,
-      hpCoefficient: 20,
-      speedCoefficient: 0.3, // 0.3,
-      strokeStyle: "#000000",
+      hpCoefficient: 50,
+      speedCoefficient: 2,
+      strokeStyle: ColorDict.defauiltStrokeColor,
       framesPerSprite: 8,
-      fps: 25,
+      fps: 24,
+      cleanTilePrice: 25,
     },
     public waveGenerator: ITDEngine["waveGenerator"] = null,
     public sound: ITDEngine["sound"] = new Sound(),
   ) {
-    // safari polyfill
-    if (!window.requestIdleCallback) {
-      // @ts-ignore
-      window.requestIdleCallback = function (
-        callback: IdleRequestCallback,
-        options: Record<string, string | number> = {},
-      ): NodeJS.Timeout {
-        let relaxation = 1;
-        let timeout = options?.timeout || relaxation;
-        let start = performance.now();
-        return setTimeout(function () {
-          callback({
-            get didTimeout() {
-              return options.timeout
-                ? false
-                : performance.now() - start - relaxation > timeout;
-            },
-            timeRemaining: function () {
-              return Math.max(0, relaxation + (performance.now() - start));
-            },
-          });
-        }, relaxation);
-      };
-    }
-    if (!window.cancelIdleCallback) {
-      window.cancelIdleCallback = function (id) {
-        clearTimeout(id);
-      };
-    }
     // set waveGenerator
     this.waveGenerator = new WaveGenerator(this);
     this.money = this.initialGameParams.money;
@@ -1179,12 +988,12 @@ export class TDEngine {
         newCanvas.height = this.map?.mapParams?.height!;
         if (canvasId === "build") {
           newCanvas.style.opacity = "0.4";
+          newCanvas.style.outline = "none";
           newCanvas.tabIndex = 2;
-        } else if (canvasId === "spellDraft") {
+        } else if (canvasId === "spellDraft" || canvasId === "towerRange") {
           newCanvas.style.opacity = "0.4";
-          newCanvas.tabIndex = -1;
         } else if (canvasId === "map") {
-          newCanvas.style.background = `url("${this.map?.grassBackrgroundCanvas?.toDataURL()}") repeat`;
+          /* newCanvas.style.background = `url("${this.map?.grassBackrgroundCanvas?.toDataURL()}") repeat`; */
         }
         newCanvas.style.zIndex = `${zIndex}`;
         newCanvas.id = `${canvasId}Canvas`;
@@ -1200,7 +1009,7 @@ export class TDEngine {
       // set canvas created flag to true
       this.isCanvasCreated = true;
 
-      // return sucess
+      // return success
       resolve(`Success`);
     });
   }
@@ -1233,6 +1042,212 @@ export class TDEngine {
     this.gameWindow?.removeEventListener("click", this.canvasClickCallback);
   };
 
+  public startDemo() {
+    gameStore.getState().updateIsGameStarted(true);
+    // set game params
+    this.lives = 10000;
+    this.money = 10000;
+    this.mana = 10000;
+    // set demo stage timeouts
+    const demoStageTimeout = {
+      enemiesSpawn: 1000,
+      buildTowers: 3000,
+      updateTower: 20000,
+      spellCast: 5000,
+    };
+    // slice tiles to build in demo mode
+    let demoBuildTilesArr = this.map?.mapParams?.mapTilesArr.filter(
+      (tile) =>
+        tile.y <= this.map?.tileToNumber(4)! &&
+        tile.y > this.map?.tileToNumber(2)!,
+    );
+    // make tower types arr
+    const towerTypesArr: TTowerTypes[] = ["one", "two", "three", "four"];
+    const spellTypesArr: TSpellTypes[] = [
+      "fireball",
+      "tornado",
+      "water",
+      "rock",
+    ];
+    const getRandomTile = (arr: ITwoDCoordinates[]) => {
+      const tile = arr!
+        .sort(() => Math.random() - Math.random())
+        .slice(0, arr!.length)[0];
+      // pop this tile
+      demoBuildTilesArr = demoBuildTilesArr?.filter(
+        (tileParam) => tileParam.x !== tile.x || tileParam.y !== tile.y,
+      );
+      return {
+        x: tile.x + this.map?.mapParams?.gridStep!,
+        y: tile.y + this.map?.mapParams?.gridStep!,
+      };
+    };
+
+    const castRandomSpell = () => {
+      if (
+        this.enemies?.length &&
+        this.waveGenerator?.waveParams?.isWaveInProgress
+      ) {
+        const spellType: TSpellTypes =
+          spellTypesArr[Math.floor(Math.random() * spellTypesArr.length)];
+        const visibleEnemies = this.enemies.filter(
+          (enemy) =>
+            enemy.currentPosition.x > this.map?.tileToNumber(1)! &&
+            enemy.currentPosition.x <
+              this.map?.tileToNumber(this.map?.mapParams?.widthTile - 1)!,
+        );
+        const spellPosition =
+          visibleEnemies[Math.floor(Math.random() * visibleEnemies.length)]
+            .currentPosition;
+        const collisionPoint = {
+          x:
+            spellPosition.x! -
+            this.predefinedSpellParams[spellType].spell.width / 2,
+          y:
+            spellPosition.y! -
+            this.predefinedSpellParams[spellType].spell.height / 2,
+        };
+        const currentPosition = {
+          x:
+            this.predefinedSpellParams[spellType].spellParams.spellDirection ===
+            "left"
+              ? spellPosition.x! - this.map?.mapParams?.gridStep! * 4
+              : collisionPoint.x!,
+          y: spellPosition.y! - this.map?.mapParams?.gridStep! * 4,
+        };
+        // create spell draft
+        this.draftSpell = new Spell(this, spellType, {
+          attackDamage:
+            this.predefinedSpellParams[spellType].spellParams.attackDamage,
+          attackRange:
+            this.predefinedSpellParams[spellType].spellParams.attackRange,
+          movementSpeed:
+            this.predefinedSpellParams[spellType].spellParams.movementSpeed,
+          manaCost: this.predefinedSpellParams[spellType].spellParams.manaCost,
+          spellDirection:
+            this.predefinedSpellParams[spellType].spellParams.spellDirection,
+        });
+        this.draftSpell.spellParams = structuredClone(
+          this.predefinedSpellParams[spellType].spellParams,
+        );
+        this.draftSpell.spellParams.currentPosition = currentPosition;
+        this.draftSpell.spellParams.collisionPoint = collisionPoint;
+        // cast a spell
+        this.spells?.push(this.draftSpell);
+        this.draftSpell = null;
+      }
+    };
+
+    const buildRandomTower = () => {
+      const buildTile = getRandomTile(demoBuildTilesArr!);
+      const towerType: TTowerTypes =
+        towerTypesArr[Math.floor(Math.random() * towerTypesArr.length)];
+      // make new tower
+      this.draftTower = new Tower(
+        this,
+        towerType,
+        0,
+        buildTile,
+        structuredClone(this.predefinedTowerParams[towerType]?.towerParams!),
+        structuredClone(
+          this.predefinedTowerParams[towerType]?.projectileParams!,
+        ),
+      );
+      // and build it
+      this.draftTower!.renderParams.isConstructing = true;
+      this.towers?.push(this.draftTower);
+      // clear draft tower
+      this.draftTower = null;
+    };
+
+    const buildRandomTowers = () => {
+      buildRandomTower();
+      this.demoTimeoutArr.push(
+        setTimeout(buildRandomTower, Math.floor(Math.random() * 10000)),
+      );
+      this.demoTimeoutArr.push(
+        setTimeout(buildRandomTower, Math.floor(Math.random() * 20000)),
+      );
+      this.demoTimeoutArr.push(
+        setTimeout(buildRandomTower, Math.floor(Math.random() * 30000)),
+      );
+      this.demoTimeoutArr.push(
+        setTimeout(buildRandomTower, Math.floor(Math.random() * 40000)),
+      );
+    };
+
+    // emulate user game actions by random timeouts
+    // start game and spawn enemies
+    this.demoTimeoutArr.push(
+      setTimeout(() => {
+        this.waveGenerator = new WaveGenerator(this);
+        this.waveGenerator.init();
+        this.gameStart();
+      }, demoStageTimeout.enemiesSpawn),
+    );
+    // build random towers
+    this.demoTimeoutArr.push(
+      setTimeout(() => {
+        buildRandomTowers();
+      }, demoStageTimeout.buildTowers),
+    );
+    // update random tower
+    this.demoTimeoutArr.push(
+      setInterval(() => {
+        const readyForUpgradeTowerArray = this.towers?.filter(
+          (tower) =>
+            tower.renderParams.isConstructing !== true ||
+            tower.renderParams.isConstructionEnd !== true,
+        );
+        const tower =
+          readyForUpgradeTowerArray![
+            Math.floor(Math.random() * this.towers?.length!)
+          ];
+        this.upgradeTower(tower);
+        this.clearContext(this.context!.towerRange!);
+      }, demoStageTimeout.updateTower),
+    );
+    // cast random spell
+    this.demoTimeoutArr.push(
+      setInterval(() => {
+        castRandomSpell();
+      }, demoStageTimeout.spellCast),
+    );
+  }
+
+  public reload() {
+    const { updateIsGameStarted, updateIsGameMenuOpen } = gameStore.getState();
+    // disable music
+    this.sound?.soundArr?.gameStart?.pause();
+    updateIsGameMenuOpen(true);
+    updateIsGameStarted(false);
+    cancelAnimationFrame(this.animationFrameId);
+    this.animationFrameId = 0;
+    this.lives = this.initialGameParams.lives;
+    this.money = this.initialGameParams.money;
+    this.mana = this.initialGameParams.mana;
+    this.isDemo = false;
+    this.map = null;
+    this.isCanvasCreated = false;
+    this.isDemo = false;
+    this.isInitialized = false;
+    this.gameWindow = null;
+    this.enemies = [];
+    this.deadEnemies = [];
+    this.towers = [];
+    this.projectiles = [];
+    this.spells = [];
+    this.waveGenerator = new WaveGenerator(this);
+    this.isGameStarted = false;
+    this.demoTimeoutArr.forEach((timer) => clearTimeout(timer));
+    this.demoTimeoutArr = [];
+    this.draftSpell = null;
+    this.draftTower = null;
+    // debug
+    console.log(`engine reload!`);
+    //
+  }
+
   public gameRestart() {
     // clear memory
     this.enemies = [];
@@ -1247,6 +1262,10 @@ export class TDEngine {
     this.sound?.soundArr?.gameStart?.play();
     // clear tower canvas
     this.clearContext(this.context!.tower!);
+    this.clearContext(this.context!.enemy!);
+    this.clearContext(this.context!.projectile!);
+    this.clearContext(this.context!.spell!);
+    this.clearContext(this.context!.deadEnemy!);
     this.clearContext(this.context!.selection!);
     // wave generator
     clearInterval(this.waveGenerator!.waveCountdownTimer!);
@@ -1266,13 +1285,22 @@ export class TDEngine {
     this.mana = this.initialGameParams.mana;
     this.score = 0;
     // UI
-    gameStore.getState().updateMoney(this.initialGameParams.money);
-    gameStore.getState().updateMana(this.initialGameParams.mana);
-    gameStore.getState().updateLives(this.initialGameParams.lives);
-    gameStore.getState().updateScore(this.score);
-    gameStore.getState().updateWaveNumber(1);
-    gameStore.getState().updateEnemiesLeft(this.enemies.length);
-    gameStore.getState().updateIsGameOver(false);
+    const {
+      updateMoney,
+      updateMana,
+      updateLives,
+      updateScore,
+      updateWaveNumber,
+      updateEnemiesLeft,
+      updateIsGameOver,
+    } = gameStore.getState();
+    updateMoney(this.initialGameParams.money);
+    updateMana(this.initialGameParams.mana);
+    updateLives(this.initialGameParams.lives);
+    updateScore(this.score);
+    updateWaveNumber(1);
+    updateEnemiesLeft(this.enemies.length);
+    updateIsGameOver(false);
     // spawner
     this.waveGenerator!.waveParams.currentWave = 1;
     this.waveGenerator!.waveCountdown = Math.floor(
@@ -1288,12 +1316,13 @@ export class TDEngine {
     if (!gameStore.getState().isGameStarted) {
       gameStore.getState().updateIsGameStarted(true);
     } else {
-      this.gameLoop();
-      this.gameLoopLogic();
+      if (!this.animationFrameId) {
+        this.gameLoop();
+      }
       // add event listeners
       this.addEventListeners();
       // game start play sound
-      if (this.isSoundEnabled) {
+      if (this.isSoundEnabled && !this.isDemo) {
         this.sound?.soundArr?.gameStart?.play();
       }
       // close game menu if opened
@@ -1304,25 +1333,29 @@ export class TDEngine {
   }
 
   public gameStop() {
-    gameStore.getState().updateIsGameStarted(false);
-    cancelAnimationFrame(this.animationFrameId);
-    cancelIdleCallback(this.requestIdleCallback);
-    // remove event listeners
-    this.removeEventListeners();
+    if (gameStore.getState().isGameStarted) {
+      gameStore.getState().updateIsGameStarted(false);
+    } else {
+      cancelAnimationFrame(this.animationFrameId);
+      this.animationFrameId = 0;
+      // remove event listeners
+      this.removeEventListeners();
 
-    // game start pause sound
-    if (this.isSoundEnabled) {
-      this.sound?.soundArr?.gameStart?.pause();
-    }
-    // close game menu if opened
-    if (gameStore.getState().isGameMenuOpen) {
-      gameStore.getState().updateIsGameMenuOpen(false);
+      // game start pause sound
+      if (this.isSoundEnabled) {
+        this.sound?.soundArr?.gameStart?.pause();
+      }
+      // close game menu if opened
+      if (gameStore.getState().isGameMenuOpen && !this.isDemo) {
+        gameStore.getState().updateIsGameMenuOpen(false);
+      }
     }
   }
 
   public clearMemory() {
     this.enemies = [];
     this.deadEnemies = [];
+    this.clearContext(this.context!.deadEnemy!);
     this.projectiles = [];
     for (let tower of this.towers!) {
       tower.target = null;
@@ -1594,13 +1627,16 @@ export class TDEngine {
       ],
       weapon: [
         this.createCanvasArr(
-          this.predefinedTowerParams[towerType]?.towerParams?.cannonFrameLimit!,
+          this.predefinedTowerParams[towerType]?.towerParams
+            ?.cannonFrameLimit! + 1,
         )!,
         this.createCanvasArr(
-          this.predefinedTowerParams[towerType]?.towerParams?.cannonFrameLimit!,
+          this.predefinedTowerParams[towerType]?.towerParams
+            ?.cannonFrameLimit! + 1,
         )!,
         this.createCanvasArr(
-          this.predefinedTowerParams[towerType]?.towerParams?.cannonFrameLimit!,
+          this.predefinedTowerParams[towerType]?.towerParams
+            ?.cannonFrameLimit! + 1,
         )!,
       ],
       projectile: [
@@ -1712,14 +1748,16 @@ export class TDEngine {
         case "weapon": {
           upgradeArr.forEach((upgradeLevel, level) => {
             (upgradeLevel as HTMLCanvasElement[]).forEach((canvas) => {
-              canvas.width =
-                this.predefinedTowerParams[towerType]!.towerParams?.dimensions[
-                  level
-                ]!.cannonWidth;
-              canvas.height =
-                this.predefinedTowerParams[towerType]!.towerParams?.dimensions[
-                  level
-                ]!.cannonHeight;
+              const canvasHypot = Math.ceil(
+                Math.hypot(
+                  this.predefinedTowerParams[towerType]!.towerParams
+                    ?.dimensions[level]!.cannonWidth,
+                  this.predefinedTowerParams[towerType]!.towerParams
+                    ?.dimensions[level]!.cannonHeight,
+                ),
+              );
+              canvas.width = canvasHypot;
+              canvas.height = canvasHypot;
               (contextArr!.weapon[level]! as CanvasRenderingContext2D[]).push(
                 canvas.getContext("2d")!,
               );
@@ -2067,6 +2105,16 @@ export class TDEngine {
             }
             // weapons
             case "weapon": {
+              // find the widest or longest value of projectile canvas depending on firing angle
+              const canvasHypot = Math.ceil(
+                Math.hypot(
+                  this.predefinedTowerParams[towerType]!.towerParams
+                    ?.dimensions[upgradeLevel].cannonWidth,
+                  this.predefinedTowerParams[towerType]!.towerParams
+                    ?.dimensions[upgradeLevel].cannonHeight,
+                ),
+              );
+              //
               this.drawFrame(
                 context,
                 spriteSource,
@@ -2080,8 +2128,14 @@ export class TDEngine {
                 this.predefinedTowerParams[towerType]?.towerParams?.dimensions[
                   upgradeLevel
                 ].cannonHeight!,
-                0,
-                0,
+                (canvasHypot -
+                  this.predefinedTowerParams[towerType]!.towerParams
+                    ?.dimensions[upgradeLevel].cannonWidth) /
+                  2,
+                (canvasHypot -
+                  this.predefinedTowerParams[towerType]!.towerParams
+                    ?.dimensions[upgradeLevel].cannonHeight) /
+                  2,
                 this.predefinedTowerParams[towerType]?.towerParams?.dimensions[
                   upgradeLevel
                 ].cannonWidth!,
@@ -2176,17 +2230,74 @@ export class TDEngine {
     };
     this.draftSpell!.spellParams!.currentPosition! = {
       x:
-        this.draftSpell?.spellParams?.currentPosition!.x! -
-        this.map?.mapParams?.gridStep! * 4,
+        this.draftSpell?.spellParams?.spellDirection === "left"
+          ? this.draftSpell?.spellParams?.currentPosition!.x! -
+            this.map?.mapParams?.gridStep! * 4
+          : this.draftSpell!.spellParams!.collisionPoint.x,
       y:
         this.draftSpell?.spellParams?.currentPosition!.y! -
         this.map?.mapParams?.gridStep! * 4,
     };
     this.spells?.push(this.draftSpell!);
     this.mana -= this.draftSpell?.spellParams?.manaCost!;
-    gameStore.getState().updateMana(this.mana);
+    if (!this.isDemo) {
+      gameStore.getState().updateMana(this.mana);
+    }
     this.isCanCast = false;
     this.draftSpell = null;
+    /*
+    // clear spell canvas
+    this.clearContext(this.context!.spell!);
+    this.clearContext(this.context!.spellDraft!);
+     */
+  }
+
+  public cleanTile() {
+    if (!this.isEnoughMoney(this.initialGameParams.cleanTilePrice)) return;
+    if (this.isCanBuild) {
+      this.isCanBuild = false;
+      this.draftTower = null;
+      // clear build canvas
+      this.clearContext(this.context?.build!);
+    } else if (this.isCanCast) {
+      this.isCanCast = false;
+      this.draftSpell = null;
+      // clear spell canvas
+      this.clearContext(this.context?.spellDraft!);
+      this.clearContext(this.context?.spell!);
+    }
+    this.isCanClean = true;
+    const tile = this.findClosestTile(
+      this.cursorPosition,
+      this.map?.mapParams?.obstacleTilesArr,
+    )!;
+    if (tile) {
+      this.highlightTile(tile, true);
+    } else {
+      this.highlightTile(this.findClosestBuildTile(this.cursorPosition), false);
+    }
+  }
+
+  public draftCleanTile() {
+    const tile = this.findClosestTile(
+      this.cursorPosition,
+      this.map?.mapParams?.obstacleTilesArr,
+    )!;
+    if (tile) {
+      this.isCanClean = false;
+      // clear background decorations tile
+      this.map?.drawEmptyBackgroundTile(tile);
+      // pop tile from obstacles arr
+      this.map!.mapParams!.obstacleTilesArr =
+        this.map?.mapParams?.obstacleTilesArr.filter(
+          (obstacleTile) => tile !== obstacleTile,
+        )!;
+      // push tile to build allowed tiles
+      this.map?.mapParams?.mapTilesArr.push(tile);
+      // decrement money
+      this.money -= this.initialGameParams.cleanTilePrice;
+      gameStore.getState().updateMoney(this.money);
+    }
   }
 
   public castSpell(spellType: TSpellTypes) {
@@ -2194,6 +2305,16 @@ export class TDEngine {
     // disable building mode
     if (this.isCanBuild) {
       this.isCanBuild = false;
+      // clear build canvas
+      this.clearContext(this.context?.build!);
+    } else if (this.isCanClean) {
+      this.isCanClean = false;
+    } else {
+      /*
+      // clear spell canvas
+      this.clearContext(this.context?.spellDraft!);
+      this.clearContext(this.context?.spell!);
+       */
     }
     if (
       this.isEnoughMana(
@@ -2201,11 +2322,19 @@ export class TDEngine {
       )
     ) {
       const collisionPoint = {
-        x: this.cursorPosition.x! - this.map?.mapParams?.gridStep! / 2,
-        y: this.cursorPosition.y! - this.map?.mapParams?.gridStep! / 2,
+        x:
+          this.cursorPosition.x! -
+          this.predefinedSpellParams[spellType].spell.width / 2,
+        y:
+          this.cursorPosition.y! -
+          this.predefinedSpellParams[spellType].spell.height / 2,
       };
       const currentPosition = {
-        x: this.cursorPosition.x! - this.map?.mapParams?.gridStep! * 4,
+        x:
+          this.predefinedSpellParams[spellType].spellParams.spellDirection ===
+          "left"
+            ? this.cursorPosition.x! - this.map?.mapParams?.gridStep! * 4
+            : collisionPoint.x!,
         y: this.cursorPosition.y! - this.map?.mapParams?.gridStep! * 4,
       };
       this.isCanCast = true;
@@ -2219,6 +2348,8 @@ export class TDEngine {
         movementSpeed:
           this.predefinedSpellParams[spellType].spellParams.movementSpeed,
         manaCost: this.predefinedSpellParams[spellType].spellParams.manaCost,
+        spellDirection:
+          this.predefinedSpellParams[spellType].spellParams.spellDirection,
       });
       this.draftSpell.spellParams = structuredClone(
         this.predefinedSpellParams[spellType].spellParams,
@@ -2236,6 +2367,11 @@ export class TDEngine {
     // disable cast mode
     if (this.isCanCast) {
       this.isCanCast = false;
+      // clear spell canvas
+      this.clearContext(this.context?.spellDraft!);
+      this.clearContext(this.context?.spell!);
+    } else if (this.isCanClean) {
+      this.isCanClean = false;
     }
     if (
       this.isEnoughMoney(this.predefinedTowerParams[type]!.towerParams.price!)
@@ -2250,13 +2386,15 @@ export class TDEngine {
         structuredClone(this.predefinedTowerParams[type]?.towerParams!),
         structuredClone(this.predefinedTowerParams[type]?.projectileParams!),
       );
+    } else {
+      this.isCanBuild = false;
     }
   };
 
-  public findClosestTile(
+  public findClosestBuildTile(
     coordinates: ITwoDCoordinates,
-    tilesArr: ITwoDCoordinates[] = this.map?.mapParams.mapTilesArr!,
-  ): ITwoDCoordinates {
+    tilesArr: ITwoDCoordinates[] = this.map?.mapParams?.mouseOverTilesArr!,
+  ) {
     let minDistance = this.map?.mapParams.width;
     tilesArr.forEach((tile) => {
       const distance =
@@ -2281,13 +2419,10 @@ export class TDEngine {
       y: this.map?.mapParams.closestTile.y! + this.map?.mapParams.gridStep!,
     };
 
-    return {
-      x: this.map?.mapParams.closestTile.x!,
-      y: this.map?.mapParams.closestTile.y!,
-    };
+    return this.map?.mapParams.closestTile!;
   }
 
-  public findClosestTower(
+  public findClosestTile(
     coordinates: ITwoDCoordinates,
     tilesArr: ITwoDCoordinates[] = this.map?.mapParams?.towerTilesArr!,
   ) {
@@ -2316,10 +2451,14 @@ export class TDEngine {
 
   public highlightTile(
     coords: ITwoDCoordinates,
+    drawShowel: boolean = false,
     context: CanvasRenderingContext2D = this.context!.game!,
   ) {
     context.beginPath();
-    context.strokeStyle = "green";
+    context.strokeStyle = ColorDict.tileSelectionColor;
+    if (drawShowel) {
+      context.drawImage(this.map?.showelCanvas!, coords.x, coords.y);
+    }
     context.setLineDash([]);
     context.strokeRect(
       coords.x,
@@ -2331,11 +2470,17 @@ export class TDEngine {
   }
 
   public canvasMouseMoveCallback = (e: MouseEvent) => {
+    if (this.isCanBuild || this.isCanCast || this.isCanClean) {
+      this.gameWindow!.style.cursor = "none";
+    } else {
+      this.gameWindow!.style.cursor = "inherit";
+    }
+
     this.cursorPosition = {
       x: e.offsetX,
       y: e.offsetY,
     };
-    this.map!.mapParams.closestTile = this.findClosestTile(this.cursorPosition);
+
     if (this.isCanBuild) {
       this.draftShowTower();
     } else if (this.draftSpell) {
@@ -2349,6 +2494,8 @@ export class TDEngine {
       this.draftBuildTower();
     } else if (this.isCanCast) {
       this.draftSpellCast();
+    } else if (this.isCanClean) {
+      this.draftCleanTile();
     } else {
       this.selectTower();
       if (!this.selectedTower && gameStore.getState().isBuildMenuOpen) {
@@ -2367,17 +2514,33 @@ export class TDEngine {
     // decrement money
     this.money -= tower.towerParams.price! * (tower.upgradeLevel + 1);
     // update UI
-    useGameStore.getState().updateMoney(this.money);
-    useGameStore.getState().updateConstructionProgress(0);
+    gameStore.getState().updateMoney(this.money);
+    gameStore.getState().updateConstructionProgress(0);
     tower.isCanFire = false;
     // release tower target
     tower.target = null;
-    // set render params
+    clearInterval(tower.attackIntervalTimer!);
+    tower.attackIntervalTimer = null;
+    // upgrade tower params by level
     tower.upgradeLevel += 1;
+    tower.towerParams.attackDamage = Math.floor(
+      tower.towerParams.attackDamage * 1.25,
+    );
+    tower.towerParams.attackRange = Math.floor(
+      tower.towerParams.attackRange * 1.1,
+    );
+    tower.towerParams.attackRate = Math.floor(
+      tower.towerParams.attackRate * 0.9,
+    );
+    // clear and redraw towerRange
+    // this.clearContext(this.context?.towerRange!);
+    // set render params
     tower.renderParams.constructionTimeout = tower.upgradeLevel
       ? tower.renderParams.constructionTimeout * tower.upgradeLevel
       : tower.renderParams.constructionTimeout;
     tower.renderParams.isConstructing = true;
+
+    tower.drawTowerRange(this.context?.towerRange!);
   }
 
   public sellTower(tower: Tower) {
@@ -2411,6 +2574,7 @@ export class TDEngine {
     gameStore.getState().updateIsSideMenuOpen(false);
     //
     this.clearContext(context);
+    this.clearContext(this.context?.towerRange!);
     this.selectedTower = null;
     if (tower) {
       tower.towerParams.isSelected = false;
@@ -2419,7 +2583,7 @@ export class TDEngine {
 
   public selectTower() {
     if (!this.towers?.length) return;
-    const closestTile = this.findClosestTower(this.cursorPosition);
+    const closestTile = this.findClosestTile(this.cursorPosition);
     this.towers.forEach((tower) => {
       // remove previous selection
       if (this.selectedTower === tower) {
@@ -2439,6 +2603,8 @@ export class TDEngine {
           gameStore.getState().updateIsSideMenuOpen(true);
           this.selectedTower.towerParams.isSelected = true;
           this.clearContext(this.context?.selection!);
+          this.clearContext(this.context?.towerRange!);
+          this.selectedTower.drawTowerRange(this.context?.towerRange!);
           this.selectedTower.drawSelection();
           return;
         }
@@ -2451,13 +2617,24 @@ export class TDEngine {
       if (gameStore.getState().isGameStarted) {
         // exit building mode
         if (this.isCanBuild) {
+          // clear tower canvas
+          this.clearContext(this.context?.build!);
           this.isCanBuild = false;
           this.isShowGrid = false;
         } else if (this.isCanCast) {
+          // clear spell canvas
+          this.clearContext(this.context?.spellDraft!);
+          this.clearContext(this.context?.spell!);
           this.isCanCast = false;
+        } else if (this.isCanClean) {
+          // clear tile mode
+          this.isCanClean = false;
         } else if (this.selectedTower) {
           // clear selected tower
           this.clearTowerSelection();
+        } else if (gameStore.getState().isBuildMenuOpen) {
+          // close build menu
+          gameStore.getState().updateIsBuildMenuOpen(false);
         } else {
           // toggle game menu
           gameStore
@@ -2470,17 +2647,11 @@ export class TDEngine {
         }
       } else {
         // toggle game menu
-        gameStore
-          .getState()
-          .updateIsGameMenuOpen(!gameStore.getState().isGameMenuOpen);
-        // toggle build menu
-        gameStore
-          .getState()
-          .updateIsBuildMenuOpen(!gameStore.getState().isBuildMenuOpen);
+        gameStore.getState().updateIsGameMenuOpen(true);
       }
     }
 
-    // quick build hotkeys
+    // game hotkeys
     if (gameStore.getState().isGameStarted) {
       // spell
       if (e.key === "q") {
@@ -2489,21 +2660,34 @@ export class TDEngine {
       if (e.key === "w") {
         this.castSpell("tornado");
       }
-      // tower
+      if (e.key === "e") {
+        this.castSpell("water");
+      }
+      if (e.key === "r") {
+        this.castSpell("rock");
+      }
+      // clean
+      if (e.key === "c") {
+        this.cleanTile();
+      }
+      // build
       if (e.key === "1") {
         this.buildTower("one", 0);
       }
       if (e.key === "2") {
-        this.draftTower = null;
         this.buildTower("two", 0);
       }
       if (e.key === "3") {
-        this.draftTower = null;
         this.buildTower("three", 0);
       }
       if (e.key === "4") {
-        this.draftTower = null;
         this.buildTower("four", 0);
+      }
+      // game menu
+      if (e.key === "b") {
+        gameStore
+          .getState()
+          .updateIsBuildMenuOpen(!gameStore.getState().isBuildMenuOpen);
       }
     }
 
@@ -2562,22 +2746,20 @@ export class TDEngine {
     return false;
   }
 
-  public isEnoughMoney(towerPrice: ITDEngine["money"]) {
-    if (this.money >= towerPrice!) {
-      return true;
-    }
-    this.isNotEnoughMoney = true;
-    return false;
+  public isEnoughMoney(
+    price: ITDEngine["money"],
+    money: ITDEngine["money"] = this.money,
+  ) {
+    return money >= price;
   }
 
   public draftShowTower() {
     if (!this.isCanBuild) return;
-    // show building grid
-    // this.isShowGrid = true;
-
+    this.map!.mapParams.closestTile = this.findClosestBuildTile(
+      this.cursorPosition,
+    );
     this.draftTower!.currentPosition = this.draftBuildCoordinates;
-    this.draftTower!.towerParams.strokeStyle = "green";
-    // this.draftTower!.drawDraft();
+    this.draftTower!.towerParams.strokeStyle = ColorDict.towerRangeColor;
   }
 
   public draftBuildTower() {
@@ -2602,7 +2784,7 @@ export class TDEngine {
           this.draftTower!.currentPosition = this.draftBuildCoordinates;
 
           // clear the map behind the tower to clear stones trees etc
-          this.map?.drawEmptyBackgroundTile(this.draftBuildCoordinates);
+          // this.map?.drawEmptyBackgroundTile(this.draftBuildCoordinates);
 
           // set strokeStyle to default
           this.draftTower!.towerParams.strokeStyle =
@@ -2657,26 +2839,22 @@ export class TDEngine {
   public clearCanvas() {
     // clear game canvas
     this.clearContext(this.context!.game!);
-    this.clearContext(this.context!.cannon!);
     this.clearContext(this.context!.constructing!);
-    this.clearContext(this.context!.hpBar!);
     this.clearContext(this.context!.projectile!);
     this.clearContext(this.context!.build!);
-    if (this.enemies?.length) {
-      this.clearContext(this.context!.enemy!);
-    }
-    this.clearContext(this.context!.deadEnemy!);
     this.clearContext(this.context!.spell!);
     this.clearContext(this.context!.spellDraft!);
-    // this.clearContext(this.context.tower!);
-  }
-
-  public pushProjectile(projectile: Projectile) {
-    this.projectiles?.push(projectile);
+    if (this.enemies?.length) {
+      this.clearContext(this.context!.enemy!);
+      this.clearContext(this.context!.hpBar!);
+    }
+    if (this.towers?.length) {
+      this.clearContext(this.context!.cannon!);
+    }
   }
 
   public gameLoop = () => {
-    setTimeout(() => {
+    const timeout = setTimeout(() => {
       // game start
       if (gameStore.getState().isGameStarted) {
         if (this.lives > 0) {
@@ -2697,6 +2875,11 @@ export class TDEngine {
             }
           }
 
+          // clean tile mode
+          if (this.isCanClean) {
+            this.cleanTile();
+          }
+
           // draw enemies
           if (this.enemies?.length) {
             this.enemies?.forEach((enemy: Enemy) => {
@@ -2709,6 +2892,9 @@ export class TDEngine {
 
           // draw dead enemies
           if (this.deadEnemies?.length) {
+            // clear deadEnemiesCanvas
+            this.clearContext(this.context?.deadEnemy!);
+            // draw
             this.deadEnemies?.forEach((deadEnemy: Enemy) => {
               deadEnemy.draw(this.context!.deadEnemy!, false);
             });
@@ -2736,16 +2922,137 @@ export class TDEngine {
 
           // draw spells
           if (this.spells?.length) {
+            // clear
+            this.clearContext(this.context!.spell!);
+            // draw
             this.spells?.forEach((spell: Spell) => {
               spell.draw();
             });
           }
 
-          // highlight the closest map tile to the cursor
-          // this.highlightTile(this.map!.mapParams.closestTile);
-          //
+          // gameLoopLogic
+          // enemy init || move
+          if (!this.waveGenerator?.isInitialized) {
+            if (!this.waveGenerator?.waveTimerBetweenWaves) {
+              // UI countdown between waves
+              gameStore
+                .getState()
+                .updateCountdown(
+                  Math.floor(
+                    this.waveGenerator!.waveTimeoutBetweenWaves / 1000,
+                  ),
+                );
+              this.waveGenerator?.countdown();
+              this.waveGenerator!.waveTimerBetweenWaves = setTimeout(() => {
+                this.waveGenerator?.init();
+              }, this.waveGenerator?.waveTimeoutBetweenWaves);
+            }
+          } else {
+            // isWaveInProgress?
+            if (
+              this.enemies?.length === 0 &&
+              this.waveGenerator?.waveParams.isWaveInProgress
+            ) {
+              this.waveGenerator.waveParams.isWaveInProgress = false;
+              this.waveGenerator.setWaveType();
+              this.waveGenerator!.waveCountdown! = Math.floor(
+                this.waveGenerator!.waveTimeoutBetweenWaves / 1000,
+              );
+              gameStore
+                .getState()
+                .updateCountdown(this.waveGenerator!.waveCountdown);
+              if (!this.waveGenerator.waveTimerBetweenWaves) {
+                // UI countdown between waves
+                this.waveGenerator.waveCountdownTimer = setInterval(() => {
+                  if (this.waveGenerator!.waveCountdown > 0) {
+                    this.waveGenerator!.waveCountdown -= 1;
+                    gameStore
+                      .getState()
+                      .updateCountdown(this.waveGenerator!.waveCountdown);
+                  } else {
+                    clearInterval(this.waveGenerator?.waveCountdownTimer!);
+                    gameStore.getState().updateCountdown(0);
+                  }
+                }, 1000);
+                this.waveGenerator!.waveTimerBetweenWaves = setTimeout(() => {
+                  this.clearMemory();
+                  this.waveGenerator?.spawnEnemies();
+                }, this.waveGenerator.waveTimeoutBetweenWaves);
+              }
+            }
+          }
+
+          // search n destroy
+          if (this.enemies?.length && this.towers?.length) {
+            this.towers?.forEach((tower: Tower) => {
+              if (
+                tower.renderParams.isConstructing ||
+                tower.renderParams.isSelling
+              )
+                return;
+              if (tower.target) {
+                if (tower.isEnemyInRange(tower.target)) {
+                  tower.findTargetAngle();
+                  tower.fire();
+                } else {
+                  tower.findTarget();
+                }
+              } else {
+                if (!tower.isCanFire) return;
+                tower.findTarget();
+              }
+            });
+          }
+
+          // move enemies
+          if (this.enemies?.length) {
+            this.enemies?.forEach((enemy: Enemy) => {
+              enemy.move();
+            });
+          }
+
+          // move projectiles
+          if (this.projectiles?.length) {
+            this.projectiles?.forEach((projectile: Projectile) => {
+              projectile.move();
+            });
+          }
+
+          // move spells
+          if (this.spells?.length) {
+            this.spells?.forEach((spell: Spell) => {
+              if (spell.renderParams.isMoving) {
+                spell.move();
+              }
+            });
+          }
+
+          // increment mana parameter
+          if (
+            !this.isGameOver &&
+            this.mana < this.initialGameParams.mana &&
+            this.mana >= 0
+          ) {
+            if (!this.manaIncrementTimer) {
+              this.manaIncrementTimer = setInterval(() => {
+                this.mana =
+                  this.mana + this.manaIncrementQuantity <
+                  this.initialGameParams.mana
+                    ? this.mana + this.manaIncrementQuantity
+                    : this.initialGameParams.mana;
+                // UI
+                gameStore.getState().updateMana(this.mana);
+              }, this.manaIncrementTimeout);
+            }
+          } else {
+            clearInterval(this.manaIncrementTimer!);
+            this.manaIncrementTimer = null;
+          }
         } else {
-          // GAME IS OVER!
+          // game is over!
+          gameStore.getState().updateIsGameStarted(false);
+          gameStore.getState().updateIsGameOver(true);
+          this.isGameOver = true;
         }
 
         // request animation frame
@@ -2754,130 +3061,8 @@ export class TDEngine {
         // cancel browser idle callback fn
         cancelAnimationFrame(this.animationFrameId);
       }
+      // clear timeout
+      clearTimeout(timeout);
     }, 1000 / this.initialGameParams.fps);
-  };
-
-  public gameLoopLogic = () => {
-    if (this.lives > 0) {
-      if (gameStore.getState().isGameStarted) {
-        // enemy init || move
-        if (!this.waveGenerator?.isInitialized) {
-          if (!this.waveGenerator?.waveTimerBetweenWaves) {
-            // UI countdown between waves
-            gameStore
-              .getState()
-              .updateCountdown(
-                Math.floor(this.waveGenerator!.waveTimeoutBetweenWaves / 1000),
-              );
-            this.waveGenerator?.countdown();
-            this.waveGenerator!.waveTimerBetweenWaves = setTimeout(() => {
-              this.waveGenerator?.init();
-            }, this.waveGenerator?.waveTimeoutBetweenWaves);
-          }
-        } else {
-          // isWaveInProgress?
-          if (
-            this.enemies?.length === 0 &&
-            this.waveGenerator?.waveParams.isWaveInProgress
-          ) {
-            this.waveGenerator.waveParams.isWaveInProgress = false;
-            this.waveGenerator!.waveCountdown! = Math.floor(
-              this.waveGenerator!.waveTimeoutBetweenWaves / 1000,
-            );
-            gameStore
-              .getState()
-              .updateCountdown(this.waveGenerator!.waveCountdown);
-            if (!this.waveGenerator.waveTimerBetweenWaves) {
-              // UI countdown between waves
-              this.waveGenerator.waveCountdownTimer = setInterval(() => {
-                if (this.waveGenerator!.waveCountdown > 0) {
-                  this.waveGenerator!.waveCountdown -= 1;
-                  gameStore
-                    .getState()
-                    .updateCountdown(this.waveGenerator!.waveCountdown);
-                } else {
-                  clearInterval(this.waveGenerator?.waveCountdownTimer!);
-                  gameStore.getState().updateCountdown(0);
-                }
-              }, 1000);
-              this.waveGenerator!.waveTimerBetweenWaves = setTimeout(() => {
-                this.clearMemory();
-                this.waveGenerator?.spawnEnemies();
-              }, this.waveGenerator.waveTimeoutBetweenWaves);
-            }
-          }
-        }
-
-        // search n destroy
-        if (this.enemies?.length) {
-          this.towers?.forEach((tower: Tower) => {
-            if (
-              tower.renderParams.isConstructing ||
-              tower.renderParams.isSelling
-            )
-              return;
-            if (tower.target) {
-              if (tower.isEnemyInRange(tower.target)) {
-                tower.findTargetAngle();
-                tower.fire();
-              } else {
-                tower.findTarget();
-              }
-            } else {
-              tower.findTarget();
-            }
-          });
-        }
-
-        // move enemies
-        if (this.enemies?.length) {
-          this.enemies?.forEach((enemy: Enemy) => {
-            enemy.move();
-          });
-        }
-
-        // move projectiles
-        if (this.projectiles?.length) {
-          this.projectiles?.forEach((projectile: Projectile) => {
-            projectile.move();
-          });
-        }
-
-        // move spells
-        if (this.spells?.length) {
-          this.spells?.forEach((spell: Spell) => {
-            if (spell.renderParams.isMoving) {
-              spell.move();
-            }
-          });
-        }
-
-        // increment mana parameter
-        if (this.mana < this.initialGameParams.mana && this.mana >= 0) {
-          if (!this.manaIncrementTimer) {
-            this.manaIncrementTimer = setInterval(() => {
-              this.mana += this.manaIncrementQuantity;
-              gameStore.getState().updateMana(this.mana);
-            }, this.manaIncrementTimeout);
-          }
-        } else {
-          clearInterval(this.manaIncrementTimer!);
-          this.manaIncrementTimer = null;
-        }
-
-        // request callback when browser is idling
-        this.requestIdleCallback = requestIdleCallback(this.gameLoopLogic, {
-          timeout: 1000 / this.initialGameParams.fps,
-          // timeout: this.idleTimeout,
-        });
-      } else {
-        cancelIdleCallback(this.requestIdleCallback);
-      }
-    } else {
-      // game is over!
-      gameStore.getState().updateIsGameStarted(false);
-      gameStore.getState().updateIsGameOver(true);
-      this.isGameOver = true;
-    }
   };
 }

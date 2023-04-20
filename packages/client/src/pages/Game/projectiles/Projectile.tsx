@@ -94,9 +94,7 @@ export class Projectile {
         (
           this.tower.engine.towerSprites[this.tower.type]!.canvasArr
             ?.projectile![this.tower.upgradeLevel] as HTMLCanvasElement[]
-        )[3]!,
-        // this.tower.towerParams.fireFromCoords.x,
-        // this.tower.towerParams.fireFromCoords.y,
+        )[this.tower.projectileParams.projectileFrameLimit]!,
         Math.ceil(this.currentPosition.x),
         Math.ceil(this.currentPosition.y),
       );
@@ -110,22 +108,6 @@ export class Projectile {
         )[this.getNextImpactFrameIndex()]! as HTMLCanvasElement,
         Math.ceil(this.currentPosition.x),
         Math.ceil(this.currentPosition.y),
-        /*
-        Math.ceil(
-          this.currentPosition.x -
-            this.tower.engine.predefinedTowerParams[this.tower.type]
-              ?.projectileParams?.dimensions[this.tower.upgradeLevel]
-              .impactWidth! /
-              2,
-        ),
-        Math.ceil(
-          this.currentPosition.y -
-            this.tower.engine.predefinedTowerParams[this.tower.type]
-              ?.projectileParams?.dimensions[this.tower.upgradeLevel]
-              .impactHeight! /
-              2,
-        ),
-         */
       );
     }
     this.tower.engine.context!.projectile!.closePath();
@@ -214,12 +196,15 @@ export class Projectile {
             this.target!.enemyParams!.modifiedSlowTimer = null;
           }
           if (!this.target?.enemyParams?.isModified) {
+            const slowCoefficient =
+              this.tower.engine.waveGenerator?.waveParams?.waveType === "boss"
+                ? this.target!.enemyParams!.speed! * 0.15
+                : this.target!.enemyParams!.speed! *
+                  0.2 *
+                  (this.tower.upgradeLevel + 1);
             this.target!.enemyParams.isModified = true;
             this.target!.enemyParams.attackModifier = "slow";
-            this.target!.enemyParams!.speed! -=
-              this.target!.enemyParams!.speed! *
-              0.2 *
-              (this.tower.upgradeLevel + 1);
+            this.target!.enemyParams!.speed! -= slowCoefficient;
           }
           this.target!.enemyParams!.modifiedSlowTimer = setTimeout(() => {
             // clear timer
@@ -249,20 +234,27 @@ export class Projectile {
             }
           });
         } else if (this.tower.projectileParams.attackModifier === "shock") {
-          this.target!.enemyParams.isModified = true;
-          this.target!.enemyParams.attackModifier = "shock";
           // stop enemy
-          this.target!.enemyParams!.speed! = 0;
-          this.target!.enemyParams!.modifiedShockTimer = setTimeout(() => {
-            // clear timer
-            this.target!.enemyParams!.modifiedShockTimer = null;
-            clearTimeout(this.target?.enemyParams?.modifiedShockTimer!);
-            // restore enemy movement speed
-            this.target!.enemyParams!.speed =
-              this.target?.enemyParams?.initialSpeed;
-            // restore enemy isModified state to false
-            this.target!.enemyParams.isModified = false;
-          }, this.tower.projectileParams.attackModifierTimeout);
+          if (
+            this.tower.engine.waveGenerator?.waveParams?.waveType === "boss"
+          ) {
+            // can't stop teh boss
+          } else {
+            this.target!.enemyParams.isModified = true;
+            this.target!.enemyParams.attackModifier = "shock";
+            // but can stop any other wave type
+            this.target!.enemyParams!.speed! = 0;
+            this.target!.enemyParams!.modifiedShockTimer = setTimeout(() => {
+              // clear timer
+              this.target!.enemyParams!.modifiedShockTimer = null;
+              clearTimeout(this.target?.enemyParams?.modifiedShockTimer!);
+              // restore enemy movement speed
+              this.target!.enemyParams!.speed =
+                this.target?.enemyParams?.initialSpeed;
+              // restore enemy isModified state to false
+              this.target!.enemyParams.isModified = false;
+            }, this.tower.projectileParams.attackModifierTimeout);
+          }
         }
       }
     }

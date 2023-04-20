@@ -164,7 +164,11 @@ export class Enemy {
               ? this.currentStage
               : this.currentStage - 1,
           )!.direction!
-        ]![this.getNextFrameIndex()],
+        ]![
+          this.enemyParams!.modifiedShockTimer
+            ? this.renderParams.currentFrame
+            : this.getNextFrameIndex()
+        ],
         context,
       );
       // enemy is dead? draw death animation
@@ -375,9 +379,14 @@ export class Enemy {
 
     this.engine.score += 1;
     if (isGiveBounty) {
-      this.engine.money += this.enemyParams.bounty!;
-      useGameStore.getState().updateMoney(this.engine.money);
-      useGameStore.getState().updateScore(this.engine.score);
+      if (
+        this.engine.money + this.enemyParams.bounty! <
+        this.engine.initialGameParams.maxMoney
+      ) {
+        this.engine.money += this.enemyParams.bounty!;
+        useGameStore.getState().updateMoney(this.engine.money);
+        useGameStore.getState().updateScore(this.engine.score);
+      }
     }
 
     // UI update

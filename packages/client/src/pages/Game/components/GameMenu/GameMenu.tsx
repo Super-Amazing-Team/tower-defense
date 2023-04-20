@@ -1,29 +1,34 @@
 import React, { useState } from "react";
 import { Box, MenuItem, MenuList } from "@mui/material";
 import { shallow } from "zustand/shallow";
+import { useNavigate } from "react-router-dom";
 import { useGameStore } from "@/store";
 import { TDEngine } from "@/pages/Game/engine/TDEngine";
+import wispAnimation from "@/../public/UI/wispAnimation.gif";
+import { TRoutes as R } from "@/types";
+import cursorHand from "@/../public/UI/cursorHand.png";
+import grassBg from "@/../public/sprites/map/grassBg.png";
 
 interface IGameMenu {
   engine: TDEngine;
 }
 export const GameMenu = ({ engine }: IGameMenu) => {
-  const [isGameMenuOpen, setIsGameMenuOpen] = useGameStore(
-    (state) => [state.isGameMenuOpen, state.updateIsGameMenuOpen],
+  const navigate = useNavigate();
+  const isGameMenuOpen = useGameStore((state) => state.isGameMenuOpen, shallow);
+  const setIsGameMenuOpen = useGameStore(
+    (state) => state.updateIsGameMenuOpen,
     shallow,
   );
-  const [isBuildMenuOpen, setIsBuildMenuOpen] = useGameStore(
-    (state) => [state.isBuildMenuOpen, state.updateIsBuildMenuOpen],
+  const setIsBuildMenuOpen = useGameStore(
+    (state) => state.updateIsBuildMenuOpen,
     shallow,
   );
-  const [isGameStarted, setIsGameStarted] = useGameStore(
-    (state) => [state.isGameStarted, state.updateIsGameStarted],
+  const isGameStarted = useGameStore((state) => state.isGameStarted, shallow);
+  const setIsGameStarted = useGameStore(
+    (state) => state.updateIsGameStarted,
     shallow,
   );
-  const [isGameOver, setIsGameOver] = useGameStore(
-    (state) => [state.isGameOver, state.updateIsGameOver],
-    shallow,
-  );
+  const isGameOver = useGameStore((state) => state.isGameOver, shallow);
   const [isSoundEnabled, setIsSoundEnabled] = useState<boolean>(
     engine.isSoundEnabled,
   );
@@ -38,7 +43,7 @@ export const GameMenu = ({ engine }: IGameMenu) => {
         top: 0,
         width: "100%",
         height: "100%",
-        background: `url("${engine.map?.grassBackrgroundCanvas?.toDataURL()}") repeat`,
+        background: `url("${grassBg}") repeat`,
         justifyContent: "center",
       }}
     >
@@ -56,6 +61,13 @@ export const GameMenu = ({ engine }: IGameMenu) => {
             display: "flex",
             flexDirection: "column",
             fontFamily: "'Press Start 2P', cursive",
+            "& > li": {
+              paddingLeft: "36px",
+            },
+            "& > li:hover": {
+              background: `url("${wispAnimation}") 0 0 no-repeat`,
+              cursor: `url("${cursorHand}"), auto`,
+            },
           }}
         >
           <MenuItem
@@ -63,12 +75,11 @@ export const GameMenu = ({ engine }: IGameMenu) => {
             onClick={() => {
               if (!isGameStarted) {
                 engine.gameStart();
-                setIsGameStarted(true);
               }
               setIsGameMenuOpen(false);
               setIsBuildMenuOpen(true);
             }}
-            disabled={isGameOver}
+            disabled={!isGameStarted && isGameOver}
           >
             {isGameStarted ? "Resume" : "Start"} game
           </MenuItem>
@@ -76,7 +87,6 @@ export const GameMenu = ({ engine }: IGameMenu) => {
             onClick={() => {
               if (isGameStarted) {
                 engine.gameStop();
-                setIsGameStarted(false);
               }
               setIsGameMenuOpen(false);
             }}
@@ -86,10 +96,13 @@ export const GameMenu = ({ engine }: IGameMenu) => {
           </MenuItem>
           <MenuItem
             onClick={() => {
-              engine.gameRestart();
-              setIsGameMenuOpen(false);
-              setIsGameStarted(true);
+              if (engine.waveGenerator?.isInitialized) {
+                engine.gameRestart();
+                setIsGameMenuOpen(false);
+                setIsGameStarted(true);
+              }
             }}
+            disabled={!engine.waveGenerator?.isInitialized}
           >
             Restart game
           </MenuItem>
@@ -105,8 +118,18 @@ export const GameMenu = ({ engine }: IGameMenu) => {
               }
               setIsGameMenuOpen(false);
             }}
+            disabled={!isGameStarted}
           >
             {isSoundEnabled ? "Disable" : "Enable"} music
+          </MenuItem>
+          <MenuItem
+            onClick={() => {
+              engine.isInitialized = false;
+              engine.isCanvasCreated = false;
+              navigate(R.home);
+            }}
+          >
+            Main page
           </MenuItem>
         </MenuList>
       </Box>

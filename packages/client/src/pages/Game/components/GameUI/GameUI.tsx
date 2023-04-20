@@ -1,79 +1,36 @@
-import React, { useState } from "react";
-import { Box, MenuList, MenuItem, Typography, Button } from "@mui/material";
+import { Box, Typography } from "@mui/material";
 import { shallow } from "zustand/shallow";
 import gameUIIcons from "@/../public/UI/gameUIIcons.png";
-import manaIcon from "@/../public/sprites/spells/manaIcon.png";
-import { TDEngine, IWaveGenerator } from "@/pages/Game/engine/TDEngine";
+import { TDEngine } from "@/pages/Game/engine/TDEngine";
 import { useGameStore } from "@/store";
-
-declare global {
-  namespace JSX {
-    // eslint-disable-next-line @typescript-eslint/naming-convention
-    interface IntrinsicElements {
-      marquee: React.DetailedHTMLProps<
-        React.HTMLAttributes<HTMLElement>,
-        HTMLElement
-      >;
-    }
-  }
-}
+import cursorHand from "@/../public/UI/cursorHand.png";
+import cursorNotAllowed from "@/../public/UI/cursorNotAllowed.png";
 
 interface IGameUI {
   engine: TDEngine;
-  lives?: number;
-  score?: number;
-  money?: number;
-  wave?: IWaveGenerator["waveParams"]["currentWave"];
-  waveCountdown?: IWaveGenerator["waveCountdown"];
-  isEnoughMoney?: boolean;
 }
 
-const GameUi = ({ engine }: IGameUI) => {
+export const GameUi = ({ engine }: IGameUI) => {
   // game status params
-  const [lives, setLives] = useGameStore(
-    (state) => [state.lives, state.updateLives],
+  const lives = useGameStore((state) => state.lives, shallow);
+  const mana = useGameStore((state) => state.mana, shallow);
+  const waveNumber = useGameStore((state) => state.waveNumber, shallow);
+  const isGameMenuOpen = useGameStore((state) => state.isGameMenuOpen, shallow);
+  const setIsGameMenuOpen = useGameStore(
+    (state) => state.updateIsGameMenuOpen,
     shallow,
   );
-  const [mana, setMana] = useGameStore(
-    (state) => [state.mana, state.updateMana],
+  const isBuildMenuOpen = useGameStore(
+    (state) => state.isBuildMenuOpen,
     shallow,
   );
-  const [countdown, setCountdown] = useGameStore(
-    (state) => [state.countdown, state.updateCountdown],
+  const setIsBuildMenuOpen = useGameStore(
+    (state) => state.updateIsBuildMenuOpen,
     shallow,
   );
-  const [waveNumber, setWaveNumber] = useGameStore(
-    (state) => [state.waveNumber, state.updateWaveNumber],
-    shallow,
-  );
-  const [isGameMenuOpen, setIsGameMenuOpen] = useGameStore(
-    (state) => [state.isGameMenuOpen, state.updateIsGameMenuOpen],
-    shallow,
-  );
-  const [isSideMenuOpen, setIsSideMenuOpen] = useGameStore(
-    (state) => [state.isSideMenuOpen, state.updateIsSideMenuOpen],
-    shallow,
-  );
-  const [isBuildMenuOpen, setIsBuildMenuOpen] = useGameStore(
-    (state) => [state.isBuildMenuOpen, state.updateIsBuildMenuOpen],
-    shallow,
-  );
-  const [isGameOver, setIsGameOver] = useGameStore(
-    (state) => [state.isGameOver, state.updateIsGameOver],
-    shallow,
-  );
-  const [score, setScore] = useGameStore(
-    (state) => [state.score, state.updateScore],
-    shallow,
-  );
-  const [money, setMoney] = useGameStore(
-    (state) => [state.money, state.updateMoney],
-    shallow,
-  );
-  const [enemiesLeft, setEnemiesLeft] = useGameStore(
-    (state) => [state.enemiesLeft, state.updateEnemiesLeft],
-    shallow,
-  );
+  const score = useGameStore((state) => state.score, shallow);
+  const money = useGameStore((state) => state.money, shallow);
+  const enemiesLeft = useGameStore((state) => state.enemiesLeft, shallow);
   //
 
   return (
@@ -82,128 +39,150 @@ const GameUi = ({ engine }: IGameUI) => {
       <Box
         sx={{
           position: "absolute",
-          top: "16px",
-          right: "16px",
+          top: 0,
+          left: 0,
           zIndex: 101,
-          "& > p": {
-            cursor: "pointer",
-            width: "32px",
-            height: "32px",
-            textAlign: "center",
-            fontSize: "1.5em",
-            color: "#262626",
-          },
-          "& > .game-menu-icon": {
-            cursor: "pointer",
-            width: "32px",
-            height: "32px",
-            background: `url(${gameUIIcons}) 0 0 no-repeat`,
-          },
-          "& > .game-build-icon": {
-            cursor: "pointer",
-            width: "32px",
-            height: "32px",
-            marginTop: "16px",
-            background: `url(${gameUIIcons}) 0 -32px no-repeat`,
-          },
-        }}
-      >
-        {!isSideMenuOpen && (
-          <>
-            <Box
-              onClick={() => {
-                // toggle game menu
-                setIsGameMenuOpen(!isGameMenuOpen);
-              }}
-              className="game-menu-icon"
-            />
-            {!isGameMenuOpen && (
-              <Box
-                onClick={() => {
-                  // toggle game menu
-                  setIsBuildMenuOpen(!isBuildMenuOpen);
-                }}
-                className="game-build-icon"
-              />
-            )}
-          </>
-        )}
-      </Box>
-      {isGameOver && !isGameMenuOpen && (
-        <Box
-          sx={{
-            position: "absolute",
-            zIndex: 100,
-            width: "100%",
-            height: "100%",
-            display: "flex",
-            "& p": {
-              display: "flex",
-              flexGrow: 1,
-              alignItems: "center",
-              color: "#262626",
-              fontSize: "4em",
-            },
-          }}
-        >
-          <Typography>
-            {/* eslint-disable-next-line react/no-unknown-property */}
-            <marquee behavior="alternate" scrollamount="12">
-              GAME IS OVER!
-            </marquee>
-          </Typography>
-        </Box>
-      )}
-      <Box
-        className="b-game-status"
-        sx={{
-          position: "absolute",
-          top: "8px",
-          zIndex: 101,
-          width: "100%",
           userSelect: "none",
+          height: "100%",
         }}
+        className="b-game-ui-wrapper"
       >
         <Box
           sx={{
-            background: `url(${manaIcon}) 0 0 no-repeat`,
-            height: "32px",
-            paddingLeft: "32px",
-            paddingTop: "10px",
-            position: "absolute",
+            position: "relative",
             top: "8px",
-            left: "16px",
-            "& p": {
-              color: "white",
+            left: "8px",
+            "& .icon": {
+              height: "32px",
+            },
+            "& > .menu-icon": {
+              cursor: `url("${cursorHand}"), auto`,
+            },
+            "& > .game-menu-icon": {
+              background: `url(${gameUIIcons}) 0 0 no-repeat`,
+              marginBottom: "16px",
+            },
+            "& > .game-build-icon": {
+              background: `url(${gameUIIcons}) 0 -32px no-repeat`,
+              marginBottom: "16px",
+            },
+            "& > .game-showel-icon": {
+              background: `url(${gameUIIcons}) 0 -256px no-repeat`,
+              marginBottom: "16px",
+            },
+            "& .icon.state__disabled": {
+              cursor: `url("${cursorNotAllowed}"), auto`,
+              opacity: 0.4,
             },
           }}
+          className="b-game-ui"
         >
-          <Typography>{mana}</Typography>
-        </Box>
-        <Box
-          sx={{
-            "& > p": {
-              textAlign: "center",
-              color: "#262626",
-            },
-          }}
-        >
-          <Typography>
-            <span>{`Money: $${money}`}</span>&nbsp;
-            <span>{`Lives: ${lives}`}</span>&nbsp;
-            <span>{`Enemies: ${enemiesLeft}`}</span>&nbsp;
-            <span>{`Wave: ${waveNumber}`}</span>&nbsp;
-            <span>{`Score: ${score}`}</span>&nbsp;
-          </Typography>
-          <Typography>
-            {Boolean(countdown) && (
-              <span>{`Next wave in: ${countdown} seconds`}</span>
-            )}
-          </Typography>
+          <Box
+            onClick={() => {
+              // toggle game menu
+              setIsGameMenuOpen(!isGameMenuOpen);
+            }}
+            className="game-menu-icon icon menu-icon"
+          />
+          <Box
+            onClick={() => {
+              if (!isGameMenuOpen) {
+                // toggle game menu
+                setIsBuildMenuOpen(!isBuildMenuOpen);
+              }
+            }}
+            className={`game-build-icon icon menu-icon ${
+              isGameMenuOpen ? "state__disabled" : ""
+            }`}
+          />
+          <Box
+            onClick={() => {
+              if (
+                !isGameMenuOpen &&
+                engine.isEnoughMoney(engine.initialGameParams.cleanTilePrice)
+              ) {
+                // clean tile
+                engine.cleanTile();
+              }
+            }}
+            className={`game-showel-icon icon menu-icon ${
+              isGameMenuOpen &&
+              !engine.isEnoughMoney(engine.initialGameParams.cleanTilePrice)
+                ? "state__disabled"
+                : ""
+            }`}
+          />
+          {/* UI Game status */}
+          <Box
+            className="b-game-status"
+            sx={{
+              "& .status-icon": {
+                paddingLeft: "36px",
+                paddingTop: "10px",
+                marginBottom: "16px",
+              },
+
+              "& .status-icon p": {
+                minWidth: "22px",
+                color: "#262626",
+                textAlign: "center",
+              },
+            }}
+          >
+            <Box
+              sx={{
+                background: `url(${gameUIIcons}) 0 -192px no-repeat`,
+                "& p": {
+                  color: "#262626",
+                },
+              }}
+              className="game-mana-icon icon status-icon"
+            >
+              <Typography>{mana}</Typography>
+            </Box>
+            <Box
+              sx={{
+                background: `url(${gameUIIcons}) 0 -64px no-repeat`,
+              }}
+              className="game-money-icon icon status-icon"
+            >
+              <Typography>{money}</Typography>
+            </Box>
+            <Box
+              sx={{
+                background: `url(${gameUIIcons}) 0 -96px no-repeat`,
+              }}
+              className="game-lives-icon icon status-icon"
+            >
+              <Typography>{lives}</Typography>
+            </Box>
+            <Box
+              sx={{
+                background: `url(${gameUIIcons}) 0 -224px no-repeat`,
+              }}
+              className="game-enemies-left-icon icon status-icon"
+            >
+              <Typography>{enemiesLeft}</Typography>
+            </Box>
+            <Box
+              sx={{
+                background: `url(${gameUIIcons}) 0 -128px no-repeat`,
+              }}
+              className="game-wave-number-icon icon status-icon"
+            >
+              <Typography>{waveNumber}</Typography>
+            </Box>
+            <Box
+              sx={{
+                background: `url(${gameUIIcons}) 0 -160px no-repeat`,
+              }}
+              className="game-score-icon icon status-icon"
+            >
+              <Typography>{score}</Typography>
+            </Box>
+          </Box>
         </Box>
       </Box>
     </>
   );
 };
-
-export default GameUi;

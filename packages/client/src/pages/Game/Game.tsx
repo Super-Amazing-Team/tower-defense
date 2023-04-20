@@ -1,21 +1,24 @@
 import { useEffect, useRef, useState } from "react";
-import { CircularProgress, Box, createTheme } from "@mui/material";
+import { CircularProgress, Box, createTheme, Grid } from "@mui/material";
 import { shallow } from "zustand/shallow";
 import { ThemeProvider } from "@mui/material/styles";
-import { TDEngine, TTowerTypes } from "./engine/TDEngine";
-import GameUi from "@/pages/Game/components/GameUI/GameUI";
+import { ColorDict, TDEngine } from "./engine/TDEngine";
+import cursorPointer from "@/../public/UI/cursorPointer.png";
+import { GameUi } from "@/pages/Game/components/GameUI/GameUI";
 import { useGameStore } from "@/store";
 import { SideMenu } from "@/pages/Game/components/SideMenu/SideMenu";
 import { BuildMenu } from "@/pages/Game/components/BuildMenu/BuildMenu";
 import { GameMenu } from "@/pages/Game/components/GameMenu/GameMenu";
+import { UiMessage } from "@/pages/Game/components/UIMessage/UIMessage";
+import grassBg from "@/../public/sprites/map/grassBg.png";
 
 // mui theme
-const theme = createTheme({
+export const gameTheme = createTheme({
   components: {
     MuiMenuItem: {
       styleOverrides: {
         root: {
-          color: "#ffae70",
+          color: ColorDict.sandColor,
           fontFamily: "'Press Start 2P', cursive",
         },
       },
@@ -23,18 +26,16 @@ const theme = createTheme({
     MuiTypography: {
       styleOverrides: {
         root: {
-          color: "#000000",
+          color: ColorDict.fontColor,
           fontFamily: "'Press Start 2P', cursive",
-          fontSize: "0.7em",
         },
       },
     },
     MuiButton: {
       styleOverrides: {
         root: {
-          color: "#000000",
+          color: ColorDict.fontColor,
           fontFamily: "'Press Start 2P', cursive",
-          fontSize: "0.75em",
         },
       },
     },
@@ -66,14 +67,14 @@ export const Game = ({ engine = new TDEngine() }: IGameProps) => {
           // add hotkey listeners
           engine.addDocumentEventListeners();
 
+          // set engine init flag to true
+          engine.isInitialized = true;
+          setIsLoading(false);
+
           // debug
           console.log(`engine`);
           console.log(engine);
           //
-
-          // set engine init flag to true
-          engine.isInitialized = true;
-          setIsLoading(false);
         })
         .catch((error) => {
           throw new Error(
@@ -81,10 +82,24 @@ export const Game = ({ engine = new TDEngine() }: IGameProps) => {
           );
         });
     }
+    // componentWillUnmount
+    return () => {
+      // remove event listeners
+      engine.removeDocumentEventListeners();
+      engine.gameStop();
+      cancelAnimationFrame(engine.animationFrameId);
+      // reload the engine
+      engine.reload();
+    };
   }, []);
 
   useEffect(() => {
     if (engine.isInitialized) {
+      if (engine.towers?.length) {
+        engine.towers.forEach((tower) => {
+          tower.drawBase();
+        });
+      }
       // game start
       if (isGameStarted) {
         engine.gameStart();
@@ -92,45 +107,56 @@ export const Game = ({ engine = new TDEngine() }: IGameProps) => {
         engine.gameStop();
       }
     }
-    // componentWillUnmount
-    return () => {
-      if (engine.isInitialized) {
-        if (isGameStarted) {
-          // pause teh game
-          engine.gameStop();
-        }
-        // remove event listeners
-        // engine.removeDocumentEventListeners();
-      }
-    };
+    if (engine?.waveGenerator?.isInitialized) {
+      // add hotkey listeners
+      engine.addDocumentEventListeners();
+    }
   }, [isGameStarted]);
 
   return (
-    <ThemeProvider theme={theme}>
-      <Box
+    <ThemeProvider theme={gameTheme}>
+      <Grid
+        container
+        justifyContent="center"
+        alignItems="center"
         sx={{
+          cursor: `url("${cursorPointer}"), auto`,
           position: "relative",
-          width: `${engine.map?.mapParams?.width}px`,
-          height: `${engine.map?.mapParams?.height}px`,
+          background: `url("${!isLoading ? grassBg : ""}") 0 0 repeat`,
           "& .b-game-window": {
+            top: 0,
+            left: 0,
             position: "absolute",
             display: !isLoading ? "flex" : "none",
           },
-          overflow: "hidden",
+          "& p": {
+            fontSize: "0.7em",
+          },
+          "& button": {
+            fontSize: "0.75em",
+          },
         }}
       >
+        {!isLoading && <GameUi engine={engine} />}
         <Box className="b-game-window" id="gameWindow" ref={gameWindow} />
         {isLoading ? (
           <CircularProgress />
         ) : (
-          <>
-            <GameUi engine={engine} />
+          <Box
+            sx={{
+              position: "relative",
+              width: `100%`,
+              height: `100%`,
+              overflow: "hidden",
+            }}
+          >
             <SideMenu engine={engine} />
             <BuildMenu engine={engine} />
             <GameMenu engine={engine} />
-          </>
+            <UiMessage engine={engine} />
+          </Box>
         )}
-      </Box>
+      </Grid>
     </ThemeProvider>
   );
 };
