@@ -1,7 +1,14 @@
 import { useEffect, useRef, useState } from "react";
-import { CircularProgress, Box, createTheme, Grid } from "@mui/material";
+import {
+  CircularProgress,
+  Box,
+  createTheme,
+  Grid,
+  CssBaseline,
+} from "@mui/material";
 import { shallow } from "zustand/shallow";
 import { ThemeProvider } from "@mui/material/styles";
+import PressStart2P from "../../../public/fonts/PressStart2P-Regular.woff2";
 import { ColorDict, TDEngine } from "./engine/TDEngine";
 import cursorPointer from "@/../public/UI/cursorPointer.png";
 import { GameUi } from "@/pages/Game/components/GameUI/GameUI";
@@ -19,7 +26,7 @@ export const gameTheme = createTheme({
       styleOverrides: {
         root: {
           color: ColorDict.sandColor,
-          fontFamily: "'Press Start 2P', cursive",
+          fontFamily: "'PressStart2P', cursive",
         },
       },
     },
@@ -27,7 +34,7 @@ export const gameTheme = createTheme({
       styleOverrides: {
         root: {
           color: ColorDict.fontColor,
-          fontFamily: "'Press Start 2P', cursive",
+          fontFamily: "'PressStart2P', cursive",
         },
       },
     },
@@ -35,9 +42,21 @@ export const gameTheme = createTheme({
       styleOverrides: {
         root: {
           color: ColorDict.fontColor,
-          fontFamily: "'Press Start 2P', cursive",
+          fontFamily: "'PressStart2P', cursive",
         },
       },
+    },
+    MuiCssBaseline: {
+      styleOverrides: `
+        @font-face {
+          font-family: "PressStart2P";
+          font-style: normal;
+          font-display: swap;
+          font-weight: 400;
+          src: local("PressStart2P"), local("PressStart2P-Regular"), url(${PressStart2P}) format("woff2");
+          unicodeRange: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF;
+        }
+      `,
     },
   },
 });
@@ -115,6 +134,7 @@ export const Game = ({ engine = new TDEngine() }: IGameProps) => {
 
   return (
     <ThemeProvider theme={gameTheme}>
+      <CssBaseline />
       <Grid
         container
         justifyContent="center"
