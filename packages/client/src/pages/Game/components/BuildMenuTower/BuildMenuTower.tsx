@@ -94,6 +94,12 @@ export const BuildMenuTower = ({
               "& .b-attack-modifier-splash": {
                 color: ColorDict.specialAttacksplashColor,
               },
+              "& .b-attack-modifier-poison": {
+                color: ColorDict.specialAttackpoisonColor,
+              },
+              "& .b-attack-modifier-spell": {
+                color: ColorDict.specialAttackspellColor,
+              },
             }}
           >
             Special:

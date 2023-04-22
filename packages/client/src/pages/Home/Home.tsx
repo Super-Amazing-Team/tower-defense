@@ -115,14 +115,14 @@ export function Home({ engine }: IHome) {
             zIndex: 100,
             left: 0,
             top: 0,
-            background: "#444444",
+            background: ColorDict.shadowColor,
             opacity: 0.2,
           },
           "& .b-text-background": {
             border: `4px solid ${ColorDict.borderColor}`,
             borderRadius: "8px",
             background: ColorDict.sandColor,
-            padding: "32px",
+            padding: "32px 32px 64px 32px",
           },
           "& .b-tower-image-wrapper": {
             position: "relative",
@@ -407,7 +407,6 @@ export function Home({ engine }: IHome) {
                   <Typography
                     variant="h5"
                     sx={{
-                      pb: 10,
                       textAlign: "left",
                     }}
                   >
@@ -423,7 +422,7 @@ export function Home({ engine }: IHome) {
                   to={isAuth ? R.game : R.login}
                   sx={{
                     textAlign: "center",
-                    mt: 3,
+                    margin: "64px 0 32px",
                     color: ColorDict.sandColor,
                     textDecorationColor: "rgba(255, 192, 139, 0.4)",
                   }}

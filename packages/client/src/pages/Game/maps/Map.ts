@@ -131,6 +131,8 @@ export class Map {
       this.mapParams.width = this.mapParams.widthTile * this.mapParams.gridStep;
       this.mapParams.height =
         this.mapParams.heightTile * this.mapParams.gridStep;
+      // set engine.viewport
+      engine.viewport = "widescreen";
 
       // set map stage stack
       this.stageArrStack = [
@@ -157,6 +159,8 @@ export class Map {
       if (this.mapParams.heightTile > 12 && this.mapParams.widthTile > 16) {
         this.mapParams.width = 28 * this.mapParams.gridStep;
         this.mapParams.height = 15 * this.mapParams.gridStep;
+        // set engine.viewport
+        engine.viewport = "widescreen";
 
         // set map stage stack
         this.stageArrStack = [
@@ -266,6 +270,9 @@ export class Map {
         // tablet
         this.mapParams.width = 16 * this.mapParams.gridStep;
         this.mapParams.height = 12 * this.mapParams.gridStep;
+
+        // set engine.viewport
+        engine.viewport = "tablet";
 
         // set map stage stack
         this.stageArrStack = [

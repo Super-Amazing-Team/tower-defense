@@ -43,7 +43,7 @@ export const gameTheme = createTheme({
 });
 
 export interface IGameProps {
-  engine?: TDEngine;
+  engine: TDEngine;
 }
 
 export const Game = ({ engine = new TDEngine() }: IGameProps) => {
