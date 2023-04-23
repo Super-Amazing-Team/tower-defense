@@ -1,6 +1,7 @@
 import { create } from "zustand";
-import { ITDEngine, IWaveGenerator } from "@/pages/Game/engine/TDEngine";
+import { ITDEngine } from "@/pages/Game/engine/TDEngine";
 import { ITower } from "@/pages/Game/towers/Tower";
+import { IWaveGenerator } from "@/pages/Game/waveGenerator/waveGenerator";
 
 export interface IGameStore {
   isGameMenuOpen: ITDEngine["isGameMenuOpen"];
@@ -16,6 +17,7 @@ export interface IGameStore {
   enemiesLeft: ITDEngine["enemiesLeft"];
   countdown: IWaveGenerator["waveCountdown"];
   waveNumber: IWaveGenerator["waveParams"]["currentWave"];
+  waveType: IWaveGenerator["waveParams"]["waveType"];
   constructionProgress: ITower["renderParams"]["constructionProgressPercent"];
 }
 export type TGameAction = {
@@ -35,6 +37,7 @@ export type TGameAction = {
   updateConstructionProgress: (
     constructionProgress: IGameStore["constructionProgress"],
   ) => void;
+  updateWaveType: (waveType: IGameStore["waveType"]) => void;
 };
 
 export const useGameStore = create<IGameStore & TGameAction>()((set) => ({
@@ -72,4 +75,6 @@ export const useGameStore = create<IGameStore & TGameAction>()((set) => ({
   constructionProgress: 0,
   updateConstructionProgress: (constructionProgress) =>
     set(() => ({ constructionProgress: constructionProgress })),
+  waveType: "regular",
+  updateWaveType: (waveType) => set(() => ({ waveType: waveType })),
 }));

@@ -1,24 +1,19 @@
 import { Box, Typography } from "@mui/material";
 import { shallow } from "zustand/shallow";
-import { useEffect } from "react";
 import sidePanelBg from "@/../public/UI/sidePanelBg.png";
-import { TDEngine, TTowerTypes } from "@/pages/Game/engine/TDEngine";
+import { ColorDict, TDEngine, TTowerTypes } from "@/pages/Game/engine/TDEngine";
 import { BuildMenuTower } from "@/pages/Game/components/BuildMenuTower/BuildMenuTower";
 import { useGameStore } from "@/store";
 import { SpellMenu } from "@/pages/Game/components/SpellMenu/SpellMenu";
+import cursorHand from "@/../public/UI/cursorHand.png";
 
 interface IBuildMenu {
   engine: TDEngine;
 }
 export const BuildMenu = ({ engine }: IBuildMenu) => {
-  const [isGameStarted, setIsGameStarted] = useGameStore(
-    (state) => [state.isGameStarted, state.updateIsGameStarted],
-    shallow,
-  );
-  const [isGameMenuOpen, setIsGameMenuOpen] = useGameStore(
-    (state) => [state.isGameMenuOpen, state.updateIsGameMenuOpen],
-    shallow,
-  );
+  const isGameStarted = useGameStore((state) => state.isGameStarted);
+  const isGameMenuOpen = useGameStore((state) => state.isGameMenuOpen);
+  const money = useGameStore((state) => state.money);
   const [isBuildMenuOpen, setIsBuildMenuOpen] = useGameStore(
     (state) => [state.isBuildMenuOpen, state.updateIsBuildMenuOpen],
     shallow,
@@ -28,10 +23,11 @@ export const BuildMenu = ({ engine }: IBuildMenu) => {
     <Box
       sx={{
         display: isGameStarted ? "flex" : "none",
-        zIndex: 100,
+        zIndex: 101,
         position: "absolute",
         width: "100%",
         height: `${engine.map?.tileToNumber(4)}px`,
+        left: 0,
         bottom:
           isBuildMenuOpen && !isGameMenuOpen
             ? "0px"
@@ -66,6 +62,12 @@ export const BuildMenu = ({ engine }: IBuildMenu) => {
                 key={`build-menu-tower-${towerType}`}
                 engine={engine}
                 towerType={towerType}
+                isDisabled={
+                  !engine.isEnoughMoney(
+                    engine.predefinedTowerParams[towerType].towerParams.price!,
+                    money,
+                  )
+                }
               />
             </Box>
           );
@@ -78,12 +80,12 @@ export const BuildMenu = ({ engine }: IBuildMenu) => {
           right: "16px",
           zIndex: 101,
           "& > p": {
-            cursor: "pointer",
+            cursor: `url("${cursorHand}"), auto`,
             width: "32px",
             height: "32px",
             textAlign: "center",
             fontSize: "1.5em",
-            color: "#262626",
+            color: ColorDict.fontColor,
           },
         }}
       >
