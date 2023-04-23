@@ -4,3 +4,5 @@ node_modules/
 .vscode
 dist
 tmp
+certificate.crt
+certificate.key
