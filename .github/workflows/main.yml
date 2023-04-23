@@ -21,6 +21,8 @@ jobs:
       - name: Build, tag, and push image to Yandex Cloud Container Registry
         env:
           CR_REGISTRY: crpp5qmt2u1jr41cma29
+          SSL_CERT_CONTENT: ${{ secrets.SSL_KEY_CONTENT }}
+          SSL_KEY_CONTENT: ${{ secrets.SSL_KEY_CONTENT }}
           CR_REPOSITORY: tower-defense
           IMAGE_TAG: ${{ github.sha }}
           CLIENT_PORT: 3000
@@ -31,8 +33,8 @@ jobs:
           POSTGRES_PORT: 5432
 
         run: |
-          echo ${{ secrets.SSL_CERT_CONTENT }} > certificate.crt
-          echo ${{ secrets.SSL_KEY_CONTENT }} > certificate.key
+          echo $SSL_CERT_CONTENT > certificate.crt
+          echo $SSL_KEY_CONTENT > certificate.key
           docker-compose build
           docker tag practicum-client-1:latest cr.yandex/$CR_REGISTRY/practicum-client-1:latest
           docker push cr.yandex/$CR_REGISTRY/practicum-client-1:latest
