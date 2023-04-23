@@ -31,9 +31,10 @@ export const ApiClient: IApiClient = {
     return APIService.post("/leaderboard", body);
   },
   async getUserInfo() {
-    const { data } = await APIService.get<z.infer<typeof userSchema>>(
+    const response = await APIService.get<z.infer<typeof userSchema>>(
       "/auth/user",
     );
+    const { data } = response;
     await userSchema.parseAsync(data);
     return data;
   },

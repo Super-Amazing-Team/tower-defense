@@ -2,6 +2,7 @@ import express from "express"
 import type { Request, Response, Express } from "express";
 import fs from "node:fs";
 import path from "node:path";
+import cors from "cors";
 import { fileURLToPath } from "node:url";
 import type { ViteDevServer } from "vite";
 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -69,8 +70,13 @@ export async function createServer(
   }
 
   // middleware
+  app.use(cors( {
+    origin: "*",
+    methods: "GET,HEAD,PUT,PATCH,POST,DELETE",
+    credentials: true,
+    optionsSuccessStatus: 200 // some legacy browsers (IE11, various SmartTVs) choke on 204
+  }))
   app.use(express.json());
-
 // routes
  app.use(router);
 

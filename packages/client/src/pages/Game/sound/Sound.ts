@@ -10,7 +10,9 @@ export interface ISound {
 }
 export class Sound {
   constructor(
-    public context: ISound["context"] = document.createElement("audio"),
+    public context: ISound["context"] | undefined = typeof window === "object"
+      ? document.createElement("audio")
+      : undefined,
     public soundSourceArr: ISound["soundSourceArr"] = {
       gameStart: "/sound/gameStart.mp3",
     },
@@ -20,12 +22,15 @@ export class Sound {
     for (const [soundType, soundSource] of Object.entries(
       this.soundSourceArr,
     )) {
-      const soundSample = new Audio(soundSource);
-      soundSample.oncanplay = () => {
-        this.soundArr[soundType as TSoundType] = soundSample;
-      };
-      if (soundType === "gameStart") {
-        soundSample.loop = true;
+      const soundSample =
+        typeof window === "object" ? new Audio(soundSource) : undefined;
+      if (soundSample) {
+        soundSample.oncanplay = () => {
+          this.soundArr[soundType as TSoundType] = soundSample;
+        };
+        if (soundType === "gameStart") {
+          soundSample.loop = true;
+        }
       }
     }
   }

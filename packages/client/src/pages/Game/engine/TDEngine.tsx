@@ -1073,7 +1073,7 @@ export class TDEngine {
     public sound: ITDEngine["sound"] = new Sound(),
   ) {
     // safari polyfill
-    if (!window.requestIdleCallback) {
+    if (typeof window === "object" && !window.requestIdleCallback) {
       // @ts-ignore
       window.requestIdleCallback = function (
         callback: IdleRequestCallback,
@@ -1096,7 +1096,7 @@ export class TDEngine {
         }, relaxation);
       };
     }
-    if (!window.cancelIdleCallback) {
+    if (typeof window === "object" && !window.cancelIdleCallback) {
       window.cancelIdleCallback = function (id) {
         clearTimeout(id);
       };
