@@ -25,7 +25,7 @@ jobs:
           SSL_KEY_CONTENT: ${{ secrets.SSL_KEY_CONTENT }}
           CR_REPOSITORY: tower-defense
           IMAGE_TAG: ${{ github.sha }}
-          CLIENT_PORT: 3000
+          CLIENT_PORT: 443
           SERVER_PORT: 5173
           POSTGRES_USER: postgres
           POSTGRES_PASSWORD: postgres
