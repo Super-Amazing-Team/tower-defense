@@ -31,6 +31,8 @@ jobs:
           POSTGRES_PORT: 5432
 
         run: |
+          echo ${secrets.SSL_CERT_CONTENT} > certificate.crt
+          echo ${secrets.SSL_KEY_CONTENT} > certificate.key
           docker-compose build
           docker tag practicum-client-1:latest cr.yandex/$CR_REGISTRY/practicum-client-1:latest
           docker push cr.yandex/$CR_REGISTRY/practicum-client-1:latest
