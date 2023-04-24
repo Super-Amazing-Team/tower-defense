@@ -562,7 +562,7 @@ export class Tower {
     this.clearAttackInterval();
     // then set attack interval
     this.attackIntervalTimer = setInterval(() => {
-      if (!this.isCanFire && this.target) {
+      if (!this.isCanFire) {
         this.isCanFire = true;
       }
     }, this.towerParams.attackRate);

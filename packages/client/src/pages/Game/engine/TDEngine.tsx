@@ -3591,7 +3591,10 @@ export class TDEngine {
           gameStore.getState().updateIsGameStarted(false);
           gameStore.getState().updateIsGameOver(true);
           this.isGameOver = true;
-          this.saveScore();
+          // disable score save in cheat_mode
+          if (!this.isCheatMode) {
+            this.saveScore();
+          }
         }
 
         // request animation frame
