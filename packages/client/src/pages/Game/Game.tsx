@@ -122,7 +122,7 @@ export const Game = ({ engine = new TDEngine() }: IGameProps) => {
         sx={{
           cursor: `url("${cursorPointer}"), auto`,
           position: "relative",
-          background: `url("${!isLoading ? grassBg : ""}") 0 0 repeat`,
+          background: `url("${grassBg}") 0 0 repeat`,
           "& .b-game-window": {
             top: 0,
             left: 0,

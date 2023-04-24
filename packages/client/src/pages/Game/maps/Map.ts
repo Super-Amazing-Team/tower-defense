@@ -157,8 +157,16 @@ export class Map {
     } else {
       // widescreen
       if (this.mapParams.heightTile > 12 && this.mapParams.widthTile > 16) {
-        this.mapParams.width = 28 * this.mapParams.gridStep;
-        this.mapParams.height = 15 * this.mapParams.gridStep;
+        this.mapParams.width =
+          this.mapParams.widthTile >= 28
+            ? this.tileToNumber(this.mapParams.widthTile)
+            : 28 * this.mapParams.gridStep;
+        this.mapParams.height =
+          this.mapParams.heightTile >= 15
+            ? this.tileToNumber(this.mapParams.heightTile)
+            : 15 * this.mapParams.gridStep;
+        // this.mapParams.width = 28 * this.mapParams.gridStep;
+        // this.mapParams.height = 15 * this.mapParams.gridStep;
         // set engine.viewport
         engine.viewport = "widescreen";
 
@@ -281,14 +289,14 @@ export class Map {
             {
               direction: "right",
               limit: {
-                x: this.tileToNumber(this.mapParams.widthTile - 1),
+                x: this.tileToNumber(15),
                 y: this.tileToNumber(1),
               },
             },
             {
               direction: "down",
               limit: {
-                x: this.tileToNumber(this.mapParams.widthTile - 1),
+                x: this.tileToNumber(15),
                 y: this.tileToNumber(4),
               },
             },
@@ -303,14 +311,14 @@ export class Map {
             {
               direction: "right",
               limit: {
-                x: this.tileToNumber(this.mapParams.widthTile - 1),
+                x: this.tileToNumber(15),
                 y: this.tileToNumber(6),
               },
             },
             {
               direction: "down",
               limit: {
-                x: this.tileToNumber(this.mapParams.widthTile - 1),
+                x: this.tileToNumber(15),
                 y: this.tileToNumber(8),
               },
             },
@@ -365,14 +373,14 @@ export class Map {
             {
               direction: "right",
               limit: {
-                x: this.tileToNumber(this.mapParams.widthTile),
+                x: this.tileToNumber(16),
                 y: this.tileToNumber(10),
               },
             },
             {
               direction: "end",
               limit: {
-                x: this.tileToNumber(this.mapParams.widthTile + 1),
+                x: this.tileToNumber(17),
                 y: this.tileToNumber(10),
               },
             },

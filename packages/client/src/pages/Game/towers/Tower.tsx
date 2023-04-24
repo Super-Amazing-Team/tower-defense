@@ -221,6 +221,8 @@ export class Tower {
           this.renderParams.constructingCurrentFrame = 0;
           this.renderParams.isConstructing = false;
           this.renderParams.isConstructionEnd = false;
+          // initial fire set
+          this.isCanFire = true;
           // set attack interval
           this.setAttackInterval();
           // clear build canvas
@@ -376,7 +378,7 @@ export class Tower {
           if (useGameStore.getState().selectedTower === this) {
             useGameStore.getState().updateConstructionProgress(0);
           }
-        }, this.renderParams?.constructionTimeout);
+        }, this.renderParams?.constructionTimeout!);
       }
       // tower base
       context.beginPath();
@@ -555,14 +557,12 @@ export class Tower {
   }
 
   public setAttackInterval = () => {
-    if (this.attackIntervalTimer) return;
-    // initial fire
-    this.isCanFire = true;
+    // if (this.attackIntervalTimer) return;
     // clear memory
     this.clearAttackInterval();
     // then set attack interval
     this.attackIntervalTimer = setInterval(() => {
-      if (!this.isCanFire) {
+      if (!this.isCanFire && this.target) {
         this.isCanFire = true;
       }
     }, this.towerParams.attackRate);
@@ -603,11 +603,6 @@ export class Tower {
       (enemy.currentPosition.y + enemy.enemyParams.height! / 2);
     if (Math.hypot(xDistance, yDistance) < this.towerParams.attackRange) {
       this.target = enemy;
-      /*
-      if (!this.attackIntervalTimer && !this.renderParams.isConstructing) {
-        this.setAttackInterval();
-      }
-       */
       return true;
     }
     return false;

@@ -16,12 +16,14 @@ import {
   ColorDict,
   TDEngine,
   TEnemyType,
+  TSpellTypes,
   TTowerTypes,
 } from "@/pages/Game/engine/TDEngine";
 import { gameTheme } from "@/pages/Game/Game";
 import grassBg from "@/../public/sprites/map/grassBg.png";
 import { TowerImage } from "@/pages/Game/components/TowerImage/TowerImage";
 import { EnemyImage } from "@/pages/Game/components/EnemyImage/EnemyImage";
+import { SpellImage } from "@/pages/Game/components/SpellImage/SpellImage";
 
 export interface IHome {
   engine: TDEngine;
@@ -237,10 +239,10 @@ export function Home({ engine }: IHome) {
                       textAlign: "left",
                     }}
                   >
-                    Классический тавер дефенс. Цель игры - остановить монстров
-                    от прохода через карту, путем постройки башен. Башни
-                    строятся за деньги, которые игрок зарабатывает убийством
-                    монстров.
+                    Игра в жанре tower defence. Цель игры - остановить монстров,
+                    путем постройки башен и вызова заклинаний. За убийство
+                    монстров игрок получает деньги, которые можно потратить на
+                    улучшение башен улучшение существующих.
                   </Typography>
                 </Box>
                 <Typography
@@ -333,6 +335,42 @@ export function Home({ engine }: IHome) {
                       upgradeLevel={2}
                     />
                   </Box>
+                </Box>
+                <Typography
+                  variant="h4"
+                  sx={{
+                    padding: "60px 0 60px 128px",
+                    textAlign: "left",
+                  }}
+                >
+                  Несколько типов заклинаний:
+                </Typography>
+                <Box className="b-text-background">
+                  {Object.entries(engine.predefinedSpellParams).map((spell) => {
+                    const spellType = spell[0] as TSpellTypes;
+                    return (
+                      <Box
+                        sx={{ display: "flex" }}
+                        key={`b-spell-${spellType}-image-wrapper`}
+                      >
+                        <SpellImage
+                          key={`b-spell-${spellType}-image`}
+                          engine={engine}
+                          spellType={spellType}
+                        />
+                        <Typography
+                          key={`b-spell-${spellType}-description`}
+                          variant="h5"
+                          sx={{
+                            margin: "26px 0 0 60px",
+                            textAlign: "left",
+                          }}
+                        >
+                          {`${engine.predefinedSpellParams[spellType]?.spell.description}`}
+                        </Typography>
+                      </Box>
+                    );
+                  })}
                 </Box>
                 <Typography
                   variant="h4"

@@ -57,7 +57,9 @@ export class Enemy {
       isModified: false,
     },
     public renderParams: IEnemy["renderParams"] = {
-      currentFrame: 0,
+      currentFrame: Math.floor(
+        Math.random() * engine.enemySprites[enemyParams.type]?.framesPerSprite,
+      ),
       isAnimateDeath: false,
       framesPerSprite: 8,
     },

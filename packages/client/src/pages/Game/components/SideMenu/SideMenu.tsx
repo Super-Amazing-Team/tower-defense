@@ -137,7 +137,7 @@ export const SideMenu = ({ engine }: ISideMenu) => {
                       Attack range:{" "}
                       <Box component="span">{`${selectedTower?.towerParams?.attackRange}`}</Box>
                     </Typography>
-                    {selectedTower?.projectileParams?.attackModifier && (
+                    {selectedTower?.projectileParams?.attackModifier! && (
                       <>
                         <Typography>
                           Special:
@@ -150,7 +150,7 @@ export const SideMenu = ({ engine }: ISideMenu) => {
                                 ] + " !important",
                             }}
                           >
-                            {selectedTower?.projectileParams?.attackModifier}
+                            {selectedTower?.projectileParams?.attackModifier!}
                           </Box>
                         </Typography>
                         {selectedTower?.projectileParams
@@ -168,7 +168,7 @@ export const SideMenu = ({ engine }: ISideMenu) => {
                             >
                               {
                                 selectedTower?.projectileParams
-                                  ?.attackModifierTimeout
+                                  ?.attackModifierTimeout!
                               }
                             </Box>
                           </Typography>
@@ -188,7 +188,26 @@ export const SideMenu = ({ engine }: ISideMenu) => {
                             >
                               {
                                 selectedTower?.projectileParams
-                                  ?.attackModifierRange
+                                  ?.attackModifierRange!
+                              }
+                            </Box>
+                          </Typography>
+                        )}
+                        {selectedTower?.projectileParams?.attackModifierDPS && (
+                          <Typography>
+                            Poison DPS:
+                            <Box
+                              component="span"
+                              sx={{
+                                color:
+                                  ColorDict[
+                                    `specialAttack${selectedTower?.projectileParams?.attackModifier}Color`
+                                  ] + " !important",
+                              }}
+                            >
+                              {
+                                selectedTower?.projectileParams
+                                  ?.attackModifierDPS!
                               }
                             </Box>
                           </Typography>

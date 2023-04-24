@@ -1,6 +1,13 @@
 import { create } from "zustand";
 import { ApiClient } from "@/api";
 
+export interface ILeaderbordPostBody {
+  data: {
+    score: number;
+    name: string;
+  };
+  limit: number;
+}
 interface ILeaderboardStore {
   leaderboardAll: unknown[] | unknown;
   getLeaderboardAll(body: {
@@ -8,13 +15,7 @@ interface ILeaderboardStore {
     cursor: number;
     limit: number;
   }): Promise<void>;
-  postLeaderboard(body: {
-    data: {
-      score: number;
-      name: string;
-    };
-    limit: number;
-  }): Promise<void>;
+  postLeaderboard(body: ILeaderbordPostBody): Promise<void>;
 }
 
 export const useLeaderboardStore = create<ILeaderboardStore>()((set) => ({

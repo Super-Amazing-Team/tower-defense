@@ -3,9 +3,15 @@ import { Tower } from "../towers/Tower";
 import { IMap, Map } from "../maps/Map";
 import { Projectile } from "../projectiles/Projectile";
 import { Sound } from "@/pages/Game/sound/Sound";
-import { useGameStore as gameStore } from "@/store";
+import { useGameStore as gameStore, useUserStore } from "@/store";
 import { ISpell, Spell } from "@/pages/Game/spells/Spell";
 import { WaveGenerator } from "@/pages/Game/waveGenerator/waveGenerator";
+import { ApiClient } from "@/api";
+import { ILeaderboardPost } from "@/api/ApiClient/types";
+import {
+  ILeaderbordPostBody,
+  useLeaderboardStore,
+} from "@/store/LeaderboardStore";
 
 // utilities declaration
 export type TPartialRecord<K extends keyof any, T> = {
@@ -184,6 +190,7 @@ export interface ITDEngine {
         framesPerSprite: number;
         width: number;
         height: number;
+        description?: string;
       }
     > & {
       spellParams: ISpell["spellParams"];
@@ -279,7 +286,7 @@ export class TDEngine {
     public selectedTower: ITDEngine["selectedTower"] = null,
     public cursorPosition: ITDEngine["cursorPosition"] = { x: 0, y: 0 },
     public draftBuildCoordinates: ITwoDCoordinates = { x: 0, y: 0 },
-    public towerAngleOffset: number = Math.PI / 2.5,
+    public towerAngleOffset: number = Math.PI / 2.75,
     public cheatString: string = "",
     public spellSprites: ITDEngine["spellSprites"] = {
       fireball: {
@@ -597,7 +604,8 @@ export class TDEngine {
         spriteDownRow: 3,
         framesPerSprite: 8,
         deathFramesPerSprite: 11,
-        description: "обычный враг, жук. все параметры средние",
+        description:
+          "обычный враг, средняя скорость, средний показатель здоровья",
       },
       leafbug: {
         spriteSourcePath: "leafbugSprite.png",
@@ -610,7 +618,7 @@ export class TDEngine {
         spriteDownRow: 4,
         framesPerSprite: 8,
         deathFramesPerSprite: 8,
-        description: "медленный враг, гусеница. больше хп, меньше скорость",
+        description: "скорость ниже среднего, увеличенное количество здоровья",
       },
       magmacrab: {
         spriteSourcePath: "magmacrabSprite.png",
@@ -624,20 +632,7 @@ export class TDEngine {
         framesPerSprite: 8,
         deathFramesPerSprite: 10,
         description:
-          "быстрый враг. больше скорость перемещения, здоровье ниже среднего",
-      },
-      scorpion: {
-        spriteSourcePath: "scorpionSprite.png",
-        spriteSource: null,
-        canvasArr: null,
-        canvasContextArr: null,
-        spriteDownRow: 3,
-        spriteUpRow: 4,
-        spriteLeftRow: 5,
-        spriteRightRow: 6,
-        framesPerSprite: 8,
-        deathFramesPerSprite: 8,
-        description: "босс. много здоровья, сопротивление магическим эффектам",
+          "обычный враг, средняя скорость, средний показатель здоровья",
       },
       clampbeetle: {
         spriteSourcePath: "clampbeetleSprite.png",
@@ -678,8 +673,20 @@ export class TDEngine {
         spriteDownRow: 4,
         framesPerSprite: 8,
         deathFramesPerSprite: 12,
-        description:
-          "быстрый враг. больше скорость перемещения, здоровье ниже среднего",
+        description: "самый быстрый враг. здоровье значительно ниже среднего",
+      },
+      scorpion: {
+        spriteSourcePath: "scorpionSprite.png",
+        spriteSource: null,
+        canvasArr: null,
+        canvasContextArr: null,
+        spriteDownRow: 3,
+        spriteUpRow: 4,
+        spriteLeftRow: 5,
+        spriteRightRow: 6,
+        framesPerSprite: 8,
+        deathFramesPerSprite: 8,
+        description: "босс. много здоровья, сопротивление магическим эффектам",
       },
     },
     public predefinedSpellParams: ITDEngine["predefinedSpellParams"] = {
@@ -688,6 +695,7 @@ export class TDEngine {
           framesPerSprite: 10,
           width: 64,
           height: 64,
+          description: `Шар огня, который поражает врагов в небольшой области, наносит средний урон`,
         },
         impact: {
           framesPerSprite: 13,
@@ -707,6 +715,7 @@ export class TDEngine {
           framesPerSprite: 10,
           width: 64,
           height: 64,
+          description: `Ураган, который наносит небольшой урон и заметно замедляет противников в небольшой области`,
         },
         impact: {
           framesPerSprite: 9,
@@ -729,6 +738,7 @@ export class TDEngine {
           framesPerSprite: 10,
           width: 64,
           height: 64,
+          description: `Водопад, который наносит небольшой урон и надолго, но незначительно замедляет врагов в большой области `,
         },
         impact: {
           framesPerSprite: 5,
@@ -751,6 +761,7 @@ export class TDEngine {
           framesPerSprite: 10,
           width: 64,
           height: 64,
+          description: `Камнепад, который надолго оглушает врагов в очень маленькой области и наносит небольшой урон`,
         },
         impact: {
           framesPerSprite: 5,
@@ -946,7 +957,7 @@ export class TDEngine {
           firingAngle: towerAngleOffset,
           fireFromCoords: { x: 0, y: 0 },
           maxUpgradeLevel: 2,
-          price: 45,
+          price: 55,
           description:
             "Cредние по скорости атаки, но отравляющие врагов башни с рогаткой. Радиус атаки больше среднего.",
         },
@@ -1015,7 +1026,7 @@ export class TDEngine {
           firingAngle: towerAngleOffset,
           fireFromCoords: { x: 0, y: 0 },
           maxUpgradeLevel: 2,
-          price: 45,
+          price: 65,
           description:
             "Медленные, но атакующие сплешем (всех врагов в небольшом радиусе) башни с молотом. Маленький радиус атаки.",
         },
@@ -1084,9 +1095,9 @@ export class TDEngine {
           firingAngle: towerAngleOffset,
           fireFromCoords: { x: 0, y: 0 },
           maxUpgradeLevel: 2,
-          price: 45,
+          price: 55,
           description:
-            "Магическая башня с рунами. Произносит случайное заклинание по цели в радиусе действия башни.",
+            "Магическая башня с рунами. Произносит случайное заклинание с увеличенным уроном по цели в радиусе действия башни.",
         },
         projectileParams: {
           acceleration: 1.2,
@@ -1118,8 +1129,8 @@ export class TDEngine {
       },
       six: {
         towerParams: {
-          attackRate: 3000,
-          attackDamage: 35,
+          attackRate: 4000,
+          attackDamage: 25,
           attackRange: 400,
           baseWidth: 64,
           baseHeight: 128,
@@ -1154,11 +1165,11 @@ export class TDEngine {
           maxUpgradeLevel: 2,
           price: 45,
           description:
-            "Медленные, но атакующие сплешем (всех врагов в небольшом радиусе) башни с молотом. Маленький радиус атаки.",
+            "Дальнобойные башни с быстрой скоростью полета снаряда, обычный урон",
         },
         projectileParams: {
-          acceleration: 1.2,
-          projectileSpeed: 4,
+          acceleration: 2,
+          projectileSpeed: 6,
           dimensions: [
             {
               projectileWidth: 32,
@@ -1219,9 +1230,9 @@ export class TDEngine {
           firingAngle: towerAngleOffset,
           fireFromCoords: { x: 0, y: 0 },
           maxUpgradeLevel: 2,
-          price: 45,
+          price: 145,
           description:
-            "Медленные, но атакующие сплешем (всех врагов в небольшом радиусе) башни с молотом. Маленький радиус атаки.",
+            "Очень медленные, но самые дальнобойные башни с большим сплешем",
         },
         projectileParams: {
           acceleration: 1.2,
@@ -1289,9 +1300,9 @@ export class TDEngine {
           fireFromCoords: { x: 0, y: 0 },
           strokeStyle: ColorDict.towerRangeColor,
           maxUpgradeLevel: 2,
-          price: 25,
+          price: 65,
           description:
-            "Средняя скорость атаки, но с средний урон башни со стрелами. Средний радиус атаки.",
+            "Средняя скорость атаки, небольшой урон, поражает цели ядом, который наносит урон в течении времени",
         },
         projectileParams: {
           acceleration: 1.5,
@@ -1322,7 +1333,7 @@ export class TDEngine {
           impactFrameLimit: 6,
           attackModifier: "poison",
           attackModifierTimeout: 5000,
-          attackModifierDPS: 3,
+          attackModifierDPS: 4,
         },
       },
     },
@@ -1679,7 +1690,15 @@ export class TDEngine {
   }
 
   public reload() {
-    const { updateIsGameStarted, updateIsGameMenuOpen } = gameStore.getState();
+    const {
+      updateIsGameStarted,
+      updateIsGameMenuOpen,
+      updateMoney,
+      updateMana,
+      updateLives,
+      updateEnemiesLeft,
+      updateWaveNumber,
+    } = gameStore.getState();
     // disable music
     this.sound?.soundArr?.gameStart?.pause();
     updateIsGameMenuOpen(true);
@@ -1689,6 +1708,12 @@ export class TDEngine {
     this.lives = this.initialGameParams.lives;
     this.money = this.initialGameParams.money;
     this.mana = this.initialGameParams.mana;
+    // UI Update
+    updateLives(this.lives);
+    updateMoney(this.money);
+    updateMana(this.mana);
+    updateEnemiesLeft(0);
+    updateWaveNumber(0);
     this.isDemo = false;
     this.map = null;
     this.isCanvasCreated = false;
@@ -1706,9 +1731,6 @@ export class TDEngine {
     this.demoTimeoutArr = [];
     this.draftSpell = null;
     this.draftTower = null;
-    // debug
-    console.log(`engine reload!`);
-    //
   }
 
   public gameRestart() {
@@ -2997,6 +3019,9 @@ export class TDEngine {
     tower.towerParams.attackRate = Math.floor(
       tower.towerParams.attackRate * 0.9,
     );
+    if (tower.projectileParams.attackModifier === "poison") {
+      tower.projectileParams.attackModifierDPS += tower.upgradeLevel * 2;
+    }
     // clear and redraw towerRange
     // this.clearContext(this.context?.towerRange!);
     // set render params
@@ -3566,6 +3591,7 @@ export class TDEngine {
           gameStore.getState().updateIsGameStarted(false);
           gameStore.getState().updateIsGameOver(true);
           this.isGameOver = true;
+          this.saveScore();
         }
 
         // request animation frame
@@ -3577,5 +3603,21 @@ export class TDEngine {
       // clear timeout
       clearTimeout(timeout);
     }, 1000 / this.initialGameParams.fps);
+  };
+
+  public saveScore = () => {
+    // updateLeaderboard
+    try {
+      const requestBody: ILeaderbordPostBody = {
+        data: {
+          score: this.score,
+          name: useUserStore.getState().user.login,
+        },
+        limit: 0,
+      };
+      useLeaderboardStore.getState().postLeaderboard(requestBody);
+    } catch (e) {
+      console.error(`Woopsie! Something is broken! ${e.reason || e}`);
+    }
   };
 }
