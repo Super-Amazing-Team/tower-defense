@@ -1737,6 +1737,7 @@ export class TDEngine {
     this.deadEnemies = [];
     this.towers = [];
     this.projectiles = [];
+    this.spells = [];
     // reset sound
     // game start sound
     this.isSoundEnabled = true;
@@ -1751,6 +1752,9 @@ export class TDEngine {
     this.clearContext(this.context!.spell!);
     this.clearContext(this.context!.deadEnemy!);
     this.clearContext(this.context!.selection!);
+    this.clearContext(this.context!.cannon!);
+    this.clearContext(this.context!.spell!);
+    this.clearContext(this.context!.spellDraft!);
     // wave generator
     clearInterval(this.waveGenerator!.waveCountdownTimer!);
     clearTimeout(this.waveGenerator!.waveTimerBetweenWaves!);
@@ -3125,9 +3129,7 @@ export class TDEngine {
           gameStore.getState().updateIsBuildMenuOpen(false);
         } else {
           // toggle game menu
-          gameStore
-            .getState()
-            .updateIsGameMenuOpen(!gameStore.getState().isGameMenuOpen);
+          gameStore.getState().updateIsGameMenuOpen(false);
           // toggle build menu
           gameStore
             .getState()
