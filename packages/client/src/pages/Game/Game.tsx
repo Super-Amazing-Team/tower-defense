@@ -9,6 +9,7 @@ import {
 import { shallow } from "zustand/shallow";
 import { ThemeProvider } from "@mui/material/styles";
 import { ColorDict, TDEngine } from "./engine/TDEngine";
+import PressStart2P from "@/../public/fonts/PressStart2P-Regular.woff2";
 import cursorPointer from "@/../public/UI/cursorPointer.png";
 import { GameUi } from "@/pages/Game/components/GameUI/GameUI";
 import { useGameStore } from "@/store";
