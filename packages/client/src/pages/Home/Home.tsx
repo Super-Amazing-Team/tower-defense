@@ -5,6 +5,7 @@ import {
   ThemeProvider,
   Grid,
   CircularProgress,
+  CssBaseline,
 } from "@mui/material";
 import { Link as RouterLink } from "react-router-dom";
 import { useEffect, useRef, useState } from "react";
@@ -87,6 +88,7 @@ export function Home({ engine }: IHome) {
 
   return (
     <ThemeProvider theme={gameTheme}>
+      <CssBaseline />
       <Grid
         container
         justifyContent="center"
@@ -400,7 +402,6 @@ export function Home({ engine }: IHome) {
                           sx={{
                             margin: "26px 0 0 60px",
                             textAlign: "left",
-                            fontFamily: "'Press Start 2P', cursive",
                           }}
                         >
                           {`${engine.enemySprites[enemyType]?.description}`}

@@ -1,13 +1,11 @@
 import { Enemy } from "../enemies/Enemy";
 import { Tower } from "../towers/Tower";
-import { IMap, Map } from "../maps/Map";
+import { Map } from "../maps/Map";
 import { Projectile } from "../projectiles/Projectile";
 import { Sound } from "@/pages/Game/sound/Sound";
 import { useGameStore as gameStore, useUserStore } from "@/store";
 import { ISpell, Spell } from "@/pages/Game/spells/Spell";
 import { WaveGenerator } from "@/pages/Game/waveGenerator/waveGenerator";
-import { ApiClient } from "@/api";
-import { ILeaderboardPost } from "@/api/ApiClient/types";
 import {
   ILeaderboardPostBody,
   useLeaderboardStore,
