@@ -35,7 +35,7 @@ interface ILeaderboard {
   limit: number;
 }
 
-interface ILeaderboardPost {
+export interface ILeaderboardPost {
   data: {
     score: number;
     name: string;

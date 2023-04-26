@@ -20,7 +20,13 @@ export type TProjectileParamsDimensions =
   | "impactWidth"
   | "impactHeight";
 
-export type TProjectileAttackModifiers = "slow" | "freeze" | "splash" | "shock";
+export type TProjectileAttackModifiers =
+  | "slow"
+  | "freeze"
+  | "splash"
+  | "shock"
+  | "poison"
+  | "spell";
 
 export interface ITower {
   engine: TDEngine;
@@ -60,6 +66,7 @@ export interface ITower {
     attackModifier?: TProjectileAttackModifiers;
     attackModifierTimeout?: number;
     attackModifierRange?: number;
+    attackModifierDPS?: number;
   };
   image: CanvasImageSource;
   attackIntervalTimer: NodeJS.Timer | null;
@@ -214,10 +221,10 @@ export class Tower {
           this.renderParams.constructingCurrentFrame = 0;
           this.renderParams.isConstructing = false;
           this.renderParams.isConstructionEnd = false;
+          // initial fire set
+          this.isCanFire = true;
           // set attack interval
           this.setAttackInterval();
-          // initial fire
-          this.isCanFire = true;
           // clear build canvas
           this.engine.clearContext(this.engine.context?.build!);
           // clear tower canvas
@@ -371,7 +378,7 @@ export class Tower {
           if (useGameStore.getState().selectedTower === this) {
             useGameStore.getState().updateConstructionProgress(0);
           }
-        }, this.renderParams?.constructionTimeout);
+        }, this.renderParams?.constructionTimeout!);
       }
       // tower base
       context.beginPath();
@@ -451,6 +458,7 @@ export class Tower {
 
   public drawCannon(context: CanvasRenderingContext2D) {
     const isShouldRotate =
+      this.type !== "five" &&
       this.towerParams.prevFiringAngle === this.towerParams.firingAngle;
     // find rectangle diagonal
     const canvasHypot = Math.ceil(
@@ -493,7 +501,11 @@ export class Tower {
         this.engine.towerSprites[this.type]!.canvasArr?.weapon![
           this.upgradeLevel
         ] as HTMLCanvasElement[]
-      )[isShouldRotate ? this.towerParams.cannonFrameLimit : 0]!,
+      )[
+        isShouldRotate
+          ? this.towerParams.cannonFrameLimit
+          : this.getNextCannonFrame()
+      ]!,
       this.currentPosition.x -
         canvasHypot +
         (canvasHypot - this.towerParams.baseWidth) / 2,
@@ -545,12 +557,14 @@ export class Tower {
   }
 
   public setAttackInterval = () => {
-    if (this.attackIntervalTimer) return;
+    // if (this.attackIntervalTimer) return;
     // clear memory
     this.clearAttackInterval();
     // then set attack interval
     this.attackIntervalTimer = setInterval(() => {
-      this.isCanFire = true;
+      if (!this.isCanFire) {
+        this.isCanFire = true;
+      }
     }, this.towerParams.attackRate);
   };
 
@@ -589,11 +603,6 @@ export class Tower {
       (enemy.currentPosition.y + enemy.enemyParams.height! / 2);
     if (Math.hypot(xDistance, yDistance) < this.towerParams.attackRange) {
       this.target = enemy;
-      /*
-      if (!this.attackIntervalTimer && !this.renderParams.isConstructing) {
-        this.setAttackInterval();
-      }
-       */
       return true;
     }
     return false;
@@ -656,15 +665,18 @@ export class Tower {
     if (this.isCanFire && this.attackIntervalTimer) {
       this.renderParams.cannonCurrentFrame = 0;
       this.renderParams.isCannonAnimate = true;
-      this.engine.projectiles?.push(
-        new Projectile(
-          this.target!,
-          this,
-          this.towerParams.attackDamage,
-          this.towerParams.fireFromCoords,
-        ),
-      );
-
+      if (this.projectileParams.attackModifier === "spell") {
+        this.engine.castRandomSpell(this.target, this);
+      } else {
+        this.engine.projectiles?.push(
+          new Projectile(
+            this.target!,
+            this,
+            this.towerParams.attackDamage,
+            this.towerParams.fireFromCoords,
+          ),
+        );
+      }
       this.isCanFire = false;
     }
   }

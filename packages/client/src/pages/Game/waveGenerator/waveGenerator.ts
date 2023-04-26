@@ -1,5 +1,5 @@
 import { Enemy } from "@/pages/Game/enemies/Enemy";
-import { TDEngine } from "@/pages/Game/engine/TDEngine";
+import { TDEngine, TEnemyType } from "@/pages/Game/engine/TDEngine";
 import { useGameStore as gameStore } from "@/store";
 
 export type TWaveType = "regular" | "slow" | "fast" | "strong" | "boss";
@@ -74,7 +74,7 @@ export class WaveGenerator {
     const speed =
       this.engine.initialGameParams.speedCoefficient *
         this.waveParams.currentWave *
-        0.25 +
+        0.15 +
       this.waveParams.speedCoefficient * speedCoefficient;
     const hp =
       this.waveParams.hpCoefficient *
@@ -112,7 +112,7 @@ export class WaveGenerator {
         } else if (iteration % 5 === 0) {
           enemiesArray.push(
             new Enemy(this.engine, {
-              type: "scorpion",
+              type: "butterfly",
               width: this.engine.map?.mapParams?.gridStep!,
               height: this.engine.map?.mapParams?.gridStep!,
               spaceBetweenEnemies: this.engine.map?.mapParams?.gridStep! * 1.5,
@@ -164,7 +164,9 @@ export class WaveGenerator {
           // regular enemy
           enemiesArray.push(
             new Enemy(this.engine, {
-              type: "firebug",
+              type: `${
+                Math.random() > 0.5 ? "firebug" : "magmacrab"
+              }` as TEnemyType,
               width: this.engine.map?.mapParams?.gridStep!,
               height: this.engine.map?.mapParams?.gridStep!,
               spaceBetweenEnemies: this.engine.map?.mapParams?.gridStep! * 1.5,

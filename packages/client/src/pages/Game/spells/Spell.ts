@@ -291,12 +291,5 @@ export class Spell {
     this.engine.spells = this.engine.spells?.filter(
       (spell: Spell) => this !== spell,
     );
-
-    /*
-    // clear spell canvas
-    setTimeout(() => {
-      this.engine.clearContext(this.engine.context!.spell!);
-    }, 20);
-     */
   }
 }

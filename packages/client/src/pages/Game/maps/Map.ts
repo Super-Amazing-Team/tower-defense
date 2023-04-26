@@ -52,8 +52,8 @@ export class Map {
   constructor(
     public engine: TDEngine,
     public mapParams: IMap["mapParams"] = {
-      width: 960,
-      height: 960,
+      width: Math.floor(document.body.clientWidth / 64),
+      height: Math.floor(document.body.clientHeight / 64),
       widthTile: 0,
       heightTile: 0,
       gridStep: 64,
@@ -131,6 +131,8 @@ export class Map {
       this.mapParams.width = this.mapParams.widthTile * this.mapParams.gridStep;
       this.mapParams.height =
         this.mapParams.heightTile * this.mapParams.gridStep;
+      // set engine.viewport
+      engine.viewport = "widescreen";
 
       // set map stage stack
       this.stageArrStack = [
@@ -155,8 +157,16 @@ export class Map {
     } else {
       // widescreen
       if (this.mapParams.heightTile > 12 && this.mapParams.widthTile > 16) {
-        this.mapParams.width = 28 * this.mapParams.gridStep;
-        this.mapParams.height = 15 * this.mapParams.gridStep;
+        this.mapParams.width =
+          this.mapParams.widthTile >= 28
+            ? this.tileToNumber(this.mapParams.widthTile)
+            : this.tileToNumber(28);
+        this.mapParams.height =
+          this.mapParams.heightTile >= 15
+            ? this.tileToNumber(this.mapParams.heightTile)
+            : this.tileToNumber(15);
+        // set engine.viewport
+        engine.viewport = "widescreen";
 
         // set map stage stack
         this.stageArrStack = [
@@ -267,6 +277,9 @@ export class Map {
         this.mapParams.width = 16 * this.mapParams.gridStep;
         this.mapParams.height = 12 * this.mapParams.gridStep;
 
+        // set engine.viewport
+        engine.viewport = "tablet";
+
         // set map stage stack
         this.stageArrStack = [
           [
@@ -274,14 +287,14 @@ export class Map {
             {
               direction: "right",
               limit: {
-                x: this.tileToNumber(this.mapParams.widthTile - 1),
+                x: this.tileToNumber(15),
                 y: this.tileToNumber(1),
               },
             },
             {
               direction: "down",
               limit: {
-                x: this.tileToNumber(this.mapParams.widthTile - 1),
+                x: this.tileToNumber(15),
                 y: this.tileToNumber(4),
               },
             },
@@ -296,14 +309,14 @@ export class Map {
             {
               direction: "right",
               limit: {
-                x: this.tileToNumber(this.mapParams.widthTile - 1),
+                x: this.tileToNumber(15),
                 y: this.tileToNumber(6),
               },
             },
             {
               direction: "down",
               limit: {
-                x: this.tileToNumber(this.mapParams.widthTile - 1),
+                x: this.tileToNumber(15),
                 y: this.tileToNumber(8),
               },
             },
@@ -358,14 +371,14 @@ export class Map {
             {
               direction: "right",
               limit: {
-                x: this.tileToNumber(this.mapParams.widthTile),
+                x: this.tileToNumber(16),
                 y: this.tileToNumber(10),
               },
             },
             {
               direction: "end",
               limit: {
-                x: this.tileToNumber(this.mapParams.widthTile + 1),
+                x: this.tileToNumber(17),
                 y: this.tileToNumber(10),
               },
             },

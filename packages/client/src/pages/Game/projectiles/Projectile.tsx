@@ -255,6 +255,49 @@ export class Projectile {
               this.target!.enemyParams.isModified = false;
             }, this.tower.projectileParams.attackModifierTimeout);
           }
+        } else if (this.tower.projectileParams.attackModifier === "poison") {
+          this.target!.enemyParams.isModified = true;
+          this.target!.enemyParams.attackModifier = "poison";
+          if (!this.target?.enemyParams?.modifiedPoisonDPSInterval) {
+            this.target!.enemyParams.modifiedPoisonDPSInterval = setInterval(
+              () => {
+                // do periodical damage
+                this.target.enemyParams.hp -=
+                  this.tower.projectileParams.attackModifierDPS;
+                if (this.target.enemyParams.hp <= 0) {
+                  // target is dead
+                  this.target.renderParams!.currentFrame = 0;
+                  this.target.renderParams!.isAnimateDeath = true;
+                  this.target.destroy();
+                  clearTimeout(
+                    this.target?.enemyParams?.modifiedPoisonDuration!,
+                  );
+                  clearTimeout(
+                    this.target?.enemyParams?.modifiedPoisonDPSInterval,
+                  );
+                  this.target!.enemyParams!.modifiedPoisonDuration = null;
+                  this.target!.enemyParams!.modifiedPoisonDPSInterval = null;
+                }
+              },
+              500,
+            );
+          }
+          // destroy projectile
+          this.destroy();
+          // but can stop any other wave type
+          this.target!.enemyParams!.modifiedPoisonDuration = setTimeout(() => {
+            // clear timer
+            clearTimeout(this.target?.enemyParams?.modifiedPoisonDuration!);
+            clearTimeout(this.target?.enemyParams?.modifiedPoisonDPSInterval);
+            this.target!.enemyParams!.modifiedPoisonDuration = null;
+            this.target!.enemyParams!.modifiedPoisonDPSInterval = null;
+
+            // restore enemy isModified state to false
+            this.target!.enemyParams.isModified = false;
+          }, this.tower.projectileParams.attackModifierTimeout);
+        } else if (this.tower.projectileParams.attackModifier === "spell") {
+          this.tower.engine.castRandomSpell(this.target);
+          this.destroy();
         }
       }
     }

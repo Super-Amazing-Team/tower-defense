@@ -17,12 +17,14 @@ import {
   ColorDict,
   TDEngine,
   TEnemyType,
+  TSpellTypes,
   TTowerTypes,
 } from "@/pages/Game/engine/TDEngine";
 import { gameTheme } from "@/pages/Game/Game";
 import grassBg from "@/../public/sprites/map/grassBg.png";
 import { TowerImage } from "@/pages/Game/components/TowerImage/TowerImage";
 import { EnemyImage } from "@/pages/Game/components/EnemyImage/EnemyImage";
+import { SpellImage } from "@/pages/Game/components/SpellImage/SpellImage";
 
 export interface IHome {
   engine: TDEngine;
@@ -117,14 +119,14 @@ export function Home({ engine }: IHome) {
             zIndex: 100,
             left: 0,
             top: 0,
-            background: "#444444",
+            background: ColorDict.shadowColor,
             opacity: 0.2,
           },
           "& .b-text-background": {
             border: `4px solid ${ColorDict.borderColor}`,
             borderRadius: "8px",
             background: ColorDict.sandColor,
-            padding: "32px",
+            padding: "32px 32px 64px 32px",
           },
           "& .b-tower-image-wrapper": {
             position: "relative",
@@ -132,6 +134,7 @@ export function Home({ engine }: IHome) {
           },
           "& h2, & h3, & h4, & a": {
             textShadow: `4px 4px ${ColorDict.fontColor}`,
+            fontFamily: "'PressStart2P', cursive",
           },
           "& h4": {
             color: ColorDict.sandColor,
@@ -239,10 +242,10 @@ export function Home({ engine }: IHome) {
                       textAlign: "left",
                     }}
                   >
-                    Классический тавер дефенс. Цель игры - остановить монстров
-                    от прохода через карту, путем постройки башен. Башни
-                    строятся за деньги, которые игрок зарабатывает убийством
-                    монстров.
+                    Игра в жанре tower defence. Цель игры - остановить монстров,
+                    путем постройки башен и вызова заклинаний. За убийство
+                    монстров игрок получает деньги, которые можно потратить на
+                    улучшение башен улучшение существующих.
                   </Typography>
                 </Box>
                 <Typography
@@ -343,6 +346,42 @@ export function Home({ engine }: IHome) {
                     textAlign: "left",
                   }}
                 >
+                  Несколько типов заклинаний:
+                </Typography>
+                <Box className="b-text-background">
+                  {Object.entries(engine.predefinedSpellParams).map((spell) => {
+                    const spellType = spell[0] as TSpellTypes;
+                    return (
+                      <Box
+                        sx={{ display: "flex" }}
+                        key={`b-spell-${spellType}-image-wrapper`}
+                      >
+                        <SpellImage
+                          key={`b-spell-${spellType}-image`}
+                          engine={engine}
+                          spellType={spellType}
+                        />
+                        <Typography
+                          key={`b-spell-${spellType}-description`}
+                          variant="h5"
+                          sx={{
+                            margin: "26px 0 0 60px",
+                            textAlign: "left",
+                          }}
+                        >
+                          {`${engine.predefinedSpellParams[spellType]?.spell.description}`}
+                        </Typography>
+                      </Box>
+                    );
+                  })}
+                </Box>
+                <Typography
+                  variant="h4"
+                  sx={{
+                    padding: "60px 0 60px 128px",
+                    textAlign: "left",
+                  }}
+                >
                   Несколько типов врагов:
                 </Typography>
                 <Box className="b-text-background">
@@ -408,7 +447,6 @@ export function Home({ engine }: IHome) {
                   <Typography
                     variant="h5"
                     sx={{
-                      pb: 10,
                       textAlign: "left",
                     }}
                   >
@@ -424,7 +462,7 @@ export function Home({ engine }: IHome) {
                   to={isAuth ? R.game : R.login}
                   sx={{
                     textAlign: "center",
-                    mt: 3,
+                    margin: "64px 0 32px",
                     color: ColorDict.sandColor,
                     textDecorationColor: "rgba(255, 192, 139, 0.4)",
                   }}

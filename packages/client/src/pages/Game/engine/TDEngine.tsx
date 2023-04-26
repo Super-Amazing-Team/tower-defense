@@ -1,16 +1,23 @@
 import { Enemy } from "../enemies/Enemy";
 import { Tower } from "../towers/Tower";
-import { IMap, Map } from "../maps/Map";
+import { Map } from "../maps/Map";
 import { Projectile } from "../projectiles/Projectile";
 import { Sound } from "@/pages/Game/sound/Sound";
-import { useGameStore as gameStore } from "@/store";
+import { useGameStore as gameStore, useUserStore } from "@/store";
 import { ISpell, Spell } from "@/pages/Game/spells/Spell";
 import { WaveGenerator } from "@/pages/Game/waveGenerator/waveGenerator";
+import {
+  ILeaderboardPostBody,
+  useLeaderboardStore,
+} from "@/store/LeaderboardStore";
 
 // utilities declaration
 export type TPartialRecord<K extends keyof any, T> = {
   [P in K]?: T;
 };
+
+// screen size
+export type TScreenSize = "widescreen" | "tablet" | "phone";
 
 // types declaration
 export type TEngineCanvas =
@@ -30,15 +37,24 @@ export type TEngineCanvas =
   | "map"
   | "mapDecorations"
   | "mapBackground";
-export type TTowerTypes = "one" | "two" | "three" | "four";
+export type TTowerTypes =
+  | "one"
+  | "two"
+  | "three"
+  | "four"
+  | "five"
+  | "six"
+  | "seven"
+  | "eight";
 export type TSpellTypes = "fireball" | "tornado" | "water" | "rock";
 export type TEnemyType =
   | "firebug"
   | "leafbug"
+  | "magmacrab"
   | "scorpion"
-  | "firewasp"
   | "clampbeetle"
-  | "firelocust";
+  | "firelocust"
+  | "butterfly";
 type TSpellSprite = Record<TSpellTypes, ISpellSprite | null>;
 export type TSpellSpriteElements = "spell" | "impact";
 type TTowerSprite = Record<TTowerTypes, ITowerSprite | null>;
@@ -72,12 +88,15 @@ export const ColorDict = {
   borderColor: "#bd6a62",
   sandColor: "#ffae70",
   fontColor: "#262626",
+  shadowColor: "#444444",
   towerRangeColor: "green",
   spellRangeColor: "blue",
-  specialAttackslowColor: "#3B46DB",
+  specialAttackslowColor: "#b739d7",
   specialAttackshockColor: "#975b1c",
-  specialAttacksplashColor: "#155800",
+  specialAttackpoisonColor: "#39ffad",
+  specialAttacksplashColor: "#ff6e6e",
   specialAttackfreezeColor: "blue",
+  specialAttackspellColor: "white",
 } as const;
 
 /**
@@ -148,22 +167,9 @@ export interface ITDEngine {
   manaIncrementTimer: NodeJS.Timer | null;
   manaIncrementTimeout: number;
   idleTimeout: number;
-  isInitialized: boolean;
   promiseArr: Promise<string | number>[];
-  isCanvasCreated: boolean;
-  isCanBuild: boolean;
-  isCanCast: boolean;
-  isCanClean: boolean;
-  isGameStarted: boolean;
-  isSideMenuOpen: boolean;
-  isBuildMenuOpen: boolean;
-  isGameOver: boolean;
-  isShowGrid: boolean;
-  isNotEnoughMoney: boolean;
-  isNotEnoughMana: boolean;
-  isGameMenuOpen: boolean;
-  isSoundEnabled: boolean;
-  isDemo: boolean;
+  viewport: TScreenSize;
+  boolean: boolean;
   demoTimeoutArr: NodeJS.Timer[];
   canvasMouseMoveEvent: EventListener | null;
   draftSpell: Spell | null;
@@ -182,6 +188,7 @@ export interface ITDEngine {
         framesPerSprite: number;
         width: number;
         height: number;
+        description?: string;
       }
     > & {
       spellParams: ISpell["spellParams"];
@@ -255,26 +262,30 @@ export class TDEngine {
       mapBackground: 12,
       map: 11,
     } as const,
-    public isDemo: ITDEngine["isDemo"] = false,
+    public isDemo: ITDEngine["boolean"] = false,
     public demoTimeoutArr: ITDEngine["demoTimeoutArr"] = [],
-    public isInitialized: ITDEngine["isInitialized"] = false,
+    public isInitialized: ITDEngine["boolean"] = false,
     public promiseArr: ITDEngine["promiseArr"] = [],
-    public isCanvasCreated: ITDEngine["isCanvasCreated"] = false,
-    public isCanBuild: ITDEngine["isCanBuild"] = false,
-    public isCanCast: ITDEngine["isCanCast"] = false,
-    public isCanClean: ITDEngine["isCanClean"] = false,
-    public isGameStarted: ITDEngine["isGameStarted"] = false,
-    public isGameOver: ITDEngine["isGameOver"] = false,
-    public isShowGrid: ITDEngine["isShowGrid"] = false,
-    public isNotEnoughMoney: ITDEngine["isNotEnoughMoney"] = false,
-    public isNotEnoughMana: ITDEngine["isNotEnoughMana"] = false,
-    public isSoundEnabled: ITDEngine["isSoundEnabled"] = true,
+    public viewport: ITDEngine["viewport"] = "widescreen",
+    public isCanvasCreated: ITDEngine["boolean"] = false,
+    public isCanBuild: ITDEngine["boolean"] = false,
+    public isCanCast: ITDEngine["boolean"] = false,
+    public isCanClean: ITDEngine["boolean"] = false,
+    public isGameStarted: ITDEngine["boolean"] = false,
+    public isGameOver: ITDEngine["boolean"] = false,
+    public isShowGrid: ITDEngine["boolean"] = false,
+    public isCheatMode: ITDEngine["boolean"] = false,
+    public isNotEnoughMoney: ITDEngine["boolean"] = false,
+    public isNotEnoughMana: ITDEngine["boolean"] = false,
+    public isSoundEnabled: ITDEngine["boolean"] = true,
     public draftSpell: ITDEngine["draftSpell"] = null,
+    public randomSpell: ITDEngine["draftSpell"] = null,
     public draftTower: ITDEngine["draftTower"] = null,
     public selectedTower: ITDEngine["selectedTower"] = null,
     public cursorPosition: ITDEngine["cursorPosition"] = { x: 0, y: 0 },
     public draftBuildCoordinates: ITwoDCoordinates = { x: 0, y: 0 },
-    public towerAngleOffset: number = Math.PI / 2.5,
+    public towerAngleOffset: number = Math.PI / 2.75,
+    public cheatString: string = "",
     public spellSprites: ITDEngine["spellSprites"] = {
       fireball: {
         spriteSourcePath: "fireballSprite.png",
@@ -438,6 +449,142 @@ export class TDEngine {
         canvasArr: null,
         canvasContextArr: null,
       },
+      five: {
+        spriteSourcePath: {
+          base: "towerFiveBase.png",
+          construction: [
+            "constructionLevelOne.png",
+            "constructionLevelTwo.png",
+            "constructionLevelThree.png",
+          ],
+          constructionEnd: [
+            "constructionEndLevelOne.png",
+            "constructionEndLevelTwo.png",
+            "constructionEndLevelThree.png",
+          ],
+          constructionSell: "constructionSell.png",
+          impact: [
+            "towerFiveLevelOneImpact.png",
+            "towerFiveLevelTwoImpact.png",
+            "towerFiveLevelThreeImpact.png",
+          ],
+          weapon: [
+            "towerFiveLevelOneWeapon.png",
+            "towerFiveLevelTwoWeapon.png",
+            "towerFiveLevelThreeWeapon.png",
+          ],
+          projectile: [
+            "towerFiveLevelOneProjectile.png",
+            "towerFiveLevelTwoProjectile.png",
+            "towerFiveLevelThreeProjectile.png",
+          ],
+        },
+        spriteSource: null,
+        canvasArr: null,
+        canvasContextArr: null,
+      },
+      six: {
+        spriteSourcePath: {
+          base: "towerSixBase.png",
+          construction: [
+            "constructionLevelOne.png",
+            "constructionLevelTwo.png",
+            "constructionLevelThree.png",
+          ],
+          constructionEnd: [
+            "constructionEndLevelOne.png",
+            "constructionEndLevelTwo.png",
+            "constructionEndLevelThree.png",
+          ],
+          constructionSell: "constructionSell.png",
+          impact: [
+            "towerSixLevelOneImpact.png",
+            "towerSixLevelTwoImpact.png",
+            "towerSixLevelThreeImpact.png",
+          ],
+          weapon: [
+            "towerSixLevelOneWeapon.png",
+            "towerSixLevelTwoWeapon.png",
+            "towerSixLevelThreeWeapon.png",
+          ],
+          projectile: [
+            "towerSixLevelOneProjectile.png",
+            "towerSixLevelTwoProjectile.png",
+            "towerSixLevelThreeProjectile.png",
+          ],
+        },
+        spriteSource: null,
+        canvasArr: null,
+        canvasContextArr: null,
+      },
+      seven: {
+        spriteSourcePath: {
+          base: "towerSevenBase.png",
+          construction: [
+            "constructionLevelOne.png",
+            "constructionLevelTwo.png",
+            "constructionLevelThree.png",
+          ],
+          constructionEnd: [
+            "constructionEndLevelOne.png",
+            "constructionEndLevelTwo.png",
+            "constructionEndLevelThree.png",
+          ],
+          constructionSell: "constructionSell.png",
+          impact: [
+            "towerSevenLevelOneImpact.png",
+            "towerSevenLevelTwoImpact.png",
+            "towerSevenLevelThreeImpact.png",
+          ],
+          weapon: [
+            "towerSevenLevelOneWeapon.png",
+            "towerSevenLevelTwoWeapon.png",
+            "towerSevenLevelThreeWeapon.png",
+          ],
+          projectile: [
+            "towerSevenLevelOneProjectile.png",
+            "towerSevenLevelTwoProjectile.png",
+            "towerSevenLevelThreeProjectile.png",
+          ],
+        },
+        spriteSource: null,
+        canvasArr: null,
+        canvasContextArr: null,
+      },
+      eight: {
+        spriteSourcePath: {
+          base: "towerEightBase.png",
+          construction: [
+            "constructionLevelOne.png",
+            "constructionLevelTwo.png",
+            "constructionLevelThree.png",
+          ],
+          constructionEnd: [
+            "constructionEndLevelOne.png",
+            "constructionEndLevelTwo.png",
+            "constructionEndLevelThree.png",
+          ],
+          constructionSell: "constructionSell.png",
+          impact: [
+            "towerEightLevelOneImpact.png",
+            "towerEightLevelTwoImpact.png",
+            "towerEightLevelThreeImpact.png",
+          ],
+          weapon: [
+            "towerEightLevelOneWeapon.png",
+            "towerEightLevelTwoWeapon.png",
+            "towerEightLevelThreeWeapon.png",
+          ],
+          projectile: [
+            "towerEightLevelOneProjectile.png",
+            "towerEightLevelTwoProjectile.png",
+            "towerEightLevelThreeProjectile.png",
+          ],
+        },
+        spriteSource: null,
+        canvasArr: null,
+        canvasContextArr: null,
+      },
     },
     public isSpellSpritesLoaded = false,
     public isTowerSpritesLoaded = false,
@@ -455,7 +602,8 @@ export class TDEngine {
         spriteDownRow: 3,
         framesPerSprite: 8,
         deathFramesPerSprite: 11,
-        description: "обычный враг, жук. все параметры средние",
+        description:
+          "обычный враг, средняя скорость, средний показатель здоровья",
       },
       leafbug: {
         spriteSourcePath: "leafbugSprite.png",
@@ -468,7 +616,21 @@ export class TDEngine {
         spriteDownRow: 4,
         framesPerSprite: 8,
         deathFramesPerSprite: 8,
-        description: "медленный враг, гусеница. больше хп, меньше скорость",
+        description: "скорость ниже среднего, увеличенное количество здоровья",
+      },
+      magmacrab: {
+        spriteSourcePath: "magmacrabSprite.png",
+        spriteSource: null,
+        canvasArr: null,
+        canvasContextArr: null,
+        spriteRightRow: 6,
+        spriteLeftRow: 5,
+        spriteUpRow: 4,
+        spriteDownRow: 7,
+        framesPerSprite: 8,
+        deathFramesPerSprite: 10,
+        description:
+          "обычный враг, средняя скорость, средний показатель здоровья",
       },
       clampbeetle: {
         spriteSourcePath: "clampbeetleSprite.png",
@@ -482,20 +644,7 @@ export class TDEngine {
         framesPerSprite: 8,
         deathFramesPerSprite: 13,
         description:
-          "толстый враг, летающий жук. больше хп, все остальные параметры средние",
-      },
-      scorpion: {
-        spriteSourcePath: "scorpionSprite.png",
-        spriteSource: null,
-        canvasArr: null,
-        canvasContextArr: null,
-        spriteDownRow: 3,
-        spriteUpRow: 4,
-        spriteLeftRow: 5,
-        spriteRightRow: 6,
-        framesPerSprite: 8,
-        deathFramesPerSprite: 8,
-        description: "обычный враг, скорпион. все параметры средние",
+          "бронированный враг. здоровье выше среднего, все остальные параметры средние",
       },
       firelocust: {
         spriteSourcePath: "firelocustSprite.png",
@@ -509,19 +658,32 @@ export class TDEngine {
         framesPerSprite: 12,
         deathFramesPerSprite: 14,
         description:
-          "быстрый враг, летающая бабочка. больше скорость перемещения, меньше хп",
+          "быстрый враг. больше скорость перемещения, меньше здоровья",
       },
-      firewasp: {
-        spriteSourcePath: "firewaspSprite.png",
+      butterfly: {
+        spriteSourcePath: "butterflySprite.png",
         spriteSource: null,
         canvasArr: null,
         canvasContextArr: null,
         spriteRightRow: 6,
         spriteLeftRow: 7,
-        spriteUpRow: 7,
-        spriteDownRow: 7,
+        spriteUpRow: 5,
+        spriteDownRow: 4,
         framesPerSprite: 8,
-        deathFramesPerSprite: 11,
+        deathFramesPerSprite: 12,
+        description: "самый быстрый враг. здоровье значительно ниже среднего",
+      },
+      scorpion: {
+        spriteSourcePath: "scorpionSprite.png",
+        spriteSource: null,
+        canvasArr: null,
+        canvasContextArr: null,
+        spriteDownRow: 3,
+        spriteUpRow: 4,
+        spriteLeftRow: 5,
+        spriteRightRow: 6,
+        framesPerSprite: 8,
+        deathFramesPerSprite: 8,
         description: "босс. много здоровья, сопротивление магическим эффектам",
       },
     },
@@ -531,6 +693,7 @@ export class TDEngine {
           framesPerSprite: 10,
           width: 64,
           height: 64,
+          description: `Огненный шар - поражает врагов в небольшой области, быстро летит и наносит средний урон`,
         },
         impact: {
           framesPerSprite: 13,
@@ -550,6 +713,7 @@ export class TDEngine {
           framesPerSprite: 10,
           width: 64,
           height: 64,
+          description: `Ураган - наносит небольшой урон и заметно замедляет противников в небольшой области. Мгновенное применение`,
         },
         impact: {
           framesPerSprite: 9,
@@ -572,6 +736,7 @@ export class TDEngine {
           framesPerSprite: 10,
           width: 64,
           height: 64,
+          description: `Водопад - медленно летит, наносит небольшой урон и надолго, но незначительно замедляет врагов в большой области`,
         },
         impact: {
           framesPerSprite: 5,
@@ -594,6 +759,7 @@ export class TDEngine {
           framesPerSprite: 10,
           width: 64,
           height: 64,
+          description: `Камнепад, который надолго оглушает врагов в очень маленькой области и наносит небольшой урон`,
         },
         impact: {
           framesPerSprite: 5,
@@ -789,7 +955,7 @@ export class TDEngine {
           firingAngle: towerAngleOffset,
           fireFromCoords: { x: 0, y: 0 },
           maxUpgradeLevel: 2,
-          price: 45,
+          price: 55,
           description:
             "Cредние по скорости атаки, но отравляющие врагов башни с рогаткой. Радиус атаки больше среднего.",
         },
@@ -858,7 +1024,7 @@ export class TDEngine {
           firingAngle: towerAngleOffset,
           fireFromCoords: { x: 0, y: 0 },
           maxUpgradeLevel: 2,
-          price: 45,
+          price: 65,
           description:
             "Медленные, но атакующие сплешем (всех врагов в небольшом радиусе) башни с молотом. Маленький радиус атаки.",
         },
@@ -891,7 +1057,285 @@ export class TDEngine {
           attackModifierRange: 80,
         },
       },
+      five: {
+        towerParams: {
+          attackRate: 5000,
+          attackDamage: 0,
+          attackRange: 240,
+          baseWidth: 64,
+          baseHeight: 128,
+          constructionWidth: 192,
+          constructionHeight: 256,
+          constructionFrameLimit: 6,
+          constructionSellFrameLimit: 13,
+          dimensions: [
+            {
+              cannonWidth: 96,
+              cannonHeight: 96,
+              cannonOffsetX: 0,
+              cannonOffsetY: 22,
+            },
+            {
+              cannonWidth: 96,
+              cannonHeight: 96,
+              cannonOffsetX: 0,
+              cannonOffsetY: 12,
+            },
+            {
+              cannonWidth: 96,
+              cannonHeight: 96,
+              cannonOffsetX: 0,
+              cannonOffsetY: 4,
+            },
+          ],
+          cannonFrameLimit: 29,
+          strokeStyle: ColorDict.towerRangeColor,
+          firingAngle: towerAngleOffset,
+          fireFromCoords: { x: 0, y: 0 },
+          maxUpgradeLevel: 2,
+          price: 55,
+          description:
+            "Магическая башня с рунами. Произносит случайное заклинание с увеличенным уроном по цели в радиусе действия башни.",
+        },
+        projectileParams: {
+          acceleration: 1.2,
+          projectileSpeed: 4,
+          dimensions: [
+            {
+              projectileWidth: 32,
+              projectileHeight: 32,
+              impactWidth: 64,
+              impactHeight: 64,
+            },
+            {
+              projectileWidth: 32,
+              projectileHeight: 32,
+              impactWidth: 64,
+              impactHeight: 64,
+            },
+            {
+              projectileWidth: 96,
+              projectileHeight: 96,
+              impactWidth: 96,
+              impactHeight: 96,
+            },
+          ],
+          projectileFrameLimit: 12,
+          impactFrameLimit: 10,
+          attackModifier: "spell",
+        },
+      },
+      six: {
+        towerParams: {
+          attackRate: 4000,
+          attackDamage: 25,
+          attackRange: 400,
+          baseWidth: 64,
+          baseHeight: 128,
+          constructionWidth: 192,
+          constructionHeight: 256,
+          constructionFrameLimit: 6,
+          constructionSellFrameLimit: 13,
+          dimensions: [
+            {
+              cannonWidth: 64,
+              cannonHeight: 64,
+              cannonOffsetX: 0,
+              cannonOffsetY: 22,
+            },
+            {
+              cannonWidth: 64,
+              cannonHeight: 64,
+              cannonOffsetX: 0,
+              cannonOffsetY: 12,
+            },
+            {
+              cannonWidth: 64,
+              cannonHeight: 64,
+              cannonOffsetX: 0,
+              cannonOffsetY: 4,
+            },
+          ],
+          cannonFrameLimit: 6,
+          strokeStyle: ColorDict.towerRangeColor,
+          firingAngle: towerAngleOffset,
+          fireFromCoords: { x: 0, y: 0 },
+          maxUpgradeLevel: 2,
+          price: 45,
+          description:
+            "Дальнобойные башни с быстрой скоростью полета снаряда, обычный урон",
+        },
+        projectileParams: {
+          acceleration: 2,
+          projectileSpeed: 6,
+          dimensions: [
+            {
+              projectileWidth: 32,
+              projectileHeight: 32,
+              impactWidth: 64,
+              impactHeight: 64,
+            },
+            {
+              projectileWidth: 32,
+              projectileHeight: 32,
+              impactWidth: 64,
+              impactHeight: 64,
+            },
+            {
+              projectileWidth: 32,
+              projectileHeight: 32,
+              impactWidth: 64,
+              impactHeight: 64,
+            },
+          ],
+          projectileFrameLimit: 8,
+          impactFrameLimit: 9,
+        },
+      },
+      seven: {
+        towerParams: {
+          attackRate: 12000,
+          attackDamage: 45,
+          attackRange: 500,
+          baseWidth: 64,
+          baseHeight: 128,
+          constructionWidth: 192,
+          constructionHeight: 256,
+          constructionFrameLimit: 6,
+          constructionSellFrameLimit: 13,
+          dimensions: [
+            {
+              cannonWidth: 48,
+              cannonHeight: 48,
+              cannonOffsetX: 0,
+              cannonOffsetY: 22,
+            },
+            {
+              cannonWidth: 48,
+              cannonHeight: 48,
+              cannonOffsetX: 0,
+              cannonOffsetY: 12,
+            },
+            {
+              cannonWidth: 64,
+              cannonHeight: 64,
+              cannonOffsetX: 0,
+              cannonOffsetY: 4,
+            },
+          ],
+          cannonFrameLimit: 10,
+          strokeStyle: ColorDict.towerRangeColor,
+          firingAngle: towerAngleOffset,
+          fireFromCoords: { x: 0, y: 0 },
+          maxUpgradeLevel: 2,
+          price: 145,
+          description:
+            "Очень медленные, но самые дальнобойные башни с большим сплешем",
+        },
+        projectileParams: {
+          acceleration: 1.2,
+          projectileSpeed: 4,
+          dimensions: [
+            {
+              projectileWidth: 64,
+              projectileHeight: 64,
+              impactWidth: 64,
+              impactHeight: 64,
+            },
+            {
+              projectileWidth: 64,
+              projectileHeight: 64,
+              impactWidth: 64,
+              impactHeight: 64,
+            },
+            {
+              projectileWidth: 64,
+              projectileHeight: 64,
+              impactWidth: 64,
+              impactHeight: 64,
+            },
+          ],
+          projectileFrameLimit: 7,
+          impactFrameLimit: 6,
+          attackModifier: "splash",
+          attackModifierRange: 200,
+        },
+      },
+      eight: {
+        towerParams: {
+          attackRate: 3000,
+          attackDamage: 8,
+          attackRange: 200,
+          baseWidth: 64,
+          baseHeight: 128,
+          constructionWidth: 192,
+          constructionHeight: 256,
+          constructionFrameLimit: 6,
+          constructionSellFrameLimit: 13,
+          dimensions: [
+            {
+              cannonWidth: 96,
+              cannonHeight: 96,
+              cannonOffsetX: 0,
+              cannonOffsetY: 20,
+            },
+            {
+              cannonWidth: 96,
+              cannonHeight: 96,
+              cannonOffsetX: 0,
+              cannonOffsetY: 12,
+            },
+            {
+              cannonWidth: 96,
+              cannonHeight: 96,
+              cannonOffsetX: 0,
+              cannonOffsetY: 4,
+            },
+          ],
+          cannonFrameLimit: 6,
+          isSelected: false,
+          firingAngle: towerAngleOffset,
+          fireFromCoords: { x: 0, y: 0 },
+          strokeStyle: ColorDict.towerRangeColor,
+          maxUpgradeLevel: 2,
+          price: 65,
+          description:
+            "Средняя скорость атаки, небольшой урон, поражает цели ядом, который наносит урон в течении времени",
+        },
+        projectileParams: {
+          acceleration: 1.5,
+          projectileSpeed: 2,
+          rectCenterX: 0,
+          rectCenterY: 0,
+          dimensions: [
+            {
+              projectileWidth: 6,
+              projectileHeight: 26,
+              impactWidth: 64,
+              impactHeight: 64,
+            },
+            {
+              projectileWidth: 16,
+              projectileHeight: 34,
+              impactWidth: 64,
+              impactHeight: 64,
+            },
+            {
+              projectileWidth: 10,
+              projectileHeight: 37,
+              impactWidth: 64,
+              impactHeight: 64,
+            },
+          ],
+          projectileFrameLimit: 3,
+          impactFrameLimit: 6,
+          attackModifier: "poison",
+          attackModifierTimeout: 5000,
+          attackModifierDPS: 4,
+        },
+      },
     },
+
     public initialGameParams: ITDEngine["initialGameParams"] = {
       maxMoney: 999,
       money: 130,
@@ -1042,12 +1486,92 @@ export class TDEngine {
     this.gameWindow?.removeEventListener("click", this.canvasClickCallback);
   };
 
+  public castRandomSpell = (
+    enemy: Enemy | null = null,
+    tower: Tower | null = null,
+  ) => {
+    const spellTypesArr: TSpellTypes[] = [
+      "fireball",
+      "tornado",
+      "water",
+      "rock",
+    ];
+    if (
+      this.enemies?.length &&
+      this.waveGenerator?.waveParams?.isWaveInProgress
+    ) {
+      const spellType: TSpellTypes =
+        spellTypesArr[Math.floor(Math.random() * spellTypesArr.length)];
+      let spellPosition = { x: 0, y: 0 };
+      // enemy and tower is set
+      if (enemy && tower) {
+        spellPosition = enemy.currentPosition;
+      } else {
+        const visibleEnemies = this.enemies.filter(
+          (enemyParam) =>
+            enemyParam.currentPosition.x > this.map?.tileToNumber(1)! &&
+            enemyParam.currentPosition.x <
+              this.map?.tileToNumber(this.map?.mapParams?.widthTile - 1)!,
+        );
+        if (visibleEnemies.length) {
+          spellPosition =
+            visibleEnemies[Math.floor(Math.random() * visibleEnemies.length)]
+              .currentPosition;
+        } else {
+          return;
+        }
+      }
+      const collisionPoint = {
+        x:
+          spellPosition.x! -
+          this.predefinedSpellParams[spellType].spell.width / 2,
+        y:
+          spellPosition.y! -
+          this.predefinedSpellParams[spellType].spell.height / 2,
+      };
+      const currentPosition = {
+        x:
+          this.predefinedSpellParams[spellType].spellParams.spellDirection ===
+          "left"
+            ? spellPosition.x! - this.map?.mapParams?.gridStep! * 4
+            : collisionPoint.x!,
+        y: spellPosition.y! - this.map?.mapParams?.gridStep! * 4,
+      };
+      // create spell draft
+      this.randomSpell = new Spell(this, spellType, {
+        attackDamage:
+          this.predefinedSpellParams[spellType].spellParams.attackDamage,
+        attackRange:
+          this.predefinedSpellParams[spellType].spellParams.attackRange,
+        movementSpeed:
+          this.predefinedSpellParams[spellType].spellParams.movementSpeed,
+        manaCost: this.predefinedSpellParams[spellType].spellParams.manaCost,
+        spellDirection:
+          this.predefinedSpellParams[spellType].spellParams.spellDirection,
+      });
+      this.randomSpell.spellParams = structuredClone(
+        this.predefinedSpellParams[spellType].spellParams,
+      );
+      // modify spell params by tower level
+      if (tower && tower.upgradeLevel) {
+        this.randomSpell.spellParams.movementSpeed *= 2 * tower?.upgradeLevel;
+        this.randomSpell.spellParams.attackDamage *= 2 * tower?.upgradeLevel;
+      }
+      this.randomSpell.spellParams.currentPosition = currentPosition;
+      this.randomSpell.spellParams.collisionPoint = collisionPoint;
+      // cast a spell
+      this.spells?.push(this.randomSpell!);
+      this.randomSpell = null;
+    }
+  };
+
   public startDemo() {
     gameStore.getState().updateIsGameStarted(true);
     // set game params
     this.lives = 10000;
     this.money = 10000;
     this.mana = 10000;
+    this.waveGenerator!.waveParams!.endWave = 100;
     // set demo stage timeouts
     const demoStageTimeout = {
       enemiesSpawn: 1000,
@@ -1062,12 +1586,15 @@ export class TDEngine {
         tile.y > this.map?.tileToNumber(2)!,
     );
     // make tower types arr
-    const towerTypesArr: TTowerTypes[] = ["one", "two", "three", "four"];
-    const spellTypesArr: TSpellTypes[] = [
-      "fireball",
-      "tornado",
-      "water",
-      "rock",
+    const towerTypesArr: TTowerTypes[] = [
+      "one",
+      "two",
+      "three",
+      "four",
+      "five",
+      "six",
+      "seven",
+      "eight",
     ];
     const getRandomTile = (arr: ITwoDCoordinates[]) => {
       const tile = arr!
@@ -1081,61 +1608,6 @@ export class TDEngine {
         x: tile.x + this.map?.mapParams?.gridStep!,
         y: tile.y + this.map?.mapParams?.gridStep!,
       };
-    };
-
-    const castRandomSpell = () => {
-      if (
-        this.enemies?.length &&
-        this.waveGenerator?.waveParams?.isWaveInProgress
-      ) {
-        const spellType: TSpellTypes =
-          spellTypesArr[Math.floor(Math.random() * spellTypesArr.length)];
-        const visibleEnemies = this.enemies.filter(
-          (enemy) =>
-            enemy.currentPosition.x > this.map?.tileToNumber(1)! &&
-            enemy.currentPosition.x <
-              this.map?.tileToNumber(this.map?.mapParams?.widthTile - 1)!,
-        );
-        const spellPosition =
-          visibleEnemies[Math.floor(Math.random() * visibleEnemies.length)]
-            .currentPosition;
-        const collisionPoint = {
-          x:
-            spellPosition.x! -
-            this.predefinedSpellParams[spellType].spell.width / 2,
-          y:
-            spellPosition.y! -
-            this.predefinedSpellParams[spellType].spell.height / 2,
-        };
-        const currentPosition = {
-          x:
-            this.predefinedSpellParams[spellType].spellParams.spellDirection ===
-            "left"
-              ? spellPosition.x! - this.map?.mapParams?.gridStep! * 4
-              : collisionPoint.x!,
-          y: spellPosition.y! - this.map?.mapParams?.gridStep! * 4,
-        };
-        // create spell draft
-        this.draftSpell = new Spell(this, spellType, {
-          attackDamage:
-            this.predefinedSpellParams[spellType].spellParams.attackDamage,
-          attackRange:
-            this.predefinedSpellParams[spellType].spellParams.attackRange,
-          movementSpeed:
-            this.predefinedSpellParams[spellType].spellParams.movementSpeed,
-          manaCost: this.predefinedSpellParams[spellType].spellParams.manaCost,
-          spellDirection:
-            this.predefinedSpellParams[spellType].spellParams.spellDirection,
-        });
-        this.draftSpell.spellParams = structuredClone(
-          this.predefinedSpellParams[spellType].spellParams,
-        );
-        this.draftSpell.spellParams.currentPosition = currentPosition;
-        this.draftSpell.spellParams.collisionPoint = collisionPoint;
-        // cast a spell
-        this.spells?.push(this.draftSpell);
-        this.draftSpell = null;
-      }
     };
 
     const buildRandomTower = () => {
@@ -1210,13 +1682,21 @@ export class TDEngine {
     // cast random spell
     this.demoTimeoutArr.push(
       setInterval(() => {
-        castRandomSpell();
+        this.castRandomSpell();
       }, demoStageTimeout.spellCast),
     );
   }
 
   public reload() {
-    const { updateIsGameStarted, updateIsGameMenuOpen } = gameStore.getState();
+    const {
+      updateIsGameStarted,
+      updateIsGameMenuOpen,
+      updateMoney,
+      updateMana,
+      updateLives,
+      updateEnemiesLeft,
+      updateWaveNumber,
+    } = gameStore.getState();
     // disable music
     this.sound?.soundArr?.gameStart?.pause();
     updateIsGameMenuOpen(true);
@@ -1226,6 +1706,12 @@ export class TDEngine {
     this.lives = this.initialGameParams.lives;
     this.money = this.initialGameParams.money;
     this.mana = this.initialGameParams.mana;
+    // UI Update
+    updateLives(this.lives);
+    updateMoney(this.money);
+    updateMana(this.mana);
+    updateEnemiesLeft(0);
+    updateWaveNumber(0);
     this.isDemo = false;
     this.map = null;
     this.isCanvasCreated = false;
@@ -1243,9 +1729,6 @@ export class TDEngine {
     this.demoTimeoutArr = [];
     this.draftSpell = null;
     this.draftTower = null;
-    // debug
-    console.log(`engine reload!`);
-    //
   }
 
   public gameRestart() {
@@ -1254,6 +1737,7 @@ export class TDEngine {
     this.deadEnemies = [];
     this.towers = [];
     this.projectiles = [];
+    this.spells = [];
     // reset sound
     // game start sound
     this.isSoundEnabled = true;
@@ -1263,10 +1747,14 @@ export class TDEngine {
     // clear tower canvas
     this.clearContext(this.context!.tower!);
     this.clearContext(this.context!.enemy!);
+    this.clearContext(this.context!.hpBar!);
     this.clearContext(this.context!.projectile!);
     this.clearContext(this.context!.spell!);
     this.clearContext(this.context!.deadEnemy!);
     this.clearContext(this.context!.selection!);
+    this.clearContext(this.context!.cannon!);
+    this.clearContext(this.context!.spell!);
+    this.clearContext(this.context!.spellDraft!);
     // wave generator
     clearInterval(this.waveGenerator!.waveCountdownTimer!);
     clearTimeout(this.waveGenerator!.waveTimerBetweenWaves!);
@@ -1758,6 +2246,7 @@ export class TDEngine {
               );
               canvas.width = canvasHypot;
               canvas.height = canvasHypot;
+              contextArr!.weapon[level]!.imageSmoothingEnabled = false;
               (contextArr!.weapon[level]! as CanvasRenderingContext2D[]).push(
                 canvas.getContext("2d")!,
               );
@@ -2532,6 +3021,9 @@ export class TDEngine {
     tower.towerParams.attackRate = Math.floor(
       tower.towerParams.attackRate * 0.9,
     );
+    if (tower.projectileParams.attackModifier === "poison") {
+      tower.projectileParams.attackModifierDPS += tower.upgradeLevel * 2;
+    }
     // clear and redraw towerRange
     // this.clearContext(this.context?.towerRange!);
     // set render params
@@ -2637,9 +3129,7 @@ export class TDEngine {
           gameStore.getState().updateIsBuildMenuOpen(false);
         } else {
           // toggle game menu
-          gameStore
-            .getState()
-            .updateIsGameMenuOpen(!gameStore.getState().isGameMenuOpen);
+          gameStore.getState().updateIsGameMenuOpen(false);
           // toggle build menu
           gameStore
             .getState()
@@ -2683,11 +3173,55 @@ export class TDEngine {
       if (e.key === "4") {
         this.buildTower("four", 0);
       }
+      if (e.key === "5") {
+        this.buildTower("five", 0);
+      }
+      if (e.key === "6") {
+        this.buildTower("six", 0);
+      }
+      if (e.key === "7") {
+        this.buildTower("seven", 0);
+      }
+      if (e.key === "8") {
+        this.buildTower("eight", 0);
+      }
       // game menu
       if (e.key === "b") {
         gameStore
           .getState()
           .updateIsBuildMenuOpen(!gameStore.getState().isBuildMenuOpen);
+      }
+      // cheats
+      if (e.key === "g") {
+        this.cheatString = "g";
+      } else if (this.cheatString === "g" && e.key === "o") {
+        this.cheatString += "o";
+      } else if (this.cheatString === "go" && e.key === "d") {
+        this.cheatString += "d";
+        // cheat mode is enabled
+        this.lives = 999;
+        this.money = 999999;
+        this.mana = 999999;
+        // update UI
+        gameStore.getState().updateLives(this.lives);
+        gameStore.getState().updateMoney(this.money);
+        gameStore.getState().updateMana(this.mana);
+        if (gameStore.getState().isBuildMenuOpen) {
+          gameStore.getState().updateIsBuildMenuOpen(false);
+        }
+        if (gameStore.getState().isSideMenuOpen) {
+          gameStore.getState().updateIsSideMenuOpen(false);
+        }
+        // set cheats flag
+        this.isCheatMode = true;
+        // show cheats message
+        gameStore.getState().updateUIMessage("Cheats enabled!");
+        // hide cheat UI message
+        setTimeout(() => {
+          gameStore.getState().updateUIMessage("");
+        }, 3000);
+      } else {
+        this.cheatString = "";
       }
     }
 
@@ -2842,8 +3376,8 @@ export class TDEngine {
     this.clearContext(this.context!.constructing!);
     this.clearContext(this.context!.projectile!);
     this.clearContext(this.context!.build!);
-    this.clearContext(this.context!.spell!);
-    this.clearContext(this.context!.spellDraft!);
+    this.clearContext(this.context?.spell!);
+    this.clearContext(this.context?.spellDraft!);
     if (this.enemies?.length) {
       this.clearContext(this.context!.enemy!);
       this.clearContext(this.context!.hpBar!);
@@ -2894,6 +3428,10 @@ export class TDEngine {
           if (this.deadEnemies?.length) {
             // clear deadEnemiesCanvas
             this.clearContext(this.context?.deadEnemy!);
+            if (this.enemies?.length === 0) {
+              this.clearContext(this.context?.enemy!);
+              this.clearContext(this.context?.hpBar!);
+            }
             // draw
             this.deadEnemies?.forEach((deadEnemy: Enemy) => {
               deadEnemy.draw(this.context!.deadEnemy!, false);
@@ -3053,6 +3591,10 @@ export class TDEngine {
           gameStore.getState().updateIsGameStarted(false);
           gameStore.getState().updateIsGameOver(true);
           this.isGameOver = true;
+          // disable score save in cheat_mode
+          if (!this.isCheatMode) {
+            this.saveScore();
+          }
         }
 
         // request animation frame
@@ -3064,5 +3606,21 @@ export class TDEngine {
       // clear timeout
       clearTimeout(timeout);
     }, 1000 / this.initialGameParams.fps);
+  };
+
+  public saveScore = () => {
+    // updateLeaderboard
+    try {
+      const requestBody: ILeaderboardPostBody = {
+        data: {
+          score: this.score,
+          name: useUserStore.getState().user.login,
+        },
+        limit: 0,
+      };
+      useLeaderboardStore.getState().postLeaderboard(requestBody);
+    } catch (e) {
+      console.error(`Woopsie! Something is broken! ${e.reason || e}`);
+    }
   };
 }
