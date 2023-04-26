@@ -9,7 +9,7 @@ import { WaveGenerator } from "@/pages/Game/waveGenerator/waveGenerator";
 import { ApiClient } from "@/api";
 import { ILeaderboardPost } from "@/api/ApiClient/types";
 import {
-  ILeaderbordPostBody,
+  ILeaderboardPostBody,
   useLeaderboardStore,
 } from "@/store/LeaderboardStore";
 
@@ -695,7 +695,7 @@ export class TDEngine {
           framesPerSprite: 10,
           width: 64,
           height: 64,
-          description: `Шар огня, который поражает врагов в небольшой области, наносит средний урон`,
+          description: `Огненный шар - поражает врагов в небольшой области, быстро летит и наносит средний урон`,
         },
         impact: {
           framesPerSprite: 13,
@@ -715,7 +715,7 @@ export class TDEngine {
           framesPerSprite: 10,
           width: 64,
           height: 64,
-          description: `Ураган, который наносит небольшой урон и заметно замедляет противников в небольшой области`,
+          description: `Ураган - наносит небольшой урон и заметно замедляет противников в небольшой области. Мгновенное применение`,
         },
         impact: {
           framesPerSprite: 9,
@@ -738,7 +738,7 @@ export class TDEngine {
           framesPerSprite: 10,
           width: 64,
           height: 64,
-          description: `Водопад, который наносит небольшой урон и надолго, но незначительно замедляет врагов в большой области `,
+          description: `Водопад - медленно летит, наносит небольшой урон и надолго, но незначительно замедляет врагов в большой области`,
         },
         impact: {
           framesPerSprite: 5,
@@ -3611,7 +3611,7 @@ export class TDEngine {
   public saveScore = () => {
     // updateLeaderboard
     try {
-      const requestBody: ILeaderbordPostBody = {
+      const requestBody: ILeaderboardPostBody = {
         data: {
           score: this.score,
           name: useUserStore.getState().user.login,

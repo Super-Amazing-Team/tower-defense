@@ -52,8 +52,8 @@ export class Map {
   constructor(
     public engine: TDEngine,
     public mapParams: IMap["mapParams"] = {
-      width: 960,
-      height: 960,
+      width: Math.floor(document.body.clientWidth / 64),
+      height: Math.floor(document.body.clientHeight / 64),
       widthTile: 0,
       heightTile: 0,
       gridStep: 64,
@@ -160,13 +160,11 @@ export class Map {
         this.mapParams.width =
           this.mapParams.widthTile >= 28
             ? this.tileToNumber(this.mapParams.widthTile)
-            : 28 * this.mapParams.gridStep;
+            : this.tileToNumber(28);
         this.mapParams.height =
           this.mapParams.heightTile >= 15
             ? this.tileToNumber(this.mapParams.heightTile)
-            : 15 * this.mapParams.gridStep;
-        // this.mapParams.width = 28 * this.mapParams.gridStep;
-        // this.mapParams.height = 15 * this.mapParams.gridStep;
+            : this.tileToNumber(15);
         // set engine.viewport
         engine.viewport = "widescreen";
 

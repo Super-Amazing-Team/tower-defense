@@ -1,7 +1,7 @@
 import { create } from "zustand";
 import { ApiClient } from "@/api";
 
-export interface ILeaderbordPostBody {
+export interface ILeaderboardPostBody {
   data: {
     score: number;
     name: string;
@@ -15,7 +15,7 @@ interface ILeaderboardStore {
     cursor: number;
     limit: number;
   }): Promise<void>;
-  postLeaderboard(body: ILeaderbordPostBody): Promise<void>;
+  postLeaderboard(body: ILeaderboardPostBody): Promise<void>;
 }
 
 export const useLeaderboardStore = create<ILeaderboardStore>()((set) => ({
