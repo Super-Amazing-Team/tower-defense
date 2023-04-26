@@ -1,5 +1,5 @@
 ARG NODE_VERSION=16
-ARG CLIENT_PORT=3000
+ARG CLIENT_PORT=443
 
 FROM node:$NODE_VERSION-buster as base
 
@@ -19,6 +19,8 @@ WORKDIR /app
 
 COPY --from=builder /app/packages/client/dist/ /app/
 COPY --from=builder /app/packages/client/nginx.conf /etc/nginx/nginx.conf
+COPY certificate.crt /etc/nginx/ssl/certificate.crt
+COPY certificate.key /etc/nginx/ssl/certificate.key
 
 EXPOSE $CLIENT_PORT
 CMD [ "nginx", "-g", "daemon off;" ]
