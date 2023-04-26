@@ -1,4 +1,9 @@
-import { TDEngine, ITwoDCoordinates, TEnemyType } from "../engine/TDEngine";
+import {
+  TDEngine,
+  ITwoDCoordinates,
+  TEnemyType,
+  ColorDict,
+} from "../engine/TDEngine";
 import { TProjectileAttackModifiers } from "@/pages/Game/towers/Tower";
 import { useGameStore } from "@/store";
 export interface IEnemy {
@@ -21,6 +26,8 @@ export interface IEnemy {
     attackModifier?: TProjectileAttackModifiers;
     modifiedSlowTimer?: NodeJS.Timer | null;
     modifiedShockTimer?: NodeJS.Timer | null;
+    modifiedPoisonDuration?: NodeJS.Timer | null;
+    modifiedPoisonDPSInterval?: NodeJS.Timer | null;
     maxHp?: number;
   };
   renderParams: {
@@ -50,7 +57,9 @@ export class Enemy {
       isModified: false,
     },
     public renderParams: IEnemy["renderParams"] = {
-      currentFrame: 0,
+      currentFrame: Math.floor(
+        Math.random() * engine.enemySprites[enemyParams.type]?.framesPerSprite,
+      ),
       isAnimateDeath: false,
       framesPerSprite: 8,
     },
@@ -98,9 +107,11 @@ export class Enemy {
       // target have attack modifier
     } else {
       if (this.enemyParams.attackModifier === "slow") {
-        context.fillStyle = "#3B46DB";
+        context.fillStyle = ColorDict.specialAttackslowColor;
       } else if (this.enemyParams.attackModifier === "shock") {
-        context.fillStyle = "#402d19";
+        context.fillStyle = ColorDict.specialAttackshockColor;
+      } else if (this.enemyParams.attackModifier === "poison") {
+        context.fillStyle = ColorDict.specialAttackpoisonColor;
       }
     }
     context.fillRect(
@@ -123,6 +134,7 @@ export class Enemy {
     enemySprite: CanvasImageSource,
     context: CanvasRenderingContext2D = this.engine.context!.enemy!,
   ) {
+    if (!enemySprite) return;
     context.beginPath();
     context.drawImage(
       enemySprite,
@@ -164,7 +176,11 @@ export class Enemy {
               ? this.currentStage
               : this.currentStage - 1,
           )!.direction!
-        ]![this.getNextFrameIndex()],
+        ]![
+          this.enemyParams!.modifiedShockTimer
+            ? this.renderParams.currentFrame
+            : this.getNextFrameIndex()
+        ],
         context,
       );
       // enemy is dead? draw death animation
@@ -375,9 +391,14 @@ export class Enemy {
 
     this.engine.score += 1;
     if (isGiveBounty) {
-      this.engine.money += this.enemyParams.bounty!;
-      useGameStore.getState().updateMoney(this.engine.money);
-      useGameStore.getState().updateScore(this.engine.score);
+      if (
+        this.engine.money + this.enemyParams.bounty! <
+        this.engine.initialGameParams.maxMoney
+      ) {
+        this.engine.money += this.enemyParams.bounty!;
+        useGameStore.getState().updateMoney(this.engine.money);
+        useGameStore.getState().updateScore(this.engine.score);
+      }
     }
 
     // UI update

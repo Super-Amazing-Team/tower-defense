@@ -1,32 +1,23 @@
-import React, { memo } from "react";
 import { Box, Typography } from "@mui/material";
-import { shallow } from "zustand/shallow";
-import {
-  ITowerSprite,
-  TDEngine,
-  TTowerTypes,
-} from "@/pages/Game/engine/TDEngine";
-import { Tower } from "@/pages/Game/towers/Tower";
-import { useGameStore } from "@/store";
-
+import { ColorDict, TDEngine, TTowerTypes } from "@/pages/Game/engine/TDEngine";
+import cursorNotAllowed from "@/../public/UI/cursorNotAllowed.png";
+import cursorHand from "@/../public/UI/cursorHand.png";
+import grassBg from "@/../public/sprites/map/grassBg.png";
+import { TowerImage } from "@/pages/Game/components/TowerImage/TowerImage";
 interface IBuildMenuTower {
   engine: TDEngine;
   towerType: TTowerTypes;
+  isDisabled: boolean;
 }
-export const BuildMenuTower = memo(({ engine, towerType }: IBuildMenuTower) => {
-  /*
-  const [isBuildMenuOpen, setIsBuildMenuOpen] = useGameStore(
-    (state) => [state.isBuildMenuOpen, state.updateIsBuildMenuOpen],
-    shallow,
-  );
-   */
-  const isDisabled = !engine.isEnoughMoney(
-    engine.predefinedTowerParams[towerType].towerParams.price!,
-  );
+export const BuildMenuTower = ({
+  engine,
+  towerType,
+  isDisabled,
+}: IBuildMenuTower) => {
   return (
     <Box
       sx={{
-        cursor: `${isDisabled ? "not-allowed" : "pointer"}`,
+        cursor: `url("${isDisabled ? cursorNotAllowed : cursorHand}"), auto`,
         border: "2px solid #bd6a62",
         margin: "16px",
         padding: "16px 16px 0",
@@ -36,7 +27,7 @@ export const BuildMenuTower = memo(({ engine, towerType }: IBuildMenuTower) => {
         transition: "all 300ms ease",
         "&:hover": {
           border: "2px solid #262626",
-          background: `url(${engine.map?.grassBackrgroundCanvas?.toDataURL()}) repeat`,
+          background: `url(${grassBg}) 0 0 repeat`,
         },
         "&.state__disabled": {
           opacity: ".7",
@@ -56,65 +47,7 @@ export const BuildMenuTower = memo(({ engine, towerType }: IBuildMenuTower) => {
       }}
     >
       <Box className="b-build-menu-tower">
-        <Box
-          sx={{
-            display: "flex",
-            justifyContent: "center",
-          }}
-          className="b-tower-image-wrapper"
-        >
-          <Box
-            sx={{
-              position: "relative",
-              top: "-30px",
-              "& > .tower-base": {
-                width: `${engine.predefinedTowerParams[towerType].towerParams?.baseWidth}px`,
-                height: `${engine.predefinedTowerParams[towerType].towerParams?.baseHeight}px`,
-              },
-            }}
-            className="b-tower-image"
-          >
-            <Box
-              sx={{
-                background: `url(${(
-                  engine.towerSprites[towerType]!.canvasArr!
-                    .weapon[0] as HTMLCanvasElement[]
-                )[0].toDataURL()}) 0 0 no-repeat`,
-                zIndex: 2,
-                width: `${engine.predefinedTowerParams[towerType].towerParams?.dimensions[0].cannonWidth}px`,
-                height: `${engine.predefinedTowerParams[towerType].towerParams?.dimensions[0].cannonHeight}px`,
-                position: "absolute",
-                left: `${Math.floor(
-                  (engine.predefinedTowerParams[towerType].towerParams
-                    ?.baseWidth -
-                    engine.predefinedTowerParams[towerType].towerParams
-                      ?.dimensions[0].cannonWidth) /
-                    2,
-                )}px`,
-                top: `${Math.floor(
-                  (engine.predefinedTowerParams[towerType].towerParams
-                    ?.baseHeight -
-                    engine.predefinedTowerParams[towerType].towerParams
-                      ?.dimensions[0].cannonHeight -
-                    engine.predefinedTowerParams[towerType].towerParams
-                      ?.dimensions[0].cannonOffsetY) /
-                    2,
-                )}px`,
-              }}
-              className="tower-cannon"
-            />
-            <Box
-              sx={{
-                background: `url(${(
-                  engine.towerSprites[towerType]!.canvasArr!
-                    .base[0] as HTMLCanvasElement
-                ).toDataURL()}) 0 0 no-repeat`,
-                zIndex: 1,
-              }}
-              className="tower-base"
-            />
-          </Box>
-        </Box>
+        <TowerImage engine={engine} towerType={towerType} upgradeLevel={0} />
         <Box
           className="b-build-menu-tower-description"
           sx={{
@@ -153,13 +86,19 @@ export const BuildMenuTower = memo(({ engine, towerType }: IBuildMenuTower) => {
           <Typography
             sx={{
               "& .b-attack-modifier-slow": {
-                color: "#3B46DB",
+                color: ColorDict.specialAttackslowColor,
               },
               "& .b-attack-modifier-shock": {
-                color: "#402d19",
+                color: ColorDict.specialAttackshockColor,
               },
               "& .b-attack-modifier-splash": {
-                color: "#155800",
+                color: ColorDict.specialAttacksplashColor,
+              },
+              "& .b-attack-modifier-poison": {
+                color: ColorDict.specialAttackpoisonColor,
+              },
+              "& .b-attack-modifier-spell": {
+                color: ColorDict.specialAttackspellColor,
               },
             }}
           >
@@ -184,4 +123,4 @@ export const BuildMenuTower = memo(({ engine, towerType }: IBuildMenuTower) => {
       </Box>
     </Box>
   );
-});
+};

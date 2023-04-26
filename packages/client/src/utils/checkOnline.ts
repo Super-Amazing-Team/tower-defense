@@ -1,5 +1,5 @@
 export async function checkOnLine() {
-  const URL = "http://www.google.com/";
+  const URL = "https://super-amazing-team-tower-defense-22.ru/";
   try {
     await fetch(URL, {
       method: "HEAD",
