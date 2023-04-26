@@ -134,6 +134,7 @@ export function Home({ engine }: IHome) {
           },
           "& h2, & h3, & h4, & a": {
             textShadow: `4px 4px ${ColorDict.fontColor}`,
+            fontFamily: "'PressStart2P', cursive",
           },
           "& h4": {
             color: ColorDict.sandColor,
